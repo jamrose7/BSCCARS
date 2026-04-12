@@ -136,15 +136,20 @@ input[type="password"] {
 }
 
 button.admin-btn {
-  background-color: #0f4f52;
+  background-color: #0e5e67;
   color: #f5f5f5;
-  padding: 10px 0;
+  padding: 12px 16px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  width: 50%;
+  width: 220px;
+  max-width: 100%;
   margin: 0 auto;
-  display: block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  white-space: nowrap;
   font-size: 18px;
   font-weight: 700;
   margin-top: 10px;
@@ -152,7 +157,7 @@ button.admin-btn {
 }
 
 button.admin-btn:hover {
-  background-color: #0e5e67;
+  background-color: #0c2f36;
 }
 
 .register-text {

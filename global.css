@@ -20,7 +20,7 @@ a {
 }
 
 .btn {
-  background-color: #0E5E67;
+  background-color: #0e5e67;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   color: #f5f5f5;
   padding: 12px 16px;
@@ -31,11 +31,16 @@ a {
   font-weight: 700;
   letter-spacing: 0.02em;
   transition: 0.3s;
-  width: 50%;
+  width: 220px;
+  max-width: 100%;
   margin: 0 auto;
-  display: block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .btn:hover {
-  background-color: #0C2F36;
+  background-color: #0c2f36;
 }

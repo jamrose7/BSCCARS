@@ -13,6 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
+  const adminBtn = document.querySelector(".admin-btn");
+  if (adminBtn) {
+    adminBtn.addEventListener("click", () => {
+      window.location.href = "admin_login.html";
+    });
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 

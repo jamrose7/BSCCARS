@@ -1,32 +1,34 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form");
+  const passwordInput = document.querySelector("input[type='password']");
+  const eye = document.querySelector(".eye");
 
-    const form = document.querySelector("form");
-    const passwordInput = document.querySelector("input[type='password']");
-    const eye = document.querySelector(".eye");
+  eye.addEventListener("click", () => {
+    const isHidden = passwordInput.type === "password";
+    passwordInput.type = isHidden ? "text" : "password";
+    eye.classList.toggle("closed", !isHidden);
+    eye.setAttribute(
+      "aria-label",
+      isHidden ? "Hide password" : "Show password",
+    );
+  });
 
-    eye.addEventListener("click", () => {
-        passwordInput.type = 
-            passwordInput.type === "password" ? "text" : "password";
-    });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
+    const username = form.querySelector("input[type='text']").value;
+    const password = passwordInput.value;
 
-        const username = form.querySelector("input[type='text']").value;
-        const password = passwordInput.value;
+    if (!username || !password) {
+      alert("Fill all fields.");
+      return;
+    }
 
-        if (!username || !password) {
-            alert("Fill all fields.");
-            return;
-        }
-
-        if (username === "admin" && password === "admin123") {
-            alert("Admin login successful!");
-            window.location.href = "admin-dashboard.html";
-        } else {
-            alert("Invalid admin credentials.");
-        }
-
-    });
-
+    if (username === "admin" && password === "admin123") {
+      alert("Admin login successful!");
+      window.location.href = "admin-dashboard.html";
+    } else {
+      alert("Invalid admin credentials.");
+    }
+  });
 });
