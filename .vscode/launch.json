@@ -5,14 +5,14 @@
       "name": "Launch index.html in Chrome",
       "type": "pwa-chrome",
       "request": "launch",
-      "file": "${workspaceFolder}/index.html",
+      "file": "${workspaceFolder}/html/index.html",
       "webRoot": "${workspaceFolder}"
     },
     {
       "name": "Launch index.html in Edge",
       "type": "pwa-msedge",
       "request": "launch",
-      "file": "${workspaceFolder}/index.html",
+      "file": "${workspaceFolder}/html/index.html",
       "webRoot": "${workspaceFolder}"
     },
     {
