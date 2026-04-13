@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Complaints - BSCCARS</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/myComplaints.css" />
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="top-left">
+        <img src="../images/logo.png" class="logo" />
+        <h1>Barangay Sillon Community Complaint and Response System</h1>
+      </div>
+
+      <div class="top-right">
+        <span class="icon">🔔</span>
+        <span class="icon">👤</span>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="sidebar">
+        <h2>Menu</h2>
+        <nav class="sidebar-menu">
+          <a href="residentDashboard.html"
+            ><span class="sidebar-icon">🏠</span> Dashboard</a
+          >
+          <a href="submitComplaint.html"
+            ><span class="sidebar-icon">📝</span> Submit Complaint</a
+          >
+          <a class="active"
+            ><span class="sidebar-icon">📋</span> My Complaints</a
+          >
+          <a href="#"><span class="sidebar-icon">🌐</span> Public Feed</a>
+        </nav>
+
+        <div class="logout"><span class="sidebar-icon">🔒</span> Logout</div>
+      </aside>
+
+      <section class="content">
+        <div class="content-header">
+          <div>
+            <h2>My Complaints</h2>
+            <p class="lead">
+              Review the status and details of the cases you submitted, with
+              quick access to each report.
+            </p>
+          </div>
+        </div>
+
+        <table class="complaints-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>View</th>
+            </tr>
+          </thead>
+
+          <tbody id="complaintsBody">
+            <!-- JS will populate -->
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <script src="../js/myComplaints.js"></script>
+  </body>
+</html>

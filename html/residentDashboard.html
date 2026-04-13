@@ -11,12 +11,12 @@
 
   <body>
     <header class="topbar">
-      <div class="logo-area">
+      <div class="top-left">
         <img src="../images/logo.png" class="logo" />
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
 
-      <div class="icons">
+      <div class="top-right">
         <span>🔔</span>
         <span>👤</span>
       </div>
@@ -26,9 +26,24 @@
       <aside class="sidebar">
         <h2>Dashboard</h2>
         <ul>
-          <li><span class="menu-icon">📝</span> Submit Complaint</li>
-          <li><span class="menu-icon">📋</span> My Complaints</li>
-          <li><span class="menu-icon">🌐</span> Public Feed</li>
+          <li>
+            <a class="active" href="residentDashboard.html"
+              ><span class="menu-icon">🏠</span> Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="submitComplaint.html"
+              ><span class="menu-icon">📝</span> Submit Complaint</a
+            >
+          </li>
+          <li>
+            <a href="myComplaints.html"
+              ><span class="menu-icon">📋</span> My Complaints</a
+            >
+          </li>
+          <li>
+            <a href="#"><span class="menu-icon">🌐</span> Public Feed</a>
+          </li>
         </ul>
 
         <div class="logout"><span class="menu-icon">🔒</span> Logout</div>
@@ -77,7 +92,7 @@
 
         <div class="alert">⚠️ High Priority Complaints: <strong>1</strong></div>
 
-        <button class="btn">View My Complaints</button>
+        <a class="btn" href="myComplaints.html">View My Complaints</a>
 
         <div class="last-action">
           🕒 Last Admin Action: <strong>#127</strong> → Status changed to In
