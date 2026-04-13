@@ -274,7 +274,7 @@ small {
   padding: 16px 28px;
   border-radius: 20px;
   border: none;
-  background: linear-gradient(135deg, #43c9c3, #0f6f6c);
+  background-color: #0e5e67;
   color: #fff;
   font-size: 1rem;
   font-weight: 700;
@@ -282,12 +282,12 @@ small {
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.24);
   transition:
     transform 0.2s ease,
-    filter 0.2s ease;
+    background-color 0.2s ease;
 }
 
 .btn-submit:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
+  background-color: #0c2f36;
 }
 
 .modal {
