@@ -33,6 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     alert("Login successful!");
 
-    window.location.href = "user-dashboard.html";
+    window.location.href = "residentDashboard.html";
   });
 });
