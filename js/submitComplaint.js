@@ -6,6 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewBtn = document.getElementById("viewComplaintsBtn");
   const dashboardBtn = document.getElementById("goDashboardBtn");
   const closeModal = document.getElementById("closeModal");
+  const logoutBtn = document.querySelector(".logout");
+
+  function handleLogout() {
+    sessionStorage.removeItem("residentLoggedIN");
+    window.location.href = "index.html";
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();

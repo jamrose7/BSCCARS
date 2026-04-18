@@ -1,5 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("complaintsBody");
+  const logoutBtn = document.querySelector(".logout");
+
+  function handleLogout() {
+    sessionStorage.removeItem("residentLoggedIn");
+    window.location.href = "index.html";
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
 
   const complaints = [
     {
