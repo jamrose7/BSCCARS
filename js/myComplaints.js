@@ -3,8 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.querySelector(".logout");
 
   function handleLogout() {
-    sessionStorage.removeItem("residentLoggedIn");
-    window.location.href = "index.html";
+    const confirmLogout = confirm("Are you sure you want to log out?");
+    if (confirmLogout) {
+      sessionStorage.removeItem("residentLoggedIn");
+      window.location.href = "index.html";
+    }
   }
 
   if (logoutBtn) {
