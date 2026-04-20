@@ -54,8 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    alert("Registration successful!");
-
-    window.location.href = "login.html";
+    // Show success modal
+    const successModal = document.getElementById("successModal");
+    if (successModal) {
+      successModal.classList.add("show");
+    }
   });
 });

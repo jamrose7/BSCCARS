@@ -151,3 +151,93 @@ button.btn {
 .eye.closed::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/%3E%3Cpath d='M3 16c2.5-3.5 6-5 9-5 2.5 0 6 1.5 9 5'/%3E%3Cline x1='3' y1='3' x2='21' y2='21'/%3E%3C/svg%3E");
 }
+
+/* Modal Styles */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #8b6f47, #a0845c);
+  padding: 28px 24px;
+  text-align: center;
+  color: white;
+}
+
+.modal-header h2 {
+  font-size: 26px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.modal-body {
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.modal-message {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 18px;
+  margin-top: 0;
+  font-weight: 500;
+}
+
+.modal-message:last-of-type {
+  margin-bottom: 28px;
+}
+
+.btn-back-login {
+  background-color: #1a7c8d;
+  color: white;
+  padding: 14px 32px;
+  font-size: 16px;
+  width: auto;
+  min-width: 180px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+}
+
+.btn-back-login:hover {
+  background-color: #155a6b;
+}
