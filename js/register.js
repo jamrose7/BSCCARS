@@ -54,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show success modal
     const successModal = document.getElementById("successModal");
     if (successModal) {
       successModal.classList.add("show");
