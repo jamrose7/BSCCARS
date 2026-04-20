@@ -113,20 +113,37 @@ body {
   justify-content: center;
 }
 
-.logout-link {
+.logout {
   margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   padding: 14px 18px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
   color: #f6f9fb;
   text-align: center;
   font-weight: 700;
-  text-decoration: none;
-  transition: background 0.25s ease;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
 }
 
-.logout-link:hover {
+.logout:hover {
   background: rgba(255, 255, 255, 0.14);
+}
+
+.menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 .main-content {
@@ -150,7 +167,9 @@ body {
 
 .page-heading p {
   color: rgba(255, 255, 255, 0.72);
-  max-width: 540px;
+  white-space: nowrap;
+  overflow-x: auto;
+  max-width: none;
 }
 
 .stats-grid {
