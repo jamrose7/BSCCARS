@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - BSCCARS</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/adminDashboard.css" />
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="top-left">
+        <img src="../images/logo.png" class="logo" alt="Barangay Sillon logo" />
+        <h1>Barangay Sillon Community Complaint and Response System</h1>
+      </div>
+
+      <div class="top-right">
+        <div class="icon-badge">🔔</div>
+        <div class="icon-badge">👤</div>
+      </div>
+    </header>
+
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <h2>Admin Dashboard</h2>
+        <nav>
+          <a class="active" href="adminDashboard.html"
+            ><span>🏠</span> Dashboard</a
+          >
+          <a href="publicFeed.html"><span>📋</span> Complaints</a>
+          <a href="#"><span>👥</span> Residents</a>
+          <a href="#"><span>📊</span> Reports</a>
+          <a href="#"><span>🧑‍💼</span> Users</a>
+        </nav>
+        <a class="logout-link" href="login.html">Logout</a>
+      </aside>
+
+      <main class="main-content">
+        <div class="page-heading">
+          <div>
+            <h2>Overview</h2>
+            <p>
+              Track community performance, review complaint status, and manage
+              residents from a single place.
+            </p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card card-gold">
+            <h3>Total Residents</h3>
+            <p>128</p>
+          </div>
+          <div class="stat-card card-orange">
+            <h3>Pending Accounts</h3>
+            <p>7</p>
+          </div>
+          <div class="stat-card card-teal">
+            <h3>Complaints</h3>
+            <p>12</p>
+          </div>
+        </div>
+
+        <section class="recent-panel">
+          <h3>Recent Complaints</h3>
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>Resident</th>
+                <th>Complaint</th>
+                <th>Category</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Aeron Smith</td>
+                <td>Burning Plastics</td>
+                <td>Environmental Concern</td>
+                <td><span class="status-pill status-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>Jim Lim</td>
+                <td>Uncollected Garbage</td>
+                <td>Waste</td>
+                <td>
+                  <span class="status-pill status-resolved">Resolved</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Caleb Nazar</td>
+                <td>Broken Streetlights</td>
+                <td>Road Issue</td>
+                <td>
+                  <span class="status-pill status-progress">In Progress</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

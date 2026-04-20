@@ -9,7 +9,6 @@
   </head>
 
   <body>
-    <!-- TOP NAV -->
     <header class="topbar">
       <div class="top-left">
         <img src="../images/logo.png" class="logo" />
@@ -22,22 +21,22 @@
       </div>
     </header>
 
-    <!-- MAIN -->
-    <div class="main">
-      <!-- SIDEBAR -->
+    <div class="dashboard-container">
       <aside class="sidebar">
         <h2>Menu</h2>
         <nav class="sidebar-menu">
-          <a href="residentDashboard.html"
-            ><span class="sidebar-icon">🏠</span> Dashboard</a
+          <a href="residentDashboard.html">
+            <span class="sidebar-icon">🏠</span> Dashboard</a
           >
-          <a class="active"
-            ><span class="sidebar-icon">📝</span> Submit Complaint</a
+          <a class="active">
+            <span class="sidebar-icon">📝</span> Submit Complaint</a
           >
-          <a href="myComplaints.html"
-            ><span class="sidebar-icon">📋</span> My Complaints</a
+          <a href="myComplaints.html">
+            <span class="sidebar-icon">📋</span> My Complaints</a
           >
-          <a href="#"><span class="sidebar-icon">🌐</span> Public Feed</a>
+          <a href="publicFeed.html">
+            <span class="sidebar-icon">🌐</span> Public Feed</a
+          >
         </nav>
 
         <div class="logout"><span class="sidebar-icon">🔒</span> Logout</div>
@@ -82,6 +81,8 @@
                   <option>Purok 1</option>
                   <option>Purok 2</option>
                   <option>Purok 3</option>
+                  <option>Purok 4</option>
+                  <option>Purok 5</option>
                 </select>
               </div>
 
@@ -110,8 +111,12 @@
               <label>Priority</label>
               <div class="radio-group">
                 <label
-                  ><input type="radio" name="priority" value="normal" checked />
-                  Normal</label
+                  ><input
+                    type="radio"
+                    name="priority"
+                    value="normal"
+                    checked
+                  />Normal</label
                 >
                 <label
                   ><input type="radio" name="priority" value="high" /> High

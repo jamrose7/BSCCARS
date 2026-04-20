@@ -13,13 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  const adminBtn = document.querySelector(".admin-btn");
-  if (adminBtn) {
-    adminBtn.addEventListener("click", () => {
-      window.location.href = "adminLogin.html";
-    });
-  }
-
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -31,8 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    alert("Login successful!");
+    const isAdmin = username.toLowerCase() === "admin";
 
-    window.location.href = "residentDashboard.html";
+    if (isAdmin) {
+      if (password === "admin578") {
+        alert("Admin login successful!");
+        window.location.href = "adminDashboard.html";
+      } else {
+        alert("Invalid admin credentials.");
+      }
+    } else {
+      alert("Resident login successful!");
+      window.location.href = "residentDashboard.html";
+    }
   });
 });
