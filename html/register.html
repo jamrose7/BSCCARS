@@ -66,13 +66,12 @@
             <label>Password:</label>
             <div class="password-field">
               <input type="password" required />
-              <span class="eye closed" role="button" aria-label="Show password"></span>
+
             </div>
 
             <label>Confirm Password:</label>
             <div class="password-field">
               <input type="password" required />
-              <span class="eye closed" role="button" aria-label="Show confirm password"></span>
             </div>
 
             <label>Upload Valid ID:</label>
@@ -95,7 +94,7 @@
             <button type="submit" class="btn">Register</button>
 
             <p class="register-text">
-              Already have an account? <button class="sign-in-btn">Sign in</button>
+              Already have an account? <button type="button" class="sign-in-btn">Sign in</button>
             </p>
           </form>
         </div>
@@ -129,29 +128,7 @@
       </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Account Created Successfully</h2>
-        </div>
-        <div class="modal-body">
-          <p class="modal-message">
-            Your account is currently waiting for Barangay Admin approval.
-          </p>
-          <p class="modal-message">
-            Please wait for verification before logging in.
-          </p>
-            <button
-              class="btn btn-back-login"
-              onclick="window.location.href = 'index.html'"
-            >
-              Back to Login
-            </button>
-        </div>
-      </div>
-    </div>
-
+    <script src="../js/landing.js"></script>
     <script src="../js/register.js"></script>
   </body>
 </html>

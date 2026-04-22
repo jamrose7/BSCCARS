@@ -1,0 +1,132 @@
+.residents-panel {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+}
+
+.residents-panel h3 {
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+  color: #f7fbff;
+}
+
+.residents-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #eef7f7;
+  font-size: 0.95rem;
+}
+
+.residents-table th,
+.residents-table td {
+  padding: 18px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: left;
+}
+
+.residents-table th {
+  color: #f7fbff;
+  background: rgba(255, 255, 255, 0.08);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.residents-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.residents-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
+  min-width: 110px;
+}
+
+.btn-approve {
+  background: linear-gradient(135deg, #2c9fab, #1a7c8d);
+  color: white;
+}
+
+.btn-approve:hover {
+  background: linear-gradient(135deg, #1a7c8d, #0f5567);
+  transform: translateY(-2px);
+}
+
+.btn-reject {
+  background: linear-gradient(135deg, #b8483b, #8b3a30);
+  color: white;
+}
+
+.btn-reject:hover {
+  background: linear-gradient(135deg, #8b3a30, #6b2d26);
+  transform: translateY(-2px);
+}
+
+.status-approved {
+  background: rgba(118, 199, 189, 0.18);
+  color: #d9f2ee;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.status-rejected {
+  background: rgba(184, 72, 59, 0.18);
+  color: #f4c9c1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 1400px) {
+  .residents-table {
+    font-size: 0.85rem;
+  }
+
+  .residents-table th,
+  .residents-table td {
+    padding: 14px 12px;
+  }
+
+  .btn-action {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    min-width: 90px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .residents-panel {
+    padding: 20px;
+  }
+
+  .residents-table {
+    font-size: 0.8rem;
+  }
+
+  .residents-table th,
+  .residents-table td {
+    padding: 12px 10px;
+  }
+}

@@ -72,9 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const successModal = document.getElementById("successModal");
-    if (successModal) {
-      successModal.classList.add("show");
-    }
+    alert("Account Created Successfully\n\nYour account is currently waiting for Barangay Admin approval.\n\nPlease wait for verification before logging in.");
+    window.location.href = 'index.html';
   });
 });

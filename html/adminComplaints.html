@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complaints - Admin Dashboard - BSCCARS</title>
+
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/adminDashboard.css" />
+    <link rel="stylesheet" href="../css/adminComplaints.css" />
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="top-left">
+        <img src="../images/logo.png" class="logo" alt="Barangay Sillon logo" />
+        <h1>Barangay Sillon Community Complaint and Response System</h1>
+      </div>
+
+      <div class="top-right">
+        <div class="icon-badge">🔔</div>
+        <div class="icon-badge">👤</div>
+      </div>
+    </header>
+
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <nav>
+          <a href="adminDashboard.html"><span>🏠</span> Dashboard</a>
+          <a class="active" href="adminComplaints.html"
+            ><span>📋</span> Complaints</a>
+          <a href="adminResidents.html"><span>👥</span> Residents</a>
+          <a href="adminReports.html"><span>📊</span> Reports</a>
+          <a href="adminUsers.html"><span>🧑‍💼</span> Users</a>
+        </nav>
+        <div class="logout"><span class="menu-icon">🔒</span> Logout</div>
+      </aside>
+
+      <main class="main-content">
+        <div class="page-heading">
+          <div>
+            <h2>Complaints</h2>
+            <p>
+              Manage and monitor all community complaints and their resolution
+              status.
+            </p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card card-gold">
+            <h3>Total</h3>
+            <p>12</p>
+          </div>
+          <div class="stat-card card-orange">
+            <h3>Pending</h3>
+            <p>3</p>
+          </div>
+          <div class="stat-card card-blue">
+            <h3>In Progress</h3>
+            <p>2</p>
+          </div>
+          <div class="stat-card card-green">
+            <h3>Resolved</h3>
+            <p>7</p>
+          </div>
+          <div class="stat-card card-warning">
+            <h3>⚠️ Alerts</h3>
+            <p>4</p>
+          </div>
+        </div>
+
+        <section class="complaints-panel">
+          <h3>Complaints List</h3>
+          <table class="complaints-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Confidentiality</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="complaintsBody">
+              <tr>
+                <td>2026-127</td>
+                <td>Aeron Smith</td>
+                <td>Public Disturbance</td>
+                <td><span class="priority-high">High</span></td>
+                <td>Yes</td>
+                <td><span class="status-progress">In Progress</span></td>
+                <td>
+                  <button
+                    class="btn-action"
+                    onclick="viewComplaint('2026-127')" >
+                    ▶
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>2026-119</td>
+                <td>Nathalia Rosseau</td>
+                <td>Waste</td>
+                <td><span class="priority-normal">Normal</span></td>
+                <td>Yes</td>
+                <td><span class="status-resolved">Resolved</span></td>
+                <td>
+                  <button
+                    class="btn-action"
+                    onclick="viewComplaint('2026-119')">
+                    ▶
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>2026-128</td>
+                <td>Bela Stanford</td>
+                <td>Parking</td>
+                <td><span class="priority-normal">Normal</span></td>
+                <td>Yes</td>
+                <td><span class="status-pending">Pending</span></td>
+                <td>
+                  <button
+                    class="btn-action"
+                    onclick="viewComplaint('2026-128')">
+                    ▶
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <div id="complaintModal" class="complaint-modal-overlay">
+      <div class="complaint-modal-content">
+        <div class="modal-header">
+          <button class="btn-close-modal" onclick="closeComplaintModal()">
+            &times;
+          </button>
+          <h2 id="modalTitle">Complaint #127 (Admin View)</h2>
+        </div>
+
+        <div class="modal-body">
+          <section class="detail-section info-section">
+            <div class="info-item">
+              <label>Complainant:</label>
+              <span id="complainantName">Aeron Smith</span>
+            </div>
+            <div class="info-item">
+              <label>Complaint Title:</label>
+              <span id="complaintTitle">Loud music past midnight</span>
+            </div>
+            <div class="info-item">
+              <label>Complaint Details:</label>
+              <span id="complaintDetails"
+                >"Loud music played repeatedly past midnight."</span>
+            </div>
+          </section>
+
+          <section class="detail-section evidence-section">
+            <h3>Evidence</h3>
+            <div class="evidence-container">
+              <div class="evidence-item">
+                <div class="evidence-file">Image_127.jpg</div>
+                <div class="evidence-actions">
+                  <button
+                    class="btn-evidence"
+                    onclick="viewImage('Image_127.jpg')"
+                  >
+                    View Image
+                  </button>
+                  <button
+                    class="btn-evidence btn-danger"
+                    onclick="removeEvidence('Image_127.jpg')" >
+                    Remove Image
+                  </button>
+                </div>
+              </div>
+
+              <div class="evidence-item">
+                <div class="evidence-file">Video_127.mp4</div>
+                <div class="evidence-actions">
+                  <button
+                    class="btn-evidence"
+                    onclick="playVideo('Video_127.mp4')">
+                    Play Video
+                  </button>
+                  <button
+                    class="btn-evidence btn-danger"
+                    onclick="removeEvidence('Video_127.mp4')">
+                    Remove Video
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="detail-section response-section">
+            <h3>Admin Response</h3>
+            <textarea
+              id="adminResponse"
+              class="response-textarea"
+              placeholder="Enter official response"></textarea>
+          </section>
+
+          <section class="detail-section status-section">
+            <div class="status-controls">
+              <div class="status-item">
+                <label>Update Status:</label>
+                <select id="statusSelect" class="status-dropdown">
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div class="warning-banner">⚠️ Confirmation Required</div>
+            </div>
+          </section>
+
+          <section class="detail-section notes-section">
+            <h3>Internal Notes (Admin only)</h3>
+            <div class="internal-note">Officer dispatched</div>
+          </section>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-save-action" onclick="saveAction()">
+            Save Action
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/adminComplaints.js"></script>
+  </body>
+</html>
