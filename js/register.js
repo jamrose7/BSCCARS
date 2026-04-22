@@ -26,6 +26,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // File upload preview
+  const fileInput = document.getElementById("idUpload");
+  const preview = document.getElementById("idPreview");
+  const filePicker = document.querySelector(".file-picker");
+
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+        filePicker.style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -33,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let valid = true;
 
     inputs.forEach((input) => {
-      if (input.type !== "checkbox" && input.value === "") {
+      if (input.type !== "checkbox" && input.type !== "file" && input.value === "") {
         valid = false;
       }
     });

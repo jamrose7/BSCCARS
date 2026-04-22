@@ -7,26 +7,46 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/register.css" />
+    <link rel="stylesheet" href="../css/landing.css" />
+     <!-- Favicon link -->
+     <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png">
   </head>
   <body>
-    <div class="main-container">
-      <div class="left-section">
+    <header class="header">
+      <div class="header-content">
         <img src="../images/logo.png" alt="Barangay Logo" class="logo" />
-
-        <h1>Barangay Sillon Community Complaint and Response System</h1>
-
-        <p class="tagline">
-          Community verification required for account approval
-        </p>
+        <h1 class="header-title">
+          <span class="full-title">Barangay Sillon Community Complaint and Response System</span>
+          <span class="short-title">BSCCARS</span>
+        </h1>
+        <button class="sign-in-btn">Sign In</button>
       </div>
+    </header>
 
+    <div class="main-container">
       <div class="right-section">
         <div class="login-card">
           <h2>Create Account</h2>
 
           <form>
-            <label>Full Name:</label>
+            <label>First Name:</label>
             <input type="text" required />
+
+            <label>Last Name:</label>
+            <input type="text" required />
+
+            <label>Middle Name:</label>
+            <input type="text" />
+
+            <label>Suffix:</label>
+            <select>
+              <option value="">None</option>
+              <option value="Jr.">Jr.</option>
+              <option value="Sr.">Sr.</option>
+              <option value="II">II</option>
+              <option value="III">III</option>
+              <option value="IV">IV</option>
+            </select>
 
             <label>Date of Birth:</label>
             <input type="date" required />
@@ -46,41 +66,66 @@
             <label>Password:</label>
             <div class="password-field">
               <input type="password" required />
-              <span
-                class="eye closed"
-                role="button"
-                aria-label="Show password"
-              ></span>
+              <span class="eye closed" role="button" aria-label="Show password"></span>
             </div>
 
             <label>Confirm Password:</label>
             <div class="password-field">
               <input type="password" required />
-              <span
-                class="eye closed"
-                role="button"
-                aria-label="Show confirm password"
-              ></span>
+              <span class="eye closed" role="button" aria-label="Show confirm password"></span>
             </div>
 
             <label>Upload Valid ID:</label>
-            <input type="file" />
+            <div class="file-upload">
+              <input type="file" id="idUpload" accept="image/*" />
+              <div class="file-picker">
+                <span>Click to upload or drag and drop</span>
+                <span>PNG, JPG up to 10MB</span>
+              </div>
+              <img id="idPreview" class="image-preview" style="display: none;" alt="ID Preview" />
+            </div>
 
             <div class="terms">
               <input type="checkbox" required />
               <span>
-                I confirm I am a resident of Barangay Sillon and information
-                provided is true.
+                I confirm I am a resident of Barangay Sillon and the information provided is true and accurate.
               </span>
             </div>
 
             <button type="submit" class="btn">Register</button>
 
             <p class="register-text">
-              Already have an account? <a href="login.html">Login</a>
+              Already have an account? <button class="sign-in-btn">Sign in</button>
             </p>
           </form>
         </div>
+      </div>
+    </div>
+
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <button class="close-modal">&times;</button>
+        <img src="../images/logo.png" alt="BSCCARS Logo" class="modal-logo" />
+        <h2>Welcome Back</h2>
+        <p class="subtext">Sign in to continue</p>
+        <form id="loginForm">
+          <label for="username">Email/Username:</label>
+          <input id="username" type="text" required />
+          <label for="password">Password:</label>
+          <div class="password-field">
+            <input id="password" type="password" required />
+            <span class="eye closed" role="button" aria-label="Show password"></span>
+          </div>
+          <div class="remember">
+            <input type="checkbox" id="remember" />
+            <label for="remember">Remember me</label>
+          </div>
+          <button type="submit" class="btn">Login</button>
+          <a href="#" class="forgot">Forgot Password?</a>
+          <p class="register-text">
+            Don't have an account? <a href="register.html">Register</a>
+          </p>
+        </form>
       </div>
     </div>
 
@@ -97,12 +142,12 @@
           <p class="modal-message">
             Please wait for verification before logging in.
           </p>
-          <button
-            class="btn btn-back-login"
-            onclick="window.location.href = 'login.html'"
-          >
-            Back to Login
-          </button>
+            <button
+              class="btn btn-back-login"
+              onclick="window.location.href = 'index.html'"
+            >
+              Back to Login
+            </button>
         </div>
       </div>
     </div>
