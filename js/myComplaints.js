@@ -1,17 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("complaintsBody");
-  const logoutBtn = document.querySelector(".logout");
+  const signoutBtn = document.querySelector(".signout");
 
-  function handleLogout() {
-    const confirmLogout = confirm("Are you sure you want to log out?");
-    if (confirmLogout) {
-      sessionStorage.removeItem("residentLoggedIn");
+  function handleSignout() {
+    const confirmSignout = confirm("Are you sure you want to sign out?");
+    if (confirmSignout) {
+      sessionStorage.removeItem("residentSignedIn");
       window.location.href = "index.html";
     }
   }
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", handleLogout);
+  if (signoutBtn) {
+    signoutBtn.addEventListener("click", handleSignout);
   }
 
   const complaints = [

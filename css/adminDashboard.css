@@ -115,7 +115,7 @@ body {
   justify-content: center;
 }
 
-.logout {
+.signout {
   margin-top: auto;
   display: inline-flex;
   align-items: center;
@@ -133,7 +133,7 @@ body {
     transform 0.2s ease;
 }
 
-.logout:hover {
+.signout:hover {
   background: rgba(255, 255, 255, 0.14);
 }
 

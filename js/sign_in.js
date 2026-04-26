@@ -28,13 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isAdmin) {
       if (password === "admin578") {
-        alert("Admin login successful!");
+        alert("Admin sign in successful!");
         window.location.href = "adminDashboard.html";
       } else {
         alert("Invalid admin credentials.");
       }
     } else {
-      alert("Resident login successful!");
+      alert("Resident sign in successful!");
       window.location.href = "residentDashboard.html";
     }
   });

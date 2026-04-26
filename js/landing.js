@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Modal functionality
     const signInBtns = document.querySelectorAll('.sign-in-btn');
     const modal = document.getElementById('loginModal');
     const closeBtn = modal.querySelector('.close-modal');
@@ -32,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Password toggle
     const eyeIcon = modal.querySelector('.eye');
     const passwordInput = modal.querySelector('#password');
 
@@ -41,20 +39,20 @@ document.addEventListener("DOMContentLoaded", () => {
             passwordInput.type = 'text';
             eyeIcon.classList.remove('closed');
             eyeIcon.classList.add('open');
-            eyeIcon.textContent = '👁️'; // or appropriate icon
+            eyeIcon.textContent = '👁️'; 
         } else {
             passwordInput.type = 'password';
             eyeIcon.classList.remove('open');
             eyeIcon.classList.add('closed');
-            eyeIcon.textContent = '🙈'; // or appropriate icon
+            eyeIcon.textContent = '🙈'; 
         }
     });
 
-    // Form submission
-    const loginForm = modal.querySelector('#loginForm');
-    loginForm.addEventListener('submit', (e) => {
+  
+    const signinForm = modal.querySelector('#signinForm');
+    signinForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        // For demo, redirect to resident dashboard
+        
         window.location.href = 'residentDashboard.html';
     });
 });

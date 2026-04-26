@@ -32,7 +32,7 @@
   max-width: 380px;
 }
 
-.sign_in-card h2 {
+.card h2 {
   font-size: 28px;
   margin-bottom: 10px;
 }
@@ -51,7 +51,7 @@
   justify-content: center;
 }
 
-.sign_in-card {
+.card {
   background: #e5e5e5;
   padding: 40px;
   border-radius: 15px;

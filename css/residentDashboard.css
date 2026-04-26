@@ -125,7 +125,7 @@
   transform: translateX(4px);
 }
 
-.logout {
+.signout {
   margin-top: auto;
   padding: 14px 16px;
   border-radius: 14px;
@@ -137,7 +137,7 @@
   transition: background 0.3s ease;
 }
 
-.logout:hover {
+.signout:hover {
   background: rgba(255, 255, 255, 0.16);
 }
 

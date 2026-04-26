@@ -1,13 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const logout = document.querySelector(".logout");
+  const signout = document.querySelector(".signout");
 
-  if (!logout) {
+  if (!signout) {
     return;
   }
 
-  logout.addEventListener("click", () => {
-    const confirmLogout = confirm("Are you sure you want to logout?");
-    if (confirmLogout) {
+  signout.addEventListener("click", () => {
+    const confirmSignout = confirm("Are you sure you want to sign out?");
+    if (confirmSignout) {
       window.location.href = "index.html";
     }
   });

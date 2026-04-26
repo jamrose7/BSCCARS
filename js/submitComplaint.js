@@ -6,17 +6,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewBtn = document.getElementById("viewComplaintsBtn");
   const dashboardBtn = document.getElementById("goDashboardBtn");
   const closeModal = document.getElementById("closeModal");
-  const logoutBtn = document.querySelector(".logout");
+  const signoutBtn = document.querySelector(".signout");
 
-  function handleLogout() {
-    const confirmLogout = confirm("Are you sure you want to log out?");
-    if (confirmLogout) {
+  function handleSignout() {
+    const confirmSignout = confirm("Are you sure you want to sign out?");
+    if (confirmSignout) {
       window.location.href = "index.html";
     }
   }
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", handleLogout);
+  if (signoutBtn) {
+    signoutBtn.addEventListener("click", handleSignout);
   }
 
   form.addEventListener("submit", (e) => {
