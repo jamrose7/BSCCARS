@@ -99,7 +99,7 @@ body {
   line-height: 1.2;
   margin-bottom: 20px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-  background: linear-gradient(45deg, #fff, #2d8c8c);
+  background: linear-gradient(45deg, #fff, #6dc8c8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -193,8 +193,6 @@ body {
   transform: translateY(-2px);
 }
 
-
-
 .image-card {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
@@ -211,8 +209,6 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
-
-
 
 .features {
   padding: 60px 20px;
