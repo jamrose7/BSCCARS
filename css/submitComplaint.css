@@ -77,7 +77,6 @@
 
 .dashboard-container {
   display: flex;
-  gap: 28px;
   min-height: calc(100vh - 108px);
 }
 

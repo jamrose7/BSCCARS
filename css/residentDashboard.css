@@ -1,4 +1,6 @@
 ﻿body {
+  margin: 0;
+  font-family: "Segoe UI", "Tahoma", "Geneva", "Verdana", sans-serif;
   min-height: 100vh;
   background:
     radial-gradient(
@@ -138,7 +140,7 @@
 }
 
 .signout:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .content {

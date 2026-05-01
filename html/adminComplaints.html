@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Complaints - Admin Dashboard - BSCCARS</title>
+   
+    <title>Complaints - BSCCARS</title>
+    <meta name="description" content="Admin complaints management panel for Barangay Sillon Community Complaint and Response System."/>
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminDashboard.css" />
@@ -13,30 +15,46 @@
   <body>
     <header class="topbar">
       <div class="top-left">
-        <img src="../images/logo.png" class="logo" alt="Barangay Sillon logo" />
+        <img
+          src="../images/logo.png"
+          class="logo"
+          alt="Barangay Sillon logo"/>
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
 
       <div class="top-right">
-        <div class="icon-badge">🔔</div>
-        <div class="icon-badge">👤</div>
+        <button class="icon-badge" aria-label="Notifications">
+          <span aria-hidden="true">🔔</span>
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <span aria-hidden="true">👤</span>
+        </button>
       </div>
     </header>
 
     <div class="dashboard-container">
-      <aside class="sidebar">
-        <nav>
-          <a href="adminDashboard.html"><span>🏠</span> Dashboard</a>
-          <a class="active" href="adminComplaints.html"
-            ><span>📋</span> Complaints</a>
-          <a href="adminResidents.html"><span>👥</span> Residents</a>
-          <a href="adminReports.html"><span>📊</span> Reports</a>
-          <a href="adminUsers.html"><span>🧑‍💼</span> Users</a>
+            <aside class="sidebar">
+        <nav aria-label="Admin navigation">
+          <a href="adminDashboard.html">
+            <span aria-hidden="true">🏠</span> Dashboard
+          </a>
+          <a class="active" href="adminComplaints.html" aria-current="page">
+            <span aria-hidden="true">📋</span> Complaints
+          </a>
+          <a href="adminResidents.html">
+            <span aria-hidden="true">👥</span> Residents
+          </a>
+          <a href="adminReports.html">
+            <span aria-hidden="true">📊</span> Reports
+          </a>
+          <a href="adminUsers.html">
+            <span aria-hidden="true">🧑‍💼</span> Users
+          </a>
         </nav>
-       <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
       </aside>
 
-      <main class="main-content">
+      <main class="main-content" id="main-content">
         <div class="page-heading">
           <div>
             <h2>Complaints</h2>
@@ -47,44 +65,52 @@
           </div>
         </div>
 
-        <div class="stats-grid">
+        <div class="stats-grid" role="region" aria-label="Complaint statistics">
           <div class="stat-card card-gold">
             <h3>Total</h3>
-            <p>12</p>
+            <p aria-label="12 total complaints">12</p>
           </div>
           <div class="stat-card card-orange">
             <h3>Pending</h3>
-            <p>3</p>
+            <p aria-label="3 pending complaints">3</p>
           </div>
           <div class="stat-card card-blue">
             <h3>In Progress</h3>
-            <p>2</p>
+            <p aria-label="2 complaints in progress">2</p>
           </div>
           <div class="stat-card card-green">
             <h3>Resolved</h3>
-            <p>7</p>
+            <p aria-label="7 resolved complaints">7</p>
           </div>
-          <div class="stat-card card-warning">
-            <h3>⚠️ Alerts</h3>
-            <p>4</p>
+         
+          <div class="stat-card card-alert">
+            <h3>
+              <span aria-hidden="true">⚠️</span> Alerts
+            </h3>
+            <p aria-label="4 high-priority alerts">4</p>
           </div>
         </div>
 
-        <section class="complaints-panel">
-          <h3>Complaints List</h3>
-          <table class="complaints-table">
+        <section class="complaints-panel" aria-labelledby="complaintsHeading">
+          <h3 id="complaintsHeading">Complaints List</h3>
+
+          <table
+            class="complaints-table"
+            aria-label="Community complaints list">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Full Name</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Confidentiality</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th scope="col">ID</th>
+                <th scope="col">Full Name</th>
+                <th scope="col">Category</th>
+                <th scope="col">Priority</th>
+                <th scope="col">Confidentiality</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
+
             <tbody id="complaintsBody">
+             
               <tr>
                 <td>2026-127</td>
                 <td>Aeron Smith</td>
@@ -95,11 +121,34 @@
                 <td>
                   <button
                     class="btn-action"
-                    onclick="viewComplaint('2026-127')" >
-                    ▶
+                    onclick="viewComplaint(this)"
+                    type="button"
+                    data-id="2026-127"
+                    data-name="Aeron Smith"
+                    data-category="Public Disturbance"
+                    data-priority="High"
+                    data-status="in-progress"
+                    data-title="Loud music past midnight"
+                    data-details="Loud music played repeatedly past midnight."
+                    data-confidential="Yes"
+                    data-image="Image_127.jpg"
+                    data-video="Video_127.mp4"
+                    data-note="Officer dispatched"
+                    aria-label="View complaint 2026-127 by Aeron Smith">
+                   
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
                   </button>
                 </td>
               </tr>
+
               <tr>
                 <td>2026-119</td>
                 <td>Nathalia Rosseau</td>
@@ -110,11 +159,33 @@
                 <td>
                   <button
                     class="btn-action"
-                    onclick="viewComplaint('2026-119')">
-                    ▶
+                    onclick="viewComplaint(this)"
+                    type="button"
+                    data-id="2026-119"
+                    data-name="Nathalia Rosseau"
+                    data-category="Waste"
+                    data-priority="Normal"
+                    data-status="resolved"
+                    data-title="Illegal dumping near canal"
+                    data-details="Garbage being dumped beside the canal regularly."
+                    data-confidential="Yes"
+                    data-image="Image_119.jpg"
+                    data-video=""
+                    data-note=""
+                    aria-label="View complaint 2026-119 by Nathalia Rosseau">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
                   </button>
                 </td>
               </tr>
+
               <tr>
                 <td>2026-128</td>
                 <td>Bela Stanford</td>
@@ -125,9 +196,38 @@
                 <td>
                   <button
                     class="btn-action"
-                    onclick="viewComplaint('2026-128')">
-                    ▶
+                    onclick="viewComplaint(this)"
+                    type="button"
+                    data-id="2026-128"
+                    data-name="Bela Stanford"
+                    data-category="Parking"
+                    data-priority="Normal"
+                    data-status="pending"
+                    data-title="Vehicles blocking driveways"
+                    data-details="Multiple vehicles blocking residential driveways on Purok 2."
+                    data-confidential="Yes"
+                    data-image=""
+                    data-video=""
+                    data-note=""
+                    aria-label="View complaint 2026-128 by Bela Stanford">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
                   </button>
+                </td>
+              </tr>
+
+              <tr id="emptyStateRow" style="display: none;">
+                <td
+                  colspan="7"
+                  style="text-align: center; padding: 32px; color: rgba(255,255,255,0.45); font-style: italic;">
+                  No complaints found.
                 </td>
               </tr>
             </tbody>
@@ -136,105 +236,167 @@
       </main>
     </div>
 
-    <div id="complaintModal" class="complaint-modal-overlay">
+    <div
+      id="complaintModal"
+      class="complaint-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+      aria-describedby="complaintDetails">
       <div class="complaint-modal-content">
+
         <div class="modal-header">
-          <button class="btn-close-modal" onclick="closeComplaintModal()">
+          <h2 id="modalTitle">Complaint #— (Admin View)</h2>
+         
+          <button
+            class="btn-close-modal"
+            onclick="closeComplaintModal()"
+            type="button"
+            aria-label="Close complaint modal">
             &times;
           </button>
-          <h2 id="modalTitle">Complaint #127 (Admin View)</h2>
         </div>
-
         <div class="modal-body">
-          <section class="detail-section info-section">
+
+          <div class="info-section" role="group" aria-label="Complaint information">
             <div class="info-item">
               <label>Complainant:</label>
-              <span id="complainantName">Aeron Smith</span>
+              <span id="complainantName">—</span>
+            </div>
+            <div class="info-item">
+              <label>Category:</label>
+              <span id="complaintCategory">—</span>
+            </div>
+            <div class="info-item">
+              <label>Priority:</label>
+              <span id="complaintPriority">—</span>
+            </div>
+            <div class="info-item">
+              <label>Confidential:</label>
+              <span id="complaintConfidential">—</span>
             </div>
             <div class="info-item">
               <label>Complaint Title:</label>
-              <span id="complaintTitle">Loud music past midnight</span>
+              <span id="complaintTitle">—</span>
             </div>
             <div class="info-item">
               <label>Complaint Details:</label>
-              <span id="complaintDetails"
-                >"Loud music played repeatedly past midnight."</span>
+              <span id="complaintDetails">—</span>
+            </div>
+          </div>
+
+          <section
+            class="detail-section evidence-section"
+            aria-labelledby="evidenceHeading">
+            <h3 id="evidenceHeading">Evidence</h3>
+            <div class="evidence-container" id="evidenceContainer">
+              
+              <p
+                id="noEvidenceMsg"
+                style="color: rgba(255,255,255,0.45); font-style: italic;">
+                No evidence attached.
+              </p>
             </div>
           </section>
 
-          <section class="detail-section evidence-section">
-            <h3>Evidence</h3>
-            <div class="evidence-container">
-              <div class="evidence-item">
-                <div class="evidence-file">Image_127.jpg</div>
-                <div class="evidence-actions">
-                  <button
-                    class="btn-evidence"
-                    onclick="viewImage('Image_127.jpg')">
-                    View Image
-                  </button>
-                  <button
-                    class="btn-evidence btn-danger"
-                    onclick="removeEvidence('Image_127.jpg')" >
-                    Remove Image
-                  </button>
-                </div>
-              </div>
-
-              <div class="evidence-item">
-                <div class="evidence-file">Video_127.mp4</div>
-                <div class="evidence-actions">
-                  <button
-                    class="btn-evidence"
-                    onclick="playVideo('Video_127.mp4')">
-                    Play Video
-                  </button>
-                  <button
-                    class="btn-evidence btn-danger"
-                    onclick="removeEvidence('Video_127.mp4')">
-                    Remove Video
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="detail-section response-section">
-            <h3>Super Admin Response</h3>
+          <section
+            class="detail-section response-section"
+            aria-labelledby="responseHeading">
+            <h3 id="responseHeading">Super Admin Response</h3>
             <textarea
               id="adminResponse"
               class="response-textarea"
-              placeholder="Enter official response"></textarea>
+              placeholder="Enter official response…"
+              maxlength="1000"
+              aria-describedby="responseHint"></textarea>
+            
+            <small
+              id="responseHint"
+              style="color: rgba(255,255,255,0.4); font-size: 0.8rem; display: block; margin-top: 6px;">
+              Max 1000 characters.
+            </small>
           </section>
 
-          <section class="detail-section status-section">
+          <section
+            class="detail-section status-section"
+            aria-labelledby="statusHeading">
+            <h3 id="statusHeading" class="visually-hidden">Update Status</h3>
             <div class="status-controls">
               <div class="status-item">
-                <label>Update Status:</label>
-                <select id="statusSelect" class="status-dropdown">
+           
+                <label for="statusSelect">Update Status:</label>
+                <select
+                  id="statusSelect"
+                  class="status-dropdown"
+                  aria-label="Update complaint status"
+                  onchange="onStatusChange()">
                   <option value="pending">Pending</option>
                   <option value="in-progress">In Progress</option>
                   <option value="resolved">Resolved</option>
                 </select>
               </div>
-              <div class="warning-banner">⚠️ Confirmation Required</div>
+            
+              <div
+                class="warning-banner"
+                id="confirmationBanner"
+                style="display: none;"
+                role="alert"
+                aria-live="polite">
+                <span aria-hidden="true">⚠️</span>
+                Changing status requires saving to take effect.
+              </div>
             </div>
           </section>
 
-          <section class="detail-section notes-section">
-            <h3>Internal Notes (Admin only)</h3>
-            <div class="internal-note">Officer dispatched</div>
+          <section
+            class="detail-section notes-section"
+            aria-labelledby="notesHeading">
+            <h3 id="notesHeading">Internal Notes (Admin only)</h3>
+           
+            <div id="internalNotesList">
+            
+            </div>
+           
+            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+              <input
+                type="text"
+                id="newNoteInput"
+                placeholder="Add a new internal note…"
+                maxlength="200"
+                aria-label="Add internal note"
+                style="
+                  flex: 1;
+                  min-width: 0;
+                  padding: 10px 14px;
+                  border-radius: 10px;
+                  border: 1px solid rgba(255,255,255,0.15);
+                  background: rgba(255,255,255,0.08);
+                  color: #f0f0f0;
+                  font-family: inherit;
+                  font-size: 0.875rem;"/>
+              <button
+                type="button"
+                class="btn-evidence"
+                onclick="addInternalNote()"
+                style="flex-shrink: 0; min-width: 90px;">
+                Add Note
+              </button>
+            </div>
           </section>
-        </div>
 
+        </div>
         <div class="modal-footer">
-          <button class="btn-save-action" onclick="saveAction()">
+          <button
+            class="btn-save-action"
+            onclick="saveAction()"
+            type="button"
+            aria-label="Save admin action for this complaint">
             Save Action
           </button>
         </div>
-      </div>
-    </div>
 
-    <script src="../js/adminComplaints.js"></script>
+      </div>
+      <script src="../js/adminComplaints.js"></script>
+
   </body>
 </html>
