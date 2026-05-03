@@ -6,8 +6,7 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/myComplaints.css" />
-     <!-- Favicon link -->
-     <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png" />
   </head>
 
   <body>
@@ -16,7 +15,6 @@
         <img src="../images/logo.png" class="logo" />
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
-
       <div class="top-right">
         <span class="icon">🔔</span>
         <span class="icon">👤</span>
@@ -27,20 +25,22 @@
       <aside class="sidebar">
         <nav class="sidebar-menu">
           <a href="residentDashboard.html">
-            <span class="sidebar-icon">🏠</span> Dashboard</a
-          >
+            <span class="sidebar-icon">🏠</span> Dashboard
+          </a>
           <a href="submitComplaint.html">
-            <span class="sidebar-icon">📝</span> Submit Complaint</a
-          >
+            <span class="sidebar-icon">📝</span> Submit Complaint
+          </a>
           <a class="active">
-            <span class="sidebar-icon">📋</span> My Complaints</a
-          >
+            <span class="sidebar-icon">📋</span> My Complaints
+          </a>
           <a href="publicFeed.html">
-            <span class="sidebar-icon">🌐</span> Public Feed</a
-          >
+            <span class="sidebar-icon">🌐</span> Public Feed
+          </a>
         </nav>
 
-        <div class="signout"><span class="sidebar-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <span class="sidebar-icon">🔒</span> Sign out
+        </div>
       </aside>
 
       <section class="content">
@@ -66,10 +66,101 @@
               <th>View</th>
             </tr>
           </thead>
-
           <tbody id="complaintsBody"></tbody>
         </table>
       </section>
+    </div>
+
+    <div id="complaintDetailModal" class="detail-modal-overlay">
+      <div class="detail-modal-content">
+
+        <div class="detail-modal-header">
+          <button class="detail-back-btn" id="detailBackBtn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+            Back to My Complaints
+          </button>
+          <h2 id="detailModalTitle" class="detail-modal-title">Complaint Detail</h2>
+        </div>
+
+        <div class="detail-modal-body">
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">📄</span>
+              <h3>Complaint Information</h3>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-field">
+                <span class="detail-label">Complaint #</span>
+                <span class="detail-value" id="detailId">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Category</span>
+                <span class="detail-value" id="detailCategory">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Purok / Sitio</span>
+                <span class="detail-value" id="detailPurok">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Priority</span>
+                <span class="detail-value" id="detailPriority">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Confidential</span>
+                <span class="detail-value" id="detailConfidential">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Incident Date</span>
+                <span class="detail-value" id="detailDate">—</span>
+              </div>
+              <div class="detail-field">
+                <span class="detail-label">Incident Time</span>
+                <span class="detail-value" id="detailTime">—</span>
+              </div>
+              <div class="detail-field detail-field--full">
+                <span class="detail-label">Complaint Details</span>
+                <span class="detail-value" id="detailDetails">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">📎</span>
+              <h3>Attachments</h3>
+            </div>
+            <div class="detail-attachments" id="detailAttachments">
+              <p class="detail-empty-msg">No attachments.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">💬</span>
+              <h3>Admin Responses</h3>
+            </div>
+            <div id="detailResponses">
+              <p class="detail-empty-msg">No responses yet.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">🕓</span>
+              <h3>Status History</h3>
+            </div>
+            <div class="detail-timeline" id="detailTimeline">
+              <p class="detail-empty-msg">No history available.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <script src="../js/myComplaints.js"></script>
