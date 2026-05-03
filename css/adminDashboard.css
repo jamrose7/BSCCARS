@@ -208,7 +208,7 @@ body {
 }
 
 .card-gold {
-  background: linear-gradient(135deg, #c49463, #b47b48);
+   background: linear-gradient(135deg, #86775c, #B99A64);
 }
 
 .card-orange {
@@ -269,17 +269,17 @@ body {
 }
 
 .status-pending {
-  background: rgba(255, 209, 126, 0.18);
+  background: rgba(231, 118, 20, 0.45);
   color: #ffecb3;
 }
 
 .status-resolved {
-  background: rgba(118, 199, 189, 0.18);
+  background: rgba(80, 160, 135, 0.45);
   color: #d9f2ee;
 }
 
 .status-progress {
-  background: rgba(108, 177, 228, 0.18);
+  background: rgba(68, 151, 210, 0.45);
   color: #d7eefb;
 }
 

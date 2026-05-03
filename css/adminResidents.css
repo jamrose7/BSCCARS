@@ -59,6 +59,7 @@
     background 0.25s ease,
     transform 0.2s ease;
   min-width: 110px;
+  margin-bottom: 10px;
 }
 
 .btn-approve {

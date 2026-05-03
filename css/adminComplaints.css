@@ -6,20 +6,18 @@
 .complaint-modal-overlay *::after {
   box-sizing: border-box;
 }
-
+.card-gold {
+  background: linear-gradient(135deg, #86775c, #B99A64);
+}
 .card-blue {
   background: linear-gradient(135deg, #5b8dd8, #4a78c2);
 }
 
 .card-green {
-  background: linear-gradient(135deg, #76c7bd, #5aa9a3);
+  background: linear-gradient(135deg, #309481, #10745e);
 }
 
 .card-alert {
-  background: linear-gradient(135deg, #b8483b, #a0392f);
-}
-
-.card-warning {
   background: linear-gradient(135deg, #b8483b, #a0392f);
 }
 
@@ -94,7 +92,7 @@
 }
 
 .status-pending {
-  background: rgba(255, 209, 126, 0.18);
+  background: rgba(231, 118, 20, 0.45);
   color: #ffecb3;
   padding: 8px 14px;
   border-radius: 8px;
@@ -103,7 +101,7 @@
 }
 
 .status-progress {
-  background: rgba(108, 177, 228, 0.18);
+  background: rgba(68, 151, 210, 0.45);
   color: #d7eefb;
   padding: 8px 14px;
   border-radius: 8px;
@@ -112,7 +110,7 @@
 }
 
 .status-resolved {
-  background: rgba(118, 199, 189, 0.18);
+  background: rgba(80, 160, 135, 0.45);
   color: #d9f2ee;
   padding: 8px 14px;
   border-radius: 8px;
