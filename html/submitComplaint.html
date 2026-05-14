@@ -2,12 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Submit Complaint - BSCCARS</title>
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/submitComplaint.css" />
- 
-     <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png">
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="/images/favicon_io/favicon-32x32.png"/>
   </head>
 
   <body>
@@ -27,17 +31,13 @@
       <aside class="sidebar">
         <nav class="sidebar-menu">
           <a href="residentDashboard.html">
-            <span class="sidebar-icon">🏠</span> Dashboard</a
-          >
+            <span class="sidebar-icon">🏠</span> Dashboard</a>
           <a class="active">
-            <span class="sidebar-icon">📝</span> Submit Complaint</a
-          >
+            <span class="sidebar-icon">📝</span> Submit Complaint</a>
           <a href="myComplaints.html">
-            <span class="sidebar-icon">📋</span> My Complaints</a
-          >
+            <span class="sidebar-icon">📋</span> My Complaints</a>
           <a href="publicFeed.html">
-            <span class="sidebar-icon">🌐</span> Public Feed</a
-          >
+            <span class="sidebar-icon">🌐</span> Public Feed</a>
         </nav>
 
         <div class="signout"><span class="sidebar-icon">🔒</span> Sign out</div>
@@ -58,75 +58,97 @@
           <form id="complaintForm">
             <div class="form-group">
               <label>Complaint Title:</label>
-              <input type="text" id="title" required />
+              <input type="text" name="title" id="title" required />
             </div>
 
             <div class="form-group">
               <label>Complaint Category:</label>
-              <select id="category">
-                <option>Public Disturbance</option>
-                <option>Sanitation</option>
-                <option>Road Issue</option>
+              <select name="categoryId" id="categoryId" required>
+                <option value="" disabled selected>Select a category</option>
+                <option value="1">Money Debt</option>
+                <option value="2">Public Disturbance</option>
+                <option value="3">Waste Management</option>
+                <option value="4">Road Issue</option>
+                <option value="5">Illegal Parking</option>
+                <option value="6">Property Damage</option>
+                <option value="7">Animal Concerns</option>
+                <option value="8">Sanitation</option>
+                <option value="9">Other</option>
               </select>
             </div>
 
             <div class="form-group">
               <label>Complaint Details:</label>
-              <textarea id="details" rows="4" required></textarea>
+              <textarea name="details" id="details" rows="4" required></textarea>
             </div>
 
             <div class="form-row">
               <div>
                 <label>Purok/Sitio:</label>
-                <select id="purok">
-                  <option>Purok 1</option>
-                  <option>Purok 2</option>
-                  <option>Purok 3</option>
-                  <option>Purok 4</option>
-                  <option>Purok 5</option>
+                <select name="purokId" id="purokId" required>
+                  <option value="" disabled selected>Select a location</option>
+                  <option value="PUROK AGUMA-A 1">PUROK AGUMA-A 1</option>
+                  <option value="PUROK AGUMA-A 2">PUROK AGUMA-A 2</option>
+                  <option value="PUROK BILABID 1">PUROK BILABID 1</option>
+                  <option value="PUROK BILABID 2">PUROK BILABID 2</option>
+                  <option value="PUROK BILABID 3">PUROK BILABID 3</option>
+                  <option value="PUROK BOLINAO 1">PUROK BOLINAO 1</option>
+                  <option value="PUROK BOLINAO 2">PUROK BOLINAO 2</option>
+                  <option value="PUROK LAMBAY 1">PUROK LAMBAY 1</option>
+                  <option value="PUROK LAMBAY 2">PUROK LAMBAY 2</option>
+                  <option value="SAP-SAP 1">SAP-SAP 1</option>
+                  <option value="PUROK SAP-SAP 2">PUROK SAP-SAP 2</option>
+                  <option value="PUROK SARA-SARA 1">PUROK SARA-SARA 1</option>
+                  <option value="PUROK SARA-SARA 2">PUROK SARA-SARA 2</option>
+                  <option value="PUROK SARA-SARA 3">PUROK SARA-SARA 3</option>
+                  <option value="PUROK DANGGIT 1">PUROK DANGGIT 1</option>
+                  <option value="PUROK DANGGIT 2">PUROK DANGGIT 2</option>
+                  <option value="PUROK DANGGIT 3">PUROK DANGGIT 3</option>
+                  <option value="PUROK BANGUS">PUROK BANGUS</option>
+                  <option value="PUROK PANDAWAN">PUROK PANDAWAN</option>
+                  <option value="PUROK TULINGAN">PUROK TULINGAN</option>
+                  <option value="PUROK LUKON">PUROK LUKON</option>
+                  <option value="PUROK BAT-OG">PUROK BAT-OG</option>
+                  <option value="PUROK KATAMBAK">PUROK KATAMBAK</option>
+                  <option value="PUROK PUGAPO">PUROK PUGAPO</option>
+                  <option value="PUROK MAMSA">PUROK MAMSA</option>
+                  <option value="PUROK GUSAW">PUROK GUSAW</option>
                 </select>
               </div>
 
               <div>
                 <label>Incident Date:</label>
-                <input type="date" id="date" />
+                <input type="date" name="incidentDate" id="incidentDate" />
               </div>
 
               <div>
                 <label>Incident Time:</label>
-                <input type="time" id="time" />
+                <input type="time" name="incidentTime" id="incidentTime" />
               </div>
             </div>
 
             <div class="form-group">
               <label>Attach Image (optional)</label>
-              <input type="file" accept="image/*" />
+              <input type="file" name="image" id="image" accept="image/jpeg,image/jpg,image/png,application/pdf" required/>
             </div>
 
             <div class="form-group">
               <label>Attach Video (optional)</label>
-              <input type="file" accept="video/mp4" />
+              <input type="file" name="video" id="video" accept="video/mp4" />
             </div>
 
             <div class="form-group">
               <label>Priority</label>
               <div class="radio-group">
-                <label><input
-                    type="radio"
-                    name="priority"
-                    value="normal"
-                    checked
-                  />Normal</label>
-                <label
-                  ><input type="radio" name="priority" value="high" /> High
-                  Priority</label>
+                <label><input type="radio" name="priority" value="normal" checked/>Normal</label>
+                <label><input type="radio" name="priority" value="high" /> High Priority</label>
               </div>
             </div>
 
             <div class="form-group">
               <label>Confidentiality</label>
               <div class="toggle">
-                <input type="checkbox" id="anonymous" />
+                <input type="checkbox" name="anonymous" id="anonymous" />
                 <span>Hide my identity from public view</span>
               </div>
               <small>Admins will still see your identity</small>
@@ -141,7 +163,7 @@
     <div id="successModal" class="modal">
       <div class="modal-content">
         <h2>Complaint Submitted Successfully</h2>
-        <hr />
+        <hr/>
 
         <p>Your complaint has been recorded.</p>
         <p><strong>Reference ID:</strong> <span id="refId">#C-0000</span></p>
