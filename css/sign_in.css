@@ -79,7 +79,10 @@ label {
 }
 
 input[type="text"],
+input[type="email"],
 input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px;
   font-size: 15px;
   border-radius: 8px;

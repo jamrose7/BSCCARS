@@ -266,3 +266,95 @@ body {
   transform: translateY(-1px);
   background-color: #0c2f36;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.62);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+  z-index: 1000;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  width: min(92%, 680px);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(18, 52, 60, 0.98);
+  border-radius: 28px;
+  padding: 26px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.45rem;
+  color: #eef7f7;
+}
+
+.close-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef7f7;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  display: grid;
+  gap: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.detail-row-full {
+  flex-direction: column;
+}
+
+.detail-label {
+  color: #9fd6d8;
+  font-weight: 700;
+  min-width: 120px;
+}
+
+.detail-value {
+  color: #eef7f7;
+  text-align: right;
+  white-space: pre-wrap;
+}
+
+.detail-paragraph {
+  margin: 8px 0 0;
+  text-align: left;
+  line-height: 1.6;
+}

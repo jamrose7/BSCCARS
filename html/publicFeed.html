@@ -7,7 +7,11 @@
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/publicFeed.css" />
 
-     <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png">
+    <link
+      rel="icon"
+      type="image/png"
+      href="/images/favicon_io/favicon-32x32.png"
+    />
   </head>
 
   <body>
@@ -64,23 +68,73 @@
             <span class="search-icon">🔍</span>
           </div>
 
-          <select id="categoryFilter">
-            <option value="">Category</option>
-            <option>Public Disturbance</option>
-            <option>Parking</option>
-            <option>Waste</option>
+          <select name="categoryFilter" id="categoryFilter">
+            <option value="" disabled selected>Select a category</option>
+            <option value="1">Money Debt</option>
+            <option value="2">Public Disturbance</option>
+            <option value="3">Waste Management</option>
+            <option value="4">Road Issue</option>
+            <option value="5">Illegal Parking</option>
+            <option value="6">Property Damage</option>
+            <option value="7">Animal Concerns</option>
+            <option value="8">Sanitation</option>
+            <option value="9">Other</option>
           </select>
 
-          <select id="statusFilter">
-            <option value="">Status</option>
-            <option>Pending</option>
-            <option>In Progress</option>
-            <option>Resolved</option>
+          <select name="statusFilter" id="statusFilter">
+            <option value="" disabled selected>Select a status</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
           </select>
         </div>
 
         <div id="feedContainer"></div>
       </main>
+    </div>
+
+    <div id="detailModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Complaint Details</h2>
+          <button
+            id="detailCloseBtn"
+            class="close-btn"
+            aria-label="Close details modal">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-row">
+            <span class="detail-label">Complaint Title:</span>
+            <span id="detailTitle" class="detail-value">—</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Category:</span>
+            <span id="detailCategory" class="detail-value">—</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Purok:</span>
+            <span id="detailPurok" class="detail-value">—</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Incident Date:</span>
+            <span id="detailDate" class="detail-value">—</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Incident Time:</span>
+            <span id="detailTime" class="detail-value">—</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span id="detailStatus" class="detail-value">—</span>
+          </div>
+          <div class="detail-row detail-row-full">
+            <span class="detail-label">Details:</span>
+            <p id="detailDetails" class="detail-value detail-paragraph">—</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="../js/publicFeed.js"></script>
