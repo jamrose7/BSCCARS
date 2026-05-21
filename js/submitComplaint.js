@@ -23,18 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
 
     const title = document.getElementById("title").value.trim();
-    const category = document.getElementById("category").value;
+    const category = document.getElementById("categoryId").value;
     const details = document.getElementById("details").value.trim();
-    const purok = document.getElementById("purok").value;
-    const date = document.getElementById("date").value;
-    const time = document.getElementById("time").value;
+    const purok = document.getElementById("purokId").value;
+    const date = document.getElementById("incidentDate").value;
+    const time = document.getElementById("incidentTime").value;
     const priority = document.querySelector(
       "input[name='priority']:checked",
     ).value;
     const anonymous = document.getElementById("anonymous").checked;
 
-    if (!title || !details) {
-      alert("Please fill in the complaint title and details.");
+    if (!title || !details || !category || !purok) {
+      alert("Please complete all required fields.");
       return;
     }
 

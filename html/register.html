@@ -25,13 +25,13 @@
 
           <form id="registerForm">
             <label>First Name</label>
-            <input type="text" name="firstName" id="firstName" required/>
+            <input type="text" name="firstName" id="firstName" required />
 
             <label>Last Name</label>
-            <input type="text" name="lastName" id="lastName"required/>
+            <input type="text" name="lastName" id="lastName" required />
 
             <label>Middle Name</label>
-            <input type="text" name="middleName" id="middleName"/>
+            <input type="text" name="middleName" id="middleName" />
 
             <label>Suffix</label>
             <select name="suffix" id="suffix">
@@ -44,12 +44,12 @@
             </select>
 
             <label>Date of Birth</label>
-            <input type="date" name="dateOfBirth" id="dateOfBirth" required/>
+            <input type="date" name="dateOfBirth" id="dateOfBirth" required />
 
             <label>Purok</label>
             <select name="purokId" id="purokId" required>
               <option value="" disabled selected>Select Purok</option>
-              <option value="PUROK AGUMAA-A 1">PUROK AGUMA-A 1</option>
+              <option value="PUROK AGUMA-A 1">PUROK AGUMA-A 1</option>
               <option value="PUROK AGUMA-A 2">PUROK AGUMA-A 2</option>
               <option value="PUROK BILABID 1">PUROK BILABID 1</option>
               <option value="PUROK BILABID 2">PUROK BILABID 2</option>
@@ -58,14 +58,14 @@
               <option value="PUROK BOLINAO 2">PUROK BOLINAO 2</option>
               <option value="PUROK LAMBAY 1">PUROK LAMBAY 1</option>
               <option value="PUROK LAMBAY 2">PUROK LAMBAY 2</option>
-              <option value="SAP-SAP 1">SAP-SAP 1</option>
+              <option value="PUROK SAP-SAP 1">PUROK SAP-SAP 1</option>
               <option value="PUROK SAP-SAP 2">PUROK SAP-SAP 2</option>
               <option value="PUROK SARA-SARA 1">PUROK SARA-SARA 1</option>
               <option value="PUROK SARA-SARA 2">PUROK SARA-SARA 2</option>
               <option value="PUROK SARA-SARA 3">PUROK SARA-SARA 3</option>
               <option value="PUROK DANGGIT 1">PUROK DANGGIT 1</option>
               <option value="PUROK DANGGIT 2">PUROK DANGGIT 2</option>
-              <option  value="PUROK DANGGIT 3">PUROK DANGGIT 3</option>
+              <option value="PUROK DANGGIT 3">PUROK DANGGIT 3</option>
               <option value="PUROK BANGUS">PUROK BANGUS</option>
               <option value="PUROK PANDAWAN">PUROK PANDAWAN</option>
               <option value="PUROK TULINGAN">PUROK TULINGAN</option>
@@ -78,25 +78,41 @@
             </select>
 
             <label>Contact Number</label>
-            <input type="tel" name="contactNumber" id="contactNumber" pattern="09[0-9]{9}" maxlength="11" placeholder="09XXXXXXXXX"required />
+            <input
+              type="tel"
+              name="contactNumber"
+              id="contactNumber"
+              pattern="09[0-9]{9}"
+              maxlength="11"
+              placeholder="09XXXXXXXXX"
+              required/>
 
             <label>Email Address</label>
-            <input type="email" name="email" id="email" required/>
+            <input type="email" name="email" id="email" required />
 
             <label>Password</label>
             <div class="password-field">
-              <input type="password" name="password" id="password" required/>
+              <input type="password" name="password" id="password" required />
               <span class="eye closed"></span>
             </div>
 
             <label>Confirm Password</label>
             <div class="password-field">
-              <input type="password" name="confirmPassword" id="confirmPassword" required/>
+              <input
+                type="password"
+                name="confirmPassword"
+                id="confirmPassword"
+                required/>
               <span class="eye closed"></span>
             </div>
 
             <label>Upload Valid ID</label>
-            <input type="file" name="validId" id="validId" accept="image/jpeg,image/jpg,image/png,application/pdf" required/>
+            <input
+              type="file"
+              name="validId"
+              id="validId"
+              accept="image/jpeg,image/jpg,image/png,application/pdf"
+              required/>
             <div class="file-picker">
               <span>Click to upload or drag and drop</span>
               <span>PNG, JPG up to 5MB</span>
@@ -132,15 +148,15 @@
           <p class="modal-message">
             Please wait for verification before signing in.
           </p>
-          <button
-            class="btn btn-back-sign-in"
-            onclick="window.location.href = 'sign_in.html'">
+          <button id="backToSignin" class="btn btn-back-sign-in">
             Back to Sign in
           </button>
         </div>
       </div>
     </div>
 
+    <script src="../js/utils/validators.js"></script>
+    <script src="../js/services/api.js"></script>
     <script src="../js/register.js"></script>
   </body>
 </html>

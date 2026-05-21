@@ -1,53 +1,46 @@
-document.addEventListener("DOMContentLoaded", () => { 
-const form = document.querySelector("form");
-const password = form.querySelectorAll("input[type='password']")[0]; 
-const confirmPassword = form.querySelectorAll("input[type='password']")[1];
-const eyes = document.querySelectorAll(".eye"); 
-const modal = document.getElementById("successModal");
-const backBtn = document.getElementById("backToSignin");
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
+  const password = form.querySelector("input#password");
+  const confirmPassword = form.querySelector("input#confirmPassword");
+  const eyes = document.querySelectorAll(".eye");
+  const modal = document.getElementById("successModal");
+  const backBtn = document.getElementById("backToSignin");
 
-eyes.forEach((eye, index) => { 
-eye.addEventListener("click", () => { 
-const input = index === 0 ? password : confirmPassword; 
-const isHidden = input.type === "password";
-
-        input.type = isHidden ? "text" : "password";
-        eye.classList.toggle("closed", !isHidden);
+  eyes.forEach((eye, index) => {
+    eye.addEventListener("click", () => {
+      const input = index === 0 ? password : confirmPassword;
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      eye.classList.toggle("closed", !isHidden);
     });
-});
+  });
 
-form.addEventListener("submit", (e) => { 
-e.preventDefault(); 
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-const inputs = form.querySelectorAll("input"); 
-let valid = true; 
+    // Use HTML5 constraint validation to ensure required selects and inputs are covered
+    if (!form.checkValidity()) {
+      alert("Please complete all required fields.");
+      return;
+    }
 
-inputs.forEach((input) => { 
-if (input.type !== "checkbox" && input.type !== "file" && input.value.trim() === "") { 
-valid = false; 
-} 
-}); 
+    if (password.value !== confirmPassword.value) {
+      alert("Passwords do not match.");
+      return;
+    }
 
-if (!valid) { 
-alert("Please complete all fields."); 
-return; 
-} 
+    const termsCheckbox = form.querySelector("input#terms");
+    if (termsCheckbox && !termsCheckbox.checked) {
+      alert("You must confirm your information.");
+      return;
+    }
 
-if (password.value !== confirmPassword.value) { 
-alert("Passwords do not match."); 
-return; 
-} 
+    modal.classList.add("show");
+  });
 
-const checkbox = form.querySelector("input[type='checkbox']"); 
-if (!checkbox.checked) { 
-alert("You must confirm your information."); 
-return; 
-} 
-
-modal.classList.add("show");
-});
-
-backBtn.addEventListener("click", () => {
-    window.location.href = "sign_in.html";
-});
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      window.location.href = "sign_in.html";
+    });
+  }
 });

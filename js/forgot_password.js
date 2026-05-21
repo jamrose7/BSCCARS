@@ -23,33 +23,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const confirmPassword = confirmNewPassword.value;
 
     if (!email) {
-      alert("Please enter your email address.");
+      showNotification("Please enter your email address.", "error");
       return;
     }
 
     if (!password) {
-      alert("Please enter a new password.");
+      showNotification("Please enter a new password.", "error");
       return;
     }
 
     if (!confirmPassword) {
-      alert("Please confirm your new password.");
+      showNotification("Please confirm your new password.", "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      showNotification("Passwords do not match.", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      alert("Please enter a valid email address.");
+      showNotification("Please enter a valid email address.", "error");
       return;
     }
 
     if (password.length < 6) {
-      alert("Password must be at least 6 characters long.");
+      showNotification("Password must be at least 6 characters long.", "error");
       return;
     }
 

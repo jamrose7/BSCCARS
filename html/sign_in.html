@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Sign_in - BSCCARS</title>
+    <title>Sign In - BSCCARS</title>
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/sign_in.css" />
@@ -23,14 +23,13 @@
           <p class="subtext">Sign in to continue</p>
 
           <form id="sign_inForm">
-            <label>Email/Username:</label>
+            <label>Email:</label>
             <input
               type="email"
               name="email"
               id="email"
               autocomplete="email"
-              required
-            />
+              required/>
 
             <label>Password:</label>
             <div class="password-field">
@@ -39,13 +38,11 @@
                 name="password"
                 id="password"
                 autocomplete="current-password"
-                required
-              />
+                required/>
               <span
                 class="eye closed"
                 role="button"
-                aria-label="Show password"
-              ></span>
+                aria-label="Show password"></span>
             </div>
 
             <div class="remember">
@@ -64,6 +61,9 @@
         </div>
       </div>
     </div>
+    <script src="../js/utils/validators.js"></script>
+    <script src="../js/utils/ui.js"></script>
+    <script src="../js/services/api.js"></script>
     <script src="../js/sign_in.js"></script>
   </body>
 </html>
