@@ -1,0 +1,10 @@
+.env
+backend/.env
+node_modules/
+backend/node_modules/
+
+# VS Code browser debug profiles
+.vscode/chrome-profile/
+.vscode/chrome-debug-profile/
+.vscode/edge-profile/
+.vscode/edge-debug-profile/
