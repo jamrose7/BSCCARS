@@ -20,12 +20,12 @@ function initSignOut() {
     }
   });
 }
-  
+
 function viewComplaint(btn) {
   const modal = document.getElementById("complaintModal");
   if (!modal || !btn) return;
 
-   _lastFocusedButton = btn;
+  _lastFocusedButton = btn;
 
   const d = btn.dataset;
   _currentComplaintId = d.id || null;
@@ -34,6 +34,10 @@ function viewComplaint(btn) {
 
   setTextById("complainantName", d.name);
   setTextById("complaintCategory", d.category);
+  const sourceSelect = document.getElementById("complaintSourceSelect");
+  if (sourceSelect) {
+    sourceSelect.value = d.source || "Digital Submission";
+  }
   setTextById("complaintPriority", d.priority);
   setTextById("complaintConfidential", d.confidential);
   setTextById("complaintTitle", d.title);
@@ -178,9 +182,8 @@ function playVideo(filename) {
 }
 
 function removeEvidence(filename, cardElement) {
-  
   const confirmed = window.confirm(
-    `Are you sure you want to remove "${filename}"?`
+    `Are you sure you want to remove "${filename}"?`,
   );
   if (!confirmed) return;
 
@@ -273,14 +276,44 @@ function saveAction() {
     resolved: "Resolved",
   };
 
+  const sourceSelect = document.getElementById("complaintSourceSelect");
+  const updatedSource = sourceSelect ? sourceSelect.value : "Unknown";
+
   alert(
     `Action saved!\n\n` +
       `${idLabel}\n` +
       `New Status: ${statusDisplay[status] || status}\n` +
-      `Response: ${adminResponse}`
+      `Source: ${updatedSource}\n` +
+      `Response: ${adminResponse}`,
   );
 
   closeComplaintModal();
+}
+
+function openHearingNotice() {
+  if (!_currentComplaintId || !_lastFocusedButton) {
+    alert("Please select a complaint before generating a hearing notice.");
+    return;
+  }
+
+  const d = _lastFocusedButton.dataset;
+  const sourceSelect = document.getElementById("complaintSourceSelect");
+  const source = sourceSelect ? sourceSelect.value : d.source || "";
+
+  const noticeData = {
+    id: d.id || "",
+    name: d.name || "",
+    category: d.category || "",
+    title: d.title || "",
+    source,
+    details: d.details || "",
+  };
+
+  sessionStorage.setItem(
+    "selectedComplaintForNotice",
+    JSON.stringify(noticeData),
+  );
+  window.location.href = "adminComplaintNotice.html";
 }
 
 function initCharacterCounter() {
@@ -301,8 +334,8 @@ function updateCharCounter(textarea) {
 
   hint.textContent = `${remaining} character${remaining !== 1 ? "s" : ""} remaining.`;
   hint.style.color = isWarning
-    ? "rgba(255, 180, 50, 0.85)"   
-    : "rgba(255, 255, 255, 0.4)";  
+    ? "rgba(255, 180, 50, 0.85)"
+    : "rgba(255, 255, 255, 0.4)";
 }
 
 function setTextById(id, value) {

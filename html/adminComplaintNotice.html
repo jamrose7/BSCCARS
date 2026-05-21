@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complaint Hearing Notice - BSCCARS</title>
+    <meta
+      name="description"
+      content="Generate a formal Barangay Sillon hearing notice for complaint mediation proceedings."/>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/adminComplaintNotice.css" />
+  </head>
+  <body>
+    <div class="kp">KP FORM NO. 8</div>
+
+    <main class="container" role="document">
+      <div class="header">
+        <p class="small">Republic of the Philippines</p>
+        <p class="small">Province of Cebu</p>
+        <p class="small">MUNICIPALITY OF BANTAYAN</p>
+        <p class="small">Barangay Sillon</p>
+
+        <p class="subtitle notice-sub">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
+        <p class="notice-title">NOTICE OF HEARING</p>
+        <p class="notice-sub">(MEDIATION PROCEEDINGS)</p>
+      </div>
+
+      <div class="to-line">
+        <label class="label">TO:</label>
+        <input
+          type="text"
+          id="complainantName"
+          class="underline-input blank-large"/>
+      </div>
+
+      <div style="height: 8px"></div>
+      <input type="text" class="underline-input blank-large" />
+      <div style="height: 6px"></div>
+      <div>Complainant/s</div>
+
+      <div class="body-text">
+        <p>
+          You are hereby required to appear before me on the
+          <input
+            type="text"
+            id="hearingDay"
+            class="underline-input blank-short"/>
+          day of
+          <input
+            type="text"
+            id="hearingMonth"
+            class="underline-input blank-medium"/>
+          20
+          <input
+            type="text"
+            id="hearingYear"
+            class="underline-input blank-short"/>
+          at
+          <input
+            type="text"
+            id="hearingTime"
+            class="underline-input blank-time"/>
+          o'clock in the
+          <input
+            type="text"
+            id="hearingPeriod"
+            class="underline-input blank-medium"/>
+          for the hearing of your complaint.
+        </p>
+
+        <p class="notified">
+          This
+          <input
+            type="text"
+            id="noticeDay"
+            class="underline-input blank-short"/>
+          day of
+          <input
+            type="text"
+            id="noticeMonth"
+            class="underline-input blank-medium"/>
+          20
+          <input
+            type="text"
+            id="noticeYear"
+            class="underline-input blank-short"/>
+          at
+          <input
+            type="text"
+            id="noticeAMPM"
+            class="underline-input blank-short"/>
+        </p>
+      </div>
+
+      <div class="signature">
+        <div
+          class="sign-line"
+          style="
+            width: 40%;
+            margin: 0 auto;
+            border-top: 1px solid #000;
+            height: 0;
+          "></div>
+        <div style="text-align: center; margin-top: 6px; font-weight: 700">
+          Punong Barangay
+        </div>
+      </div>
+
+      <div class="body-text">
+        <p style="text-align: left; margin-top: 12px">
+          Notified this
+          <input
+            type="text"
+            id="notificationDay"
+            class="underline-input blank-short"/>
+          day of
+          <input
+            type="text"
+            id="notificationMonth"
+            class="underline-input blank-medium"/>
+          20
+          <input
+            type="text"
+            id="notificationYear"
+            class="underline-input blank-short"/>
+          at
+          <input
+            type="text"
+            id="notificationAMPM"
+            class="underline-input blank-short"/>
+          .
+        </p>
+      </div>
+
+      <div class="complainant-label">Complainant/s</div>
+
+      <div class="sign-lines">
+        <div class="line" id="sign1"></div>
+        <div class="line" id="sign2"></div>
+        <div class="line" id="sign3"></div>
+      </div>
+
+      <div class="no-print">
+        <button onclick="saveNotice()">Save Notice</button>
+        <button onclick="printNotice()">Print Notice</button>
+        <button onclick="backToComplaints()">Back to Complaints</button>
+      </div>
+    </main>
+
+    <script src="../js/services/api.js"></script>
+    <script src="../js/adminComplaintNotice.js"></script>
+  </body>
+</html>

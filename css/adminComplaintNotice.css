@@ -1,0 +1,168 @@
+@page {
+  size: A4;
+  margin: 28mm 18mm 20mm 18mm;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family: "Times New Roman", Times, serif;
+  margin: 0;
+  padding: 0;
+  color: #000;
+  font-size: 12pt;
+}
+.kp {
+  position: absolute;
+  left: 18mm;
+  top: 10mm;
+  font-weight: 700;
+  font-size: 11px;
+}
+.container {
+  padding: 24mm 18mm 12mm 18mm;
+  box-sizing: border-box;
+}
+.header {
+  text-align: center;
+  margin-top: 6mm;
+}
+.header .small {
+  font-size: 11pt;
+}
+.header .title {
+  font-weight: 700;
+  font-size: 14pt;
+  margin-top: 6px;
+}
+.header .subtitle {
+  font-weight: 700;
+  font-size: 12pt;
+  margin-top: 6px;
+}
+.notice-title {
+  font-weight: 700;
+  font-size: 14pt;
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+.notice-sub {
+  font-weight: 700;
+  font-size: 12pt;
+  text-transform: uppercase;
+}
+.to-line {
+  margin-top: 14px;
+}
+.to-line .label {
+  display: inline-block;
+  width: 40px;
+}
+.underline {
+  display: inline-block;
+  border-bottom: 1px solid #000;
+  vertical-align: bottom;
+}
+.body-text {
+  margin-top: 12px;
+  line-height: 1.5;
+}
+.signature {
+  margin-top: 18px;
+  text-align: center;
+}
+.signature .line {
+  border-top: 1px solid #000;
+  width: 50%;
+  margin: 0 auto;
+  padding-top: 8px;
+}
+.notified {
+  margin-top: 18px;
+}
+.complainant-label {
+  text-align: center;
+  margin-top: 18px;
+}
+.signatures-block {
+  margin-top: 22px;
+}
+.sign-lines {
+  width: 60%;
+  margin: 18px auto 0 auto;
+}
+.sign-lines .line {
+  border-top: 1px solid #000;
+  height: 0;
+  margin: 18px 0;
+}
+.no-print {
+  margin-top: 18px;
+}
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+.underline-input {
+  border: none;
+  border-bottom: 1px solid #000;
+  background: transparent;
+  padding: 0 4px;
+  font-family: inherit;
+  font-size: inherit;
+}
+.blank-short {
+  width: 40px;
+  display: inline-block;
+}
+.blank-medium {
+  width: 150px;
+  display: inline-block;
+}
+.blank-large {
+  width: 300px;
+  display: inline-block;
+}
+.blank-time {
+  width: 70px;
+  display: inline-block;
+}
+.underline-input:focus {
+  outline: none;
+}
+.punong-input {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  text-align: center;
+}
+.print-header {
+  position: fixed;
+  top: 6mm;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18mm;
+  font-size: 10pt;
+}
+.print-title {
+  text-align: center;
+  font-weight: 600;
+}
+.print-date {
+  text-align: left;
+}
+.print-footer {
+  position: fixed;
+  bottom: 6mm;
+  left: 18mm;
+  right: 18mm;
+  font-size: 9pt;
+  display: flex;
+  justify-content: space-between;
+  color: #333;
+}
