@@ -71,10 +71,24 @@
         <div class="export-section">
           <button class="btn-export" onclick="exportPDF()">Export PDF</button>
           <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+          <span id="exportStatus" class="export-status"></span>
         </div>
+
+        <section class="report-viewer" id="reportViewer">
+          <div class="report-empty-state">
+            <h3>
+              Select a report type above to view detailed BSCCARS analytics.
+            </h3>
+            <p>
+              Each report uses example data from Barangay Sillon complaints:
+              category examples, monthly volumes, resolution times, and high-priority trend analysis.
+            </p>
+          </div>
+        </section>
       </main>
     </div>
 
+    <script src="../js/services/api.js"></script>
     <script src="../js/adminReports.js"></script>
   </body>
 </html>
