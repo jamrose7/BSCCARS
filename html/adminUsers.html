@@ -36,7 +36,6 @@
       </aside>
 
       <main class="main-content">
-
         <section class="users-section">
           <div class="section-header">
             <h2>User Management</h2>
@@ -50,7 +49,9 @@
                   onkeyup="searchUsers()"/>
                 <button class="btn-search" onclick="searchUsers()">🔍</button>
               </div>
-              <button class="btn-add-user" onclick="openAddUserModal()"> + Add New User </button>
+              <button class="btn-add-user" onclick="openAddUserModal()">
+                + Add New User
+              </button>
             </div>
           </div>
 
@@ -184,48 +185,67 @@
       </main>
     </div>
 
-   <div id="addUserModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Add New User</h2>
-      <button class="btn-close-modal" onclick="closeAddUserModal()">
-        &times;
-      </button>
+    <div id="addUserModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New User</h2>
+          <button class="btn-close-modal" onclick="closeAddUserModal()">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form onsubmit="saveNewUser(event)">
+            <div class="form-group">
+              <label for="firstName">First Name:</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                required
+                minlength="2"/>
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Last Name:</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                required
+                minlength="2"/>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+
+            <div class="form-group">
+              <label>Role:</label>
+              <input
+                type="text"
+                value="Assistant Admin"
+                readonly
+                class="readonly-field"/>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-save">Save User</button>
+              <button
+                type="button"
+                class="btn-cancel"
+                onclick="closeAddUserModal()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
-    <div class="modal-body">
-      <form onsubmit="saveNewUser(event)">
-
-        <div class="form-group">
-          <label for="firstName">First Name:</label>
-          <input type="text" id="firstName" name="firstName" required minlength="2"/>
-        </div>
-
-        <div class="form-group">
-          <label for="lastName">Last Name:</label>
-          <input type="text" id="lastName" name="lastName" required minlength="2"/>
-        </div>
-
-        <div class="form-group">
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-
-        <div class="form-group">
-          <label>Role:</label>
-          <input type="text" value="Assistant Admin" readonly class="readonly-field"/>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-save">Save User</button>
-          <button type="button" class="btn-cancel" onclick="closeAddUserModal()"> Cancel</button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-</div>
-
+    <script src="../js/services/api.js"></script>
+    <script src="../js/utils/validators.js"></script>
     <script src="../js/adminUsers.js"></script>
   </body>
 </html>
