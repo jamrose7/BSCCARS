@@ -7,7 +7,6 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminDashboard.css" />
-    
   </head>
 
   <body>
@@ -26,7 +25,9 @@
     <div class="dashboard-container">
       <aside class="sidebar">
         <nav>
-          <a class="active" href="adminDashboard.html"><span>🏠</span> Dashboard</a>
+          <a class="active" href="adminDashboard.html"
+            ><span>🏠</span> Dashboard</a
+          >
           <a href="adminComplaints.html"><span>📋</span> Complaints</a>
           <a href="adminResidents.html"><span>👥</span> Residents</a>
           <a href="adminReports.html"><span>📊</span> Reports</a>
@@ -77,12 +78,14 @@
                 <td>Aeron J. Smith</td>
                 <td>Loud music past midnight</td>
                 <td>Public Disturbance</td>
-                <td><span class="status-pill status-progress">In Progress</span></td>
+                <td>
+                  <span class="status-pill status-progress">In Progress</span>
+                </td>
               </tr>
               <tr>
                 <td>Jim A. Lim</td>
                 <td>Uncollected Garbage</td>
-                <td>Waste</td>
+                <td>Waste Management</td>
                 <td>
                   <span class="status-pill status-resolved">Resolved</span>
                 </td>
@@ -100,6 +103,7 @@
         </section>
       </main>
     </div>
+    <script src="../js/services/api.js"></script>
     <script src="../js/adminDashboard.js"></script>
   </body>
 </html>
