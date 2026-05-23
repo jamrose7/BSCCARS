@@ -6,7 +6,10 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/myComplaints.css" />
-    <link rel="icon" type="image/png" href="/images/favicon_io/favicon-32x32.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/images/favicon_io/favicon-32x32.png"/>
   </head>
 
   <body>
@@ -30,7 +33,7 @@
           <a href="submitComplaint.html">
             <span class="sidebar-icon">📝</span> Submit Complaint
           </a>
-          <a class="active">
+          <a class="active" href="myComplaints.html" aria-current="page">
             <span class="sidebar-icon">📋</span> My Complaints
           </a>
           <a href="publicFeed.html">
@@ -38,9 +41,7 @@
           </a>
         </nav>
 
-        <div class="signout">
-          <span class="sidebar-icon">🔒</span> Sign out
-        </div>
+        <div class="signout"><span class="sidebar-icon">🔒</span> Sign out</div>
       </aside>
 
       <section class="content">
@@ -73,21 +74,28 @@
 
     <div id="complaintDetailModal" class="detail-modal-overlay">
       <div class="detail-modal-content">
-
         <div class="detail-modal-header">
           <button class="detail-back-btn" id="detailBackBtn" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M19 12H5M12 5l-7 7 7 7" />
             </svg>
             Back to My Complaints
           </button>
-          <h2 id="detailModalTitle" class="detail-modal-title">Complaint Detail</h2>
+          <h2 id="detailModalTitle" class="detail-modal-title">
+            Complaint Detail
+          </h2>
         </div>
 
         <div class="detail-modal-body">
-
           <div class="detail-card">
             <div class="detail-card-header">
               <span class="detail-card-icon">📄</span>
@@ -158,11 +166,11 @@
               <p class="detail-empty-msg">No history available.</p>
             </div>
           </div>
-
         </div>
       </div>
     </div>
 
+    <script src="../js/services/api.js"></script>
     <script src="../js/myComplaints.js"></script>
   </body>
 </html>
