@@ -31,7 +31,17 @@
             <input type="text" name="lastName" id="lastName" required />
 
             <label>Middle Name</label>
-            <input type="text" name="middleName" id="middleName" />
+            <input
+              type="text"
+              name="middleName"
+              id="middleName"
+              minlength="2"
+              autocomplete="additional-name" />
+            <p class="field-error" id="middleNameError" aria-live="polite"></p>
+            <label class="no-middle-name-option" for="noMiddleName">
+              <input type="checkbox" name="noMiddleName" id="noMiddleName" />
+              <span>I have no middle name</span>
+            </label>
 
             <label>Suffix</label>
             <select name="suffix" id="suffix">
@@ -115,7 +125,7 @@
               required/>
             <div class="file-picker">
               <span>Click to upload or drag and drop</span>
-              <span>PNG, JPG up to 5MB</span>
+              <span>PNG, JPG, or PDF up to 5MB</span>
             </div>
 
             <div class="terms">

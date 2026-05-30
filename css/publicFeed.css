@@ -202,11 +202,30 @@ body {
 .filters select {
   padding: 12px 16px;
   border-radius: 10px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   outline: none;
   min-width: 180px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 58, 64, 0.92);
   color: #eef7f7;
+}
+
+.filters input::placeholder {
+  color: rgba(238, 247, 247, 0.55);
+}
+
+.filters select:focus {
+  border-color: rgba(97, 210, 204, 0.7);
+  box-shadow: 0 0 0 3px rgba(26, 124, 141, 0.22);
+}
+
+.filters select option {
+  background: #123a40;
+  color: #eef7f7;
+}
+
+.filters select option:checked {
+  background: #1a7c8d;
+  color: #ffffff;
 }
 
 .search-container {
@@ -231,7 +250,7 @@ body {
 .card {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 30px;
+  border-radius: 8px;
   padding: 34px;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.22);
   margin-bottom: 20px;
@@ -242,12 +261,20 @@ body {
   margin-top: 0;
 }
 
+.empty-feed {
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(238, 247, 247, 0.78);
+}
+
 .view-btn {
   margin: 18px 0 0;
   padding: 14px 26px;
   width: max-content;
   font-size: 1rem;
-  border-radius: 16px;
+  border-radius: 8px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
   text-decoration: none;
   display: inline-flex;
@@ -292,7 +319,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   background: rgba(18, 52, 60, 0.98);
-  border-radius: 28px;
+  border-radius: 8px;
   padding: 26px 28px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -317,7 +344,7 @@ body {
   color: #eef7f7;
   width: 42px;
   height: 42px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 1.6rem;
   cursor: pointer;
 }
@@ -334,7 +361,7 @@ body {
   gap: 16px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  border-radius: 8px;
 }
 
 .detail-row-full {

@@ -1,6 +1,7 @@
 .main-container {
   display: flex;
   min-height: 100vh;
+  background: linear-gradient(135deg, #071d23 0%, #13434b 45%, #1d5e6a 100%);
 }
 
 .left-section {
@@ -34,16 +35,19 @@
 
 .right-section {
   flex: 1;
-  background-color: #d2b48c;
+  background:
+    linear-gradient(rgba(7, 29, 35, 0.9), rgba(19, 67, 75, 0.9)),
+    linear-gradient(135deg, #0f303d, #114455);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 32px;
 }
 
 .card {
-  background: #f4f4f4;
+  background: #f7fbff;
   padding: 30px;
-  border-radius: 16px;
+  border-radius: 8px;
   width: 100%;
   max-width: 420px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -78,6 +82,55 @@ select {
   border: 1px solid #aaa;
 }
 
+input:disabled {
+  background: #e9edf0;
+  color: #7b858a;
+  cursor: not-allowed;
+}
+
+.field-error {
+  min-height: 18px;
+  margin: -4px 0 0;
+  color: #b8483b;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.input-error {
+  border-color: #b8483b;
+  box-shadow: 0 0 0 3px rgba(184, 72, 59, 0.14);
+}
+
+.no-middle-name-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: -4px 0 6px auto;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.no-middle-name-option input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: #0e5e67;
+}
+
+select option {
+  background: #123a40;
+  color: #eef7f7;
+}
+
+select option:checked {
+  background: #1a7c8d;
+  color: #ffffff;
+}
+
 .password-field {
   position: relative;
 }
@@ -88,7 +141,7 @@ select {
 }
 
 .eye {
-    position: absolute;
+  position: absolute;
   top: 50%;
   right: 10px;
   transform: translateY(-50%);
@@ -125,7 +178,8 @@ select {
   display: block;
   margin: 12px 0 8px;
   text-align: center;
-  color: #0077cc;
+  color: #0e5e67;
+  font-weight: 700;
 }
 
 .btn {
@@ -154,6 +208,16 @@ select {
   text-align: center;
 }
 
+.register-text a {
+  color: #0e5e67;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
+}
+
 .modal-overlay { 
   display: flex; 
   position: fixed; 
@@ -174,8 +238,8 @@ select {
   } 
   
   .modal-content { 
-    background: #fff; 
-    border-radius: 20px; 
+    background: #f7fbff; 
+    border-radius: 8px; 
     width: 90%; 
     max-width: 460px; 
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35); 
@@ -191,7 +255,7 @@ select {
   }
 
   .modal-header {
-    background: linear-gradient(135deg, #8b6f47, #a0845c);
+    background: linear-gradient(135deg, #083540, #0f7c7f);
     padding: 26px;
     text-align:center;
     color: white;

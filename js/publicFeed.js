@@ -4,24 +4,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryFilter = document.getElementById("categoryFilter");
   const statusFilter = document.getElementById("statusFilter");
   const signoutBtn = document.querySelector(".signout");
+  const detailModal = document.getElementById("detailModal");
+  const detailCloseBtn = document.getElementById("detailCloseBtn");
 
-  function handleSignout() {
-    const confirmSignout = confirm("Are you sure you want to sign out?");
-    if (confirmSignout) {
-      window.location.href = "index.html";
-    }
-  }
-
-  if (signoutBtn) {
-    signoutBtn.addEventListener("click", handleSignout);
-  }
-
-  const complaints = [
+  const sampleComplaints = [
     {
       title: "Loud music past midnight",
       category: "Public Disturbance",
       purok: "Purok Bilabid 1",
-      date: "01-19-2026",
+      date: "2026-01-19",
       time: "9:30 PM",
       status: "In Progress",
       details:
@@ -31,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
       title: "Vehicle blocking driveways",
       category: "Illegal Parking",
       purok: "Purok Aguma-a 2",
-      date: "01-07-2026",
+      date: "2026-01-07",
       time: "10:00 AM",
       status: "Resolved",
       details:
@@ -39,19 +30,53 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   ];
 
-  const detailModal = document.getElementById("detailModal");
-  const detailCloseBtn = document.getElementById("detailCloseBtn");
+  function getStoredComplaints() {
+    try {
+      return JSON.parse(localStorage.getItem("bsccarsComplaints")) || [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  const complaints = [
+    ...getStoredComplaints().map((complaint) => ({
+      title: complaint.title,
+      category: complaint.category,
+      purok: complaint.purok,
+      date: complaint.date,
+      time: complaint.time,
+      status: complaint.status,
+      details: complaint.details,
+    })),
+    ...sampleComplaints,
+  ];
+
+  function handleSignout() {
+    const confirmSignout = confirm("Are you sure you want to sign out?");
+    if (confirmSignout) {
+      window.location.href = "index.html";
+    }
+  }
+
+  function setDetailText(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = value || "-";
+    }
+  }
 
   function openDetailModal(complaint) {
-    document.getElementById("detailTitle").textContent = complaint.title;
-    document.getElementById("detailCategory").textContent = complaint.category;
-    document.getElementById("detailPurok").textContent = complaint.purok;
-    document.getElementById("detailDate").textContent = complaint.date;
-    document.getElementById("detailTime").textContent = complaint.time;
-    document.getElementById("detailStatus").textContent = complaint.status;
-    document.getElementById("detailDetails").textContent = complaint.details;
+    setDetailText("detailTitle", complaint.title);
+    setDetailText("detailCategory", complaint.category);
+    setDetailText("detailPurok", complaint.purok);
+    setDetailText("detailDate", complaint.date);
+    setDetailText("detailTime", complaint.time);
+    setDetailText("detailStatus", complaint.status);
+    setDetailText("detailDetails", complaint.details);
 
-    detailModal.classList.add("show");
+    if (detailModal) {
+      detailModal.classList.add("show");
+    }
   }
 
   function closeDetailModal() {
@@ -60,35 +85,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function addDetailLine(card, label, value) {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = `${label}: ${value || "-"}`;
+    card.appendChild(paragraph);
+  }
+
   function render(data) {
     container.innerHTML = "";
 
-    data.forEach((c, index) => {
+    if (!data.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-feed";
+      empty.textContent = "No public complaints match the selected filters.";
+      container.appendChild(empty);
+      return;
+    }
+
+    data.forEach((complaint) => {
       const card = document.createElement("div");
       card.className = "card";
 
-      card.innerHTML = `
-        <h3>Complaint Title: ${c.title}</h3>
-        <p>Category: ${c.category}</p>
-        <p>Purok: ${c.purok}</p>
-        <p>Incident Date: ${c.date}</p>
-        <p>Incident Time: ${c.time}</p>
-        <p>Status: ${c.status}</p>
-        <p>Submitted by: Anonymous</p>
-        <button class="view-btn" data-index="${index}">View Details</button>
-      `;
+      const title = document.createElement("h3");
+      title.textContent = `Complaint Title: ${complaint.title}`;
+      card.appendChild(title);
+
+      addDetailLine(card, "Category", complaint.category);
+      addDetailLine(card, "Purok", complaint.purok);
+      addDetailLine(card, "Incident Date", complaint.date);
+      addDetailLine(card, "Incident Time", complaint.time);
+      addDetailLine(card, "Status", complaint.status);
+      addDetailLine(card, "Submitted by", "Anonymous");
+
+      const button = document.createElement("button");
+      button.className = "view-btn";
+      button.type = "button";
+      button.textContent = "View Details";
+      button.addEventListener("click", () => openDetailModal(complaint));
+      card.appendChild(button);
 
       container.appendChild(card);
-    });
-
-    container.querySelectorAll(".view-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const index = parseInt(button.dataset.index, 10);
-        const complaint = data[index];
-        if (complaint) {
-          openDetailModal(complaint);
-        }
-      });
     });
   }
 
@@ -97,15 +133,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const category = categoryFilter.value;
     const status = statusFilter.value;
 
-    const filtered = complaints.filter((c) => {
+    const filtered = complaints.filter((complaint) => {
       return (
-        c.title.toLowerCase().includes(search) &&
-        (category === "" || c.category === category) &&
-        (status === "" || c.status === status)
+        complaint.title.toLowerCase().includes(search) &&
+        (category === "" || complaint.category === category) &&
+        (status === "" || complaint.status === status)
       );
     });
 
     render(filtered);
+  }
+
+  if (signoutBtn) {
+    signoutBtn.addEventListener("click", handleSignout);
   }
 
   searchInput.addEventListener("input", filterData);
@@ -123,6 +163,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeDetailModal();
+    }
+  });
 
   render(complaints);
 });

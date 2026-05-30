@@ -1,6 +1,7 @@
 .main-container {
   display: flex;
   height: 100vh;
+  background: linear-gradient(135deg, #071d23 0%, #13434b 45%, #1d5e6a 100%);
 }
 
 .left-section {
@@ -45,18 +46,22 @@
 
 .right-section {
   flex: 1;
-  background-color: #d2b48c;
+  background:
+    linear-gradient(rgba(7, 29, 35, 0.9), rgba(19, 67, 75, 0.9)),
+    linear-gradient(135deg, #0f303d, #114455);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 32px;
 }
 
 .card {
-  background: #e5e5e5;
+  background: #f7fbff;
   padding: 40px;
-  border-radius: 15px;
+  border-radius: 8px;
   width: 350px;
   text-align: center;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
 }
 
 .subtext {
@@ -135,7 +140,8 @@ input[type="password"] {
   display: block;
   margin: 12px 0 8px;
   text-align: center;
-  color: #0077cc;
+  color: #0e5e67;
+  font-weight: 700;
 }
 
 button.btn {
@@ -162,4 +168,14 @@ button.btn {
 .register-text {
   margin-top: 18px;
   text-align: center;
+}
+
+.register-text a {
+  color: #0e5e67;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
 }
