@@ -1,10 +1,10 @@
 @page {
-  size: A4;
-  margin: 28mm 18mm 20mm 18mm;
+  size: A4 portrait;
+  margin: 20mm 18mm;
 }
 html,
 body {
-  height: 100%;
+  min-height: 100%;
 }
 body {
   font-family: "Times New Roman", Times, serif;
@@ -12,6 +12,14 @@ body {
   padding: 0;
   color: #000;
   font-size: 12pt;
+  background: #ffffff;
+}
+.container {
+  padding: 22mm 16mm 16mm 16mm;
+  box-sizing: border-box;
+  background: #ffffff;
+  margin: 0 auto;
+  max-width: 210mm;
 }
 .kp {
   position: absolute;
@@ -20,13 +28,10 @@ body {
   font-weight: 700;
   font-size: 11px;
 }
-.container {
-  padding: 24mm 18mm 12mm 18mm;
-  box-sizing: border-box;
-}
 .header {
   text-align: center;
   margin-top: 6mm;
+  margin-bottom: 8mm;
 }
 .header .small {
   font-size: 11pt;
@@ -53,11 +58,20 @@ body {
   text-transform: uppercase;
 }
 .to-line {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .to-line .label {
   display: inline-block;
   width: 40px;
+}
+.complaint-number-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.complaint-number-line .label {
+  width: auto;
+  white-space: nowrap;
 }
 .underline {
   display: inline-block;
@@ -65,11 +79,11 @@ body {
   vertical-align: bottom;
 }
 .body-text {
-  margin-top: 12px;
-  line-height: 1.5;
+  margin-top: 16px;
+  line-height: 1.65;
 }
 .signature {
-  margin-top: 18px;
+  margin-top: 22px;
   text-align: center;
 }
 .signature .line {
@@ -79,30 +93,76 @@ body {
   padding-top: 8px;
 }
 .notified {
-  margin-top: 18px;
+  margin-top: 20px;
 }
 .complainant-label {
   text-align: center;
-  margin-top: 18px;
+  margin-top: 24px;
 }
 .signatures-block {
-  margin-top: 22px;
+  margin-top: 24px;
 }
 .sign-lines {
-  width: 60%;
-  margin: 18px auto 0 auto;
+  width: 65%;
+  margin: 22px auto 0 auto;
 }
 .sign-lines .line {
   border-top: 1px solid #000;
   height: 0;
-  margin: 18px 0;
+  margin: 20px 0;
 }
 .no-print {
   margin-top: 18px;
 }
 @media print {
-  .no-print {
-    display: none;
+  html,
+  body {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .kp,
+  .container,
+  .container * {
+    visibility: visible;
+  }
+
+  .kp {
+    position: absolute;
+    left: 18mm;
+    top: 10mm;
+  }
+
+  .container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  nav,
+  aside,
+  header,
+  footer,
+  button,
+  .topbar,
+  .sidebar,
+  .no-print,
+  .icon-badge,
+  .signout {
+    display: none !important;
+  }
+
+  .underline-input {
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 .underline-input {
@@ -118,15 +178,19 @@ body {
   display: inline-block;
 }
 .blank-medium {
-  width: 150px;
+  width: 170px;
   display: inline-block;
 }
 .blank-large {
-  width: 300px;
+  width: 320px;
+  display: inline-block;
+}
+.blank-complaint {
+  width: 170px;
   display: inline-block;
 }
 .blank-time {
-  width: 70px;
+  width: 80px;
   display: inline-block;
 }
 .underline-input:focus {
@@ -165,4 +229,38 @@ body {
   display: flex;
   justify-content: space-between;
   color: #333;
+}
+.notice-admin-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 16px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+}
+.notice-admin-controls label {
+  font-weight: 700;
+}
+.notice-admin-controls select,
+.notice-admin-controls input {
+  padding: 6px 8px;
+  border: 1px solid #c7c7c7;
+  border-radius: 8px;
+  min-width: 140px;
+}
+.notice-stage-label {
+  color: #2b6f77;
+  font-weight: 700;
+}
+.notice-template {
+  display: block;
+}
+.cfa-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
 }
