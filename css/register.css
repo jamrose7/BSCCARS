@@ -50,14 +50,16 @@
   border-radius: 8px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   max-height: 90vh;
   overflow-y: auto;
+  color: #10202a;
 }
 
 .card h2 {
   text-align: center;
   margin-bottom: 20px;
+  color: #0f2930;
 }
 
 form {
@@ -69,9 +71,10 @@ form {
 
 label {
   margin-top: 0;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   font-size: 14px;
   font-weight: 700;
+  color: #0f2930;
 }
 
 input,
@@ -79,7 +82,35 @@ select {
   padding: 12px;
   font-size: 15px;
   border-radius: 8px;
-  border: 1px solid #aaa;
+  border: 1px solid #aac9cc;
+  background: #ffffff;
+  color: #10202a;
+}
+
+input::placeholder,
+select::placeholder {
+  color: #7d9aa2;
+}
+
+.file-picker,
+.terms,
+.register-text,
+.no-middle-name-option {
+  color: #1d363f;
+}
+
+.file-picker span,
+.terms span,
+.register-text,
+.register-text a,
+.no-middle-name-option span {
+  color: #1d363f;
+}
+
+select {
+  background-color: #0e5e67;
+  color: #eef7f7;
+  cursor: pointer;
 }
 
 input:disabled {
@@ -122,12 +153,12 @@ input:disabled {
 }
 
 select option {
-  background: #123a40;
+  background: #0e5e67;
   color: #eef7f7;
 }
 
 select option:checked {
-  background: #1a7c8d;
+  background: #1a9db0;
   color: #ffffff;
 }
 
@@ -218,86 +249,96 @@ select option:checked {
   text-decoration: underline;
 }
 
-.modal-overlay { 
-  display: flex; 
-  position: fixed; 
-  inset:0;
+.terms a {
+  color: #0a4a52;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.terms a:hover {
+  color: #062d34;
+}
+
+.modal-overlay {
+  display: flex;
+  position: fixed;
+  inset: 0;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px); 
-  z-index: 9999; 
+  backdrop-filter: blur(6px);
+  z-index: 9999;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
-} 
-  
-  .modal-overlay.show { 
-    opacity: 1;
-    pointer-events: auto; 
-  } 
-  
-  .modal-content { 
-    background: #f7fbff; 
-    border-radius: 8px; 
-    width: 90%; 
-    max-width: 460px; 
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35); 
-    overflow: hidden; 
-    transform: translateY(40px) scale(0.95);
-    opacity: 0;
-    transition: all 0.3s ease;
-  } 
-  
-  .modal-overlay.show .modal-content {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+}
 
-  .modal-header {
-    background: linear-gradient(135deg, #083540, #0f7c7f);
-    padding: 26px;
-    text-align:center;
-    color: white;
-  }
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-  .modal-header h2 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-  }
+.modal-content {
+  background: #f7fbff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 460px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  transform: translateY(40px) scale(0.95);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
 
-  .modal-body {
-    padding: 36px 32px;
-    text-align: center;
-  }
+.modal-overlay.show .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
 
-  .modal-message {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 18px;
-    line-height: 1.6;
-  }
+.modal-header {
+  background: linear-gradient(135deg, #083540, #0f7c7f);
+  padding: 26px;
+  text-align: center;
+  color: white;
+}
 
-  .modal-message:last-of-type {
-    margin-bottom: 28px;
-  }
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
 
-  .btn-back-sign-in { 
-      background: #1a7c8d; 
-      color: white; 
-      border: none; 
-      border-radius: 12px; 
-      padding: 14px 28px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      display: inline-flex; 
-      align-items: center;
-      justify-content: center;
-      transition: all 0.25s ease; 
-    } 
-    
-  .btn-back-sign-in:hover{ 
-      background: #155a6b; 
-      transform: translateY(-1px);
-    }
+.modal-body {
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.modal-message {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+
+.modal-message:last-of-type {
+  margin-bottom: 28px;
+}
+
+.btn-back-sign-in {
+  background: #1a7c8d;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.btn-back-sign-in:hover {
+  background: #155a6b;
+  transform: translateY(-1px);
+}

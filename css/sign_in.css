@@ -62,11 +62,16 @@
   width: 350px;
   text-align: center;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  color: #10202a;
+}
+
+.card h2 {
+  color: #0f2930;
 }
 
 .subtext {
   margin-bottom: 20px;
-  color: #555;
+  color: #32444f;
 }
 
 form {
@@ -78,9 +83,22 @@ form {
 
 label {
   margin-top: 0;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
   font-size: 14px;
   font-weight: 700;
+  color: #0f2930;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  color: #10202a;
+  background: #ffffff;
+  border: 1px solid #aac9cc;
+}
+
+input::placeholder {
+  color: #7d9aa2;
 }
 
 input[type="text"],
@@ -140,7 +158,7 @@ input[type="password"] {
   display: block;
   margin: 12px 0 8px;
   text-align: center;
-  color: #0e5e67;
+  color: #0a4a52;
   font-weight: 700;
 }
 
