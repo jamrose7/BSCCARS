@@ -3,55 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   
+
     <title>Complaints - BSCCARS</title>
-    <meta name="description" content="Admin complaints management panel for Barangay Sillon Community Complaint and Response System."/>
+    <meta
+      name="description"
+      content="Admin complaints management panel for Barangay Sillon Community Complaint and Response System."
+    />
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminDashboard.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
     <link rel="stylesheet" href="../css/adminComplaints.css" />
   </head>
 
   <body>
     <header class="topbar">
       <div class="top-left">
-        <img
-          src="../images/logo.png"
-          class="logo"
-          alt="Barangay Sillon logo"/>
+        <img src="../images/logo.png" class="logo" alt="Barangay Sillon logo" />
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
 
       <div class="top-right">
         <button class="icon-badge" aria-label="Notifications">
-          <span aria-hidden="true">🔔</span>
+          <img
+            src="../images/notification_icon.png"
+            alt="Notifications"
+            class="notification-icon"
+          />
         </button>
         <button class="icon-badge" aria-label="User profile">
-          <span aria-hidden="true">👤</span>
+          <img
+            src="../images/profile_icon.png"
+            alt="Profile"
+            class="profile-icon"
+          />
         </button>
       </div>
     </header>
 
     <div class="dashboard-container">
-            <aside class="sidebar">
+      <aside class="sidebar">
         <nav aria-label="Admin navigation">
-          <a href="adminDashboard.html">
-            <span aria-hidden="true">🏠</span> Dashboard
-          </a>
-          <a class="active" href="adminComplaints.html" aria-current="page">
-            <span aria-hidden="true">📋</span> Complaints
-          </a>
-          <a href="adminResidents.html">
-            <span aria-hidden="true">👥</span> Residents
-          </a>
-          <a href="adminReports.html">
-            <span aria-hidden="true">📊</span> Reports
-          </a>
-          <a href="adminUsers.html">
-            <span aria-hidden="true">🧑‍💼</span> Users
-          </a>
+          <a href="adminDashboard.html"
+            ><img
+              src="../images/dashboard_icon.png"
+              alt="Dashboard"
+              class="sidebar-icon"
+            />
+            Dashboard</a
+          >
+          <a class="active" href="adminComplaints.html" aria-current="page"
+            ><img
+              src="../images/complaints_icon.png"
+              alt="Complaints"
+              class="sidebar-icon"
+            />
+            Complaints</a
+          >
+          <a href="adminResidents.html"
+            ><img
+              src="../images/residents_icon.png"
+              alt="Residents"
+              class="sidebar-icon"
+            />
+            Residents</a
+          >
+          <a href="adminReports.html"
+            ><img
+              src="../images/reports_icon.png"
+              alt="Reports"
+              class="sidebar-icon"
+            />
+            Reports</a
+          >
+          <a href="adminUsers.html"
+            ><img
+              src="../images/user_icon.png"
+              alt="Users"
+              class="sidebar-icon"
+            />
+            Users</a
+          >
         </nav>
-        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img
+            src="../images/sign-out_icon.png"
+            alt="Sign out"
+            class="sidebar-icon"
+          />
+          Sign out
+        </div>
       </aside>
 
       <main class="main-content" id="main-content">
@@ -66,37 +107,100 @@
         </div>
 
         <div class="stats-grid" role="region" aria-label="Complaint statistics">
-          <div class="stat-card card-gold">
+          <button
+            class="stat-card card-gold complaint-stat-filter"
+            type="button"
+            data-filter-status=""
+          >
             <h3>Total</h3>
-            <p aria-label="12 total complaints">12</p>
-          </div>
-          <div class="stat-card card-orange">
+            <p id="complaintsTotal" aria-label="Total complaints">--</p>
+          </button>
+          <button
+            class="stat-card card-orange complaint-stat-filter"
+            type="button"
+            data-filter-status="pending"
+          >
             <h3>Pending</h3>
-            <p aria-label="3 pending complaints">3</p>
-          </div>
-          <div class="stat-card card-blue">
+            <p id="complaintsPending" aria-label="Pending complaints">--</p>
+          </button>
+          <button
+            class="stat-card card-blue complaint-stat-filter"
+            type="button"
+            data-filter-status="in-progress"
+          >
             <h3>In Progress</h3>
-            <p aria-label="2 complaints in progress">2</p>
-          </div>
-          <div class="stat-card card-green">
+            <p id="complaintsProgress" aria-label="Complaints in progress">
+              --
+            </p>
+          </button>
+          <button
+            class="stat-card card-green complaint-stat-filter"
+            type="button"
+            data-filter-status="resolved"
+          >
             <h3>Resolved</h3>
-            <p aria-label="7 resolved complaints">7</p>
-          </div>
-         
-          <div class="stat-card card-alert">
-            <h3>
-              <span aria-hidden="true">⚠️</span> Alerts
-            </h3>
-            <p aria-label="4 high-priority alerts">4</p>
-          </div>
+            <p id="complaintsResolved" aria-label="Resolved complaints">--</p>
+          </button>
+
+          <button
+            class="stat-card card-alert complaint-stat-filter"
+            type="button"
+            data-filter-priority="High"
+          >
+            <h3>Alerts</h3>
+            <p id="complaintsHighPriority" aria-label="High-priority alerts">
+              --
+            </p>
+          </button>
         </div>
 
         <section class="complaints-panel" aria-labelledby="complaintsHeading">
           <h3 id="complaintsHeading">Complaints List</h3>
 
+          <div class="complaints-filter-row">
+            <label for="adminCategoryFilter">Filter by category</label>
+            <select id="adminCategoryFilter">
+              <option value="">All categories</option>
+              <optgroup label="Urgent Categories (Auto High Priority)">
+                <option value="Physical Harm, Violence, or Threats">
+                  Physical Harm, Violence, or Threats
+                </option>
+                <option value="Public Health Hazard">
+                  Public Health Hazard
+                </option>
+              </optgroup>
+              <optgroup label="General Categories">
+                <option value="Noise and Public Disturbance">
+                  Noise and Public Disturbance
+                </option>
+                <option value="Waste, Sanitation, and Environment">
+                  Waste, Sanitation, and Environment
+                </option>
+                <option value="Road and Infrastructure">
+                  Road and Infrastructure
+                </option>
+                <option value="Property Damage">Property Damage</option>
+                <option value="Animal Concerns">Animal Concerns</option>
+                <option value="Money Debt">Money Debt</option>
+                <option value="Illegal or Criminal Activity">
+                  Illegal or Criminal Activity
+                </option>
+                <option value="Other">Other</option>
+              </optgroup>
+            </select>
+            <label for="adminStatusFilter">Filter by status</label>
+            <select id="adminStatusFilter">
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+
           <table
             class="complaints-table"
-            aria-label="Community complaints list">
+            aria-label="Community complaints list"
+          >
             <thead>
               <tr>
                 <th scope="col">ID</th>
@@ -113,13 +217,16 @@
             </thead>
 
             <tbody id="complaintsBody">
-             
               <tr>
-                <td>2026-127</td>
+                <td>CMP-2026-0001</td>
                 <td>Aeron</td>
                 <td>Smith</td>
-                <td>J</td>
-                <td>Public Disturbance</td>
+                <td>Jones</td>
+                <td>
+                  <span class="category-badge badge-general"
+                    >Noise and Public Disturbance</span
+                  >
+                </td>
                 <td>In-person at Barangay Office</td>
                 <td><span class="priority-high">High</span></td>
                 <td>Yes</td>
@@ -129,124 +236,57 @@
                     class="btn-action"
                     onclick="viewComplaint(this)"
                     type="button"
-                    data-id="2026-127"
+                    data-id="CMP-2026-0001"
                     data-name="Aeron J. Smith"
-                    data-category="Public Disturbance"
+                    data-category="Noise and Public Disturbance"
                     data-source="In-person at Barangay Office"
                     data-priority="High"
                     data-status="in-progress"
                     data-title="Loud music past midnight"
                     data-details="Loud music played repeatedly past midnight."
                     data-confidential="Yes"
-                    data-image="Image_127.jpg"
-                    data-video="Video_127.mp4"
+                    data-image="Image_0001.jpg"
+                    data-video="Video_0001.mp4"
                     data-note="Officer dispatched"
-                    aria-label="View complaint 2026-127 by Aeron Smith">
-                   
+                    aria-label="View complaint CMP-2026-0001 by Aeron Smith"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
                       height="16"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      aria-hidden="true">
+                      aria-hidden="true"
+                    >
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </button>
                 </td>
               </tr>
 
-              <tr>
-                <td>2026-119</td>
-                <td>Nathalia</td>
-                <td>Rosseau</td>
-                <td>B</td>
-                <td>Waste Management</td>
-                <td>Messenger (informal)</td>
-                <td><span class="priority-normal">Normal</span></td>
-                <td>Yes</td>
-                <td><span class="status-resolved">Resolved</span></td>
-                <td>
-                  <button
-                    class="btn-action"
-                    onclick="viewComplaint(this)"
-                    type="button"
-                    data-id="2026-119"
-                    data-name="Nathalia B. Rosseau"
-                    data-category="Waste Management"
-                    data-source="Messenger (informal)"
-                    data-priority="Normal"
-                    data-status="resolved"
-                    data-title="Illegal dumping near canal"
-                    data-details="Garbage being dumped beside the canal regularly."
-                    data-confidential="Yes"
-                    data-image="Image_119.jpg"
-                    data-video=""
-                    data-note=""
-                    aria-label="View complaint 2026-119 by Nathalia Rosseau">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-
-              <tr>
-                <td>2026-128</td>
-                <td>Bela</td>
-                <td>Stanford</td>
-                <td>M</td>
-                <td>Illegal Parking</td>
-                <td>In-person at Barangay Office</td>
-                <td><span class="priority-normal">Normal</span></td>
-                <td>Yes</td>
-                <td><span class="status-pending">Pending</span></td>
-                <td>
-                  <button
-                    class="btn-action"
-                    onclick="viewComplaint(this)"
-                    type="button"
-                    data-id="2026-128"
-                    data-name="Bela M. Stanford"
-                    data-category="Illegal Parking"
-                    data-source="In-person at Barangay Office"
-                    data-priority="Normal"
-                    data-status="pending"
-                    data-title="Vehicles blocking driveways"
-                    data-details="Multiple vehicles blocking residential driveways on Purok Aguma-a 2."
-                    data-confidential="Yes"
-                    data-image=""
-                    data-video=""
-                    data-note=""
-                    aria-label="View complaint 2026-128 by Bela Stanford">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      aria-hidden="true">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-
-              <tr id="emptyStateRow" style="display: none;">
+              <tr id="emptyStateRow" style="display: none">
                 <td
                   colspan="10"
-                  style="text-align: center; padding: 32px; color: rgba(255,255,255,0.45); font-style: italic;">
+                  style="
+                    text-align: center;
+                    padding: 32px;
+                    color: rgba(255, 255, 255, 0.45);
+                    font-style: italic;
+                  "
+                >
                   No complaints found.
                 </td>
               </tr>
             </tbody>
           </table>
+        </section>
+
+        <section
+          class="complaints-panel archive-panel"
+          aria-labelledby="complaintsArchiveHeading"
+        >
+          <h3 id="complaintsArchiveHeading">Archived Complaints</h3>
+          <div class="archive-list" id="complaintsArchiveList"></div>
         </section>
       </main>
     </div>
@@ -259,10 +299,26 @@
       aria-labelledby="modalTitle"
       aria-describedby="complaintDetails">
       <div class="complaint-modal-content">
-
         <div class="modal-header">
-          <h2 id="modalTitle">Complaint #— (Admin View)</h2>
-         
+          <div>
+            <h2 id="modalTitle">Complaint #— (Admin View)</h2>
+            <div id="modalWorkflowSummary" class="modal-workflow-summary">
+              <span class="workflow-summary-label">Proceedings:</span>
+              <span id="modalWorkflowSummaryText" class="workflow-summary-text">
+                No hearing activity yet.
+              </span>
+            </div>
+            <div
+              id="underReviewBadge"
+              class="warning-banner"
+              style="display: none; margin-top: 8px"
+              role="status"
+              aria-live="polite">
+              <span aria-hidden="true">⚠️</span>
+              Complaint flagged for priority review due to duplicate or repeat
+              submission concerns. Status remains Pending.
+            </div>
+          </div>
           <button
             class="btn-close-modal"
             onclick="closeComplaintModal()"
@@ -272,11 +328,62 @@
           </button>
         </div>
         <div class="modal-body">
-
-          <div class="info-section" role="group" aria-label="Complaint information">
+          <div
+            class="info-section"
+            role="group"
+            aria-label="Complaint information">
             <div class="info-item">
               <label>Complainant:</label>
               <span id="complainantName">—</span>
+            </div>
+            <div class="info-item respondent-info-item">
+              <label>Respondent:</label>
+              <div class="respondent-summary" id="respondentSummary">
+                <span id="respondentDisplay">No respondent details yet.</span>
+                <button
+                  type="button"
+                  class="btn-evidence"
+                  id="editRespondentBtn"
+                  aria-label="Edit respondent details">
+                  Add respondent details
+                </button>
+              </div>
+              <div
+                id="respondentEditGroup"
+                class="respondent-edit-group"
+                style="display: none; gap: 8px; margin-top: 8px">
+                <input
+                  type="text"
+                  id="respondentNameInput"
+                  maxlength="255"
+                  placeholder="Respondent full name"/>
+                <input
+                  type="text"
+                  id="respondentContactInput"
+                  maxlength="20"
+                  placeholder="Contact number"/>
+                <input
+                  type="text"
+                  id="respondentAddressInput"
+                  maxlength="255"
+                  placeholder="Address / Purok"/>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button
+                    type="button"
+                    class="btn-evidence"
+                    id="saveRespondentBtn"
+                    aria-label="Save respondent details">
+                    Save respondent
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-evidence"
+                    id="cancelRespondentBtn"
+                    aria-label="Cancel respondent edit">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="info-item">
               <label>Category:</label>
@@ -284,13 +391,35 @@
             </div>
             <div class="info-item">
               <label for="complaintSourceSelect">Received Via:</label>
-              <select id="complaintSourceSelect" class="complaint-source-dropdown">
-                <option value="In-person at Barangay Office">In-person at Barangay Office</option>
-                <option value="Messenger (informal)">Messenger (informal)</option>
+              <select
+                id="complaintSourceSelect"
+                class="complaint-source-dropdown"
+                aria-label="Complaint source">
+                <option value="In-person at Barangay Office">
+                  In-person at Barangay Office
+                </option>
                 <option value="Digital Submission">Digital Submission</option>
                 <option value="Other">Other</option>
               </select>
-              <small style="display: block; margin-top: 4px; color: rgba(255,255,255,0.65); font-size: 0.85rem;">Admin-only complaint intake source.</small>
+              <div
+                id="complaintSourceOtherGroup"
+                style="display: none; margin-top: 8px">
+                <label for="complaintSourceOtherText">Other:</label>
+                <input
+                  type="text"
+                  id="complaintSourceOtherText"
+                  maxlength="100"
+                  disabled
+                  placeholder="Specify intake source"/>
+              </div>
+              <small
+                style="
+                  display: block;
+                  margin-top: 4px;
+                  color: rgba(255, 255, 255, 0.65);
+                  font-size: 0.85rem;
+                "
+                >Admin-only complaint intake source.</small>
             </div>
             <div class="info-item">
               <label>Priority:</label>
@@ -315,10 +444,9 @@
             aria-labelledby="evidenceHeading">
             <h3 id="evidenceHeading">Evidence</h3>
             <div class="evidence-container" id="evidenceContainer">
-              
               <p
                 id="noEvidenceMsg"
-                style="color: rgba(255,255,255,0.45); font-style: italic;">
+                style="color: rgba(255, 255, 255, 0.45); font-style: italic">
                 No evidence attached.
               </p>
             </div>
@@ -332,13 +460,18 @@
               id="adminResponse"
               class="response-textarea"
               placeholder="Enter official response…"
-              maxlength="1000"
+              maxlength="1500"
               aria-describedby="responseHint"></textarea>
-            
+
             <small
               id="responseHint"
-              style="color: rgba(255,255,255,0.4); font-size: 0.8rem; display: block; margin-top: 6px;">
-              Max 1000 characters.
+              style="
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 0.8rem;
+                display: block;
+                margin-top: 6px;
+              ">
+              0 / 1500 characters used
             </small>
           </section>
 
@@ -348,7 +481,6 @@
             <h3 id="statusHeading" class="visually-hidden">Update Status</h3>
             <div class="status-controls">
               <div class="status-item">
-           
                 <label for="statusSelect">Update Status:</label>
                 <select
                   id="statusSelect"
@@ -360,11 +492,11 @@
                   <option value="resolved">Resolved</option>
                 </select>
               </div>
-            
+
               <div
                 class="warning-banner"
                 id="confirmationBanner"
-                style="display: none;"
+                style="display: none"
                 role="alert"
                 aria-live="polite">
                 <span aria-hidden="true">⚠️</span>
@@ -374,15 +506,46 @@
           </section>
 
           <section
+            class="detail-section timeline-section"
+            aria-labelledby="timelineHeading">
+            <h3 id="timelineHeading">Proceedings Timeline</h3>
+            <div id="timelineSummary" class="timeline-summary">
+              <span class="timeline-summary-label"
+                >Current proceedings status:</span>
+              <span id="timelineSummaryText" class="timeline-summary-text">
+                No hearing notices recorded yet.
+              </span>
+            </div>
+            <div id="timelineList" class="timeline-list"></div>
+            <div id="timelineEmpty" class="timeline-empty">
+              No proceedings have been recorded yet.
+            </div>
+            <div class="timeline-actions">
+              <button
+                type="button"
+                id="timelineNextActionBtn"
+                class="btn-evidence"
+                style="display: none"></button>
+              <button
+                type="button"
+                id="issueCfaButton"
+                class="btn-evidence btn-danger"
+                style="display: none"
+                aria-label="Issue a Complaint for Administrative Action (CFA) to escalate this complaint">
+                Issue CFA
+              </button>
+            </div>
+          </section>
+
+          <section
             class="detail-section notes-section"
             aria-labelledby="notesHeading">
             <h3 id="notesHeading">Internal Notes (Admin only)</h3>
-           
-            <div id="internalNotesList">
-            
-            </div>
-           
-            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+
+            <div id="internalNotesList"></div>
+
+            <div
+              style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap">
               <input
                 type="text"
                 id="newNoteInput"
@@ -394,23 +557,26 @@
                   min-width: 0;
                   padding: 10px 14px;
                   border-radius: 10px;
-                  border: 1px solid rgba(255,255,255,0.15);
-                  background: rgba(255,255,255,0.08);
+                  border: 1px solid rgba(255, 255, 255, 0.15);
+                  background: rgba(255, 255, 255, 0.08);
                   color: #f0f0f0;
                   font-family: inherit;
-                  font-size: 0.875rem;"/>
+                  font-size: 0.875rem;
+                "/>
               <button
                 type="button"
                 class="btn-evidence"
                 onclick="addInternalNote()"
-                style="flex-shrink: 0; min-width: 90px;">
+                style="flex-shrink: 0; min-width: 90px"
+                aria-label="Add internal note">
                 Add Note
               </button>
             </div>
           </section>
-
         </div>
-        <div class="modal-footer" style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <div
+          class="modal-footer"
+          style="display: flex; gap: 12px; flex-wrap: wrap">
           <button
             class="btn-save-action"
             onclick="openHearingNotice()"
@@ -425,13 +591,22 @@
             aria-label="Save admin action for this complaint">
             Save Action
           </button>
+          <button
+            class="btn-save-action btn-archive-action"
+            onclick="archiveCurrentComplaint()"
+            type="button"
+            aria-label="Archive this complaint">
+            Archive Complaint
+          </button>
         </div>
-
       </div>
     </div>
-      <script src="../js/utils/validators.js"></script>
-      <script src="../js/services/api.js"></script>
-      <script src="../js/adminComplaints.js"></script>
-
+    <script src="../js/utils/validators.js"></script>
+    <script src="../js/utils/ui.js"></script>
+    <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="../js/adminComplaints.js"></script>
   </body>
 </html>
