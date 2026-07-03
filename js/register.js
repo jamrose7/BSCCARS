@@ -94,6 +94,32 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(PENDING_RESIDENTS_KEY, JSON.stringify(list));
   }
 
+  // Writes into the same storage key notificationManager.js reads
+  // (bsccarsLocalNotifications), so the admin notification panel shows
+  // the actual resident who just registered instead of a generic count.
+  const LOCAL_NOTIFICATIONS_KEY = "bsccarsLocalNotifications";
+
+  function notifyAdminsOfNewRegistration(resident) {
+    try {
+      const notifications =
+        JSON.parse(localStorage.getItem(LOCAL_NOTIFICATIONS_KEY)) || [];
+      notifications.unshift({
+        id: `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        title: "New resident registration",
+        message: `${resident.firstName} ${resident.lastName} registered and is awaiting approval.`,
+        roles: ["admin", "super_admin"],
+        created_at: new Date().toISOString(),
+        is_read: false,
+      });
+      localStorage.setItem(
+        LOCAL_NOTIFICATIONS_KEY,
+        JSON.stringify(notifications.slice(0, 100)),
+      );
+    } catch (error) {
+      console.warn("Unable to record registration notification:", error);
+    }
+  }
+
   function formatUserId(sequence) {
     return `${USER_ID_YEAR}${String(sequence).padStart(3, "0")}`;
   }
@@ -102,7 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const pendingIds = getPendingResidents()
       .map((resident) => resident.id)
       .filter((id) => /^2026\d{3}$/.test(String(id)));
-    const currentUser = typeof api !== "undefined" ? api.getStoredUser?.() : null;
+    const currentUser =
+      typeof api !== "undefined" ? api.getStoredUser?.() : null;
     const knownIds = [...pendingIds, currentUser?.id].filter((id) =>
       /^2026\d{3}$/.test(String(id)),
     );
@@ -136,12 +163,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const value = middleName.value.trim();
 
     if (value.length === 1) {
-      setMiddleNameError("Please enter your complete middle name, not just an initial.");
+      setMiddleNameError(
+        "Please enter your complete middle name, not just an initial.",
+      );
       return false;
     }
 
     if (value.length < 2) {
-      setMiddleNameError('Please enter your complete middle name or tick "I have no middle name".');
+      setMiddleNameError(
+        'Please enter your complete middle name or tick "I have no middle name".',
+      );
       return false;
     }
 
@@ -250,21 +281,20 @@ document.addEventListener("DOMContentLoaded", () => {
         purok: form.purokId.value,
         contactNumber: form.contactNumber.value.trim(),
         email: form.email.value.trim(),
-
+        status: "Pending",
         validId: {
           name: file.name,
           type: file.type,
-          size: file.size,
+          dataUrl: fileDataUrl,
         },
-
-        status: "Pending",
-
-        // Used for admin sorting and tracking submission order
+        warning_count: 0,
+        is_restricted: false,
         submittedAt: new Date().toISOString(),
       };
 
       await storeResidentId(residentId, fileDataUrl);
       savePendingResident(resident);
+      notifyAdminsOfNewRegistration(resident);
 
       form.reset();
       syncMiddleNameState({ validate: false });

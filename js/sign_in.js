@@ -1,10 +1,46 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // If loaded directly from filesystem, redirect to the local server
+  if (
+    typeof window !== "undefined" &&
+    (window.location.protocol === "file:" || window.location.origin === "null")
+  ) {
+    // Try a quick health check before redirecting so users aren't sent to
+    // localhost when the server isn't running (which causes ERR_CONNECTION_REFUSED).
+    const healthUrl = "http://localhost:3000/api/health";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1500);
+
+    try {
+      const resp = await fetch(healthUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (resp && resp.ok) {
+        window.location.href = "http://localhost:3000/sign_in.html";
+      } else {
+        showNotification(
+          "Local server not reachable. Start it with: `node backend/server.js`",
+          "error",
+        );
+      }
+    } catch (err) {
+      clearTimeout(timeout);
+      showNotification(
+        "Local server not reachable. Start it with: `node backend/server.js`",
+        "error",
+      );
+    }
+
+    return;
+  }
+
   const form = document.getElementById("sign_inForm");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
   const eye = document.querySelector(".eye");
   const rememberCheckbox = document.getElementById("remember");
-  const submitBtn = form.querySelector('button[type="submit"]');
+
+  let submitBtn = null;
+  if (form) submitBtn = form.querySelector('button[type="submit"]');
+  if (!submitBtn) submitBtn = document.querySelector('button[type="submit"]');
 
   if (eye) {
     eye.addEventListener("click", () => {
@@ -18,55 +54,60 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    const rememberMe = rememberCheckbox?.checked || false;
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const rememberMe = rememberCheckbox?.checked || false;
 
-    if (!email || !password) {
-      showNotification("Please fill in all fields", "error");
-      return;
-    }
-
-    if (!Validators.email(email)) {
-      showNotification("Please enter a valid email address", "error");
-      return;
-    }
-
-    try {
-      setButtonLoading(submitBtn, true);
-      showLoading("Signing in...");
-
-      const response = await api.signin(email, password);
-
-      if (response.success) {
-        completeSignIn(response.token, response.user, rememberMe, email);
-      }
-    } catch (error) {
-      console.error("Sign in failed:", error);
-
-      const demoUser = getDemoUser(email, password);
-      if (demoUser) {
-        completeSignIn("demo-token", demoUser, rememberMe, email);
+      if (!email || !password) {
+        showNotification("Please fill in all fields", "error");
         return;
       }
 
-      showNotification("Sign in failed. Please check your credentials.", "error");
-    } finally {
-      hideLoading();
-      setButtonLoading(submitBtn, false);
-    }
-  });
+      if (!Validators.email(email)) {
+        showNotification("Please enter a valid email address", "error");
+        return;
+      }
 
-  const rememberedEmail = localStorage.getItem("rememberEmail");
-  if (rememberedEmail) {
-    emailInput.value = rememberedEmail;
-    rememberCheckbox.checked = true;
+      try {
+        setButtonLoading(submitBtn, true);
+        showLoading("Signing in...");
+
+        const response = await api.signin(email, password);
+
+        if (response && response.success) {
+          completeSignIn(response.token, response.user, rememberMe, email);
+          return;
+        }
+
+        const message =
+          (response && response.message) ||
+          "Sign in failed. Please check your credentials.";
+        showNotification(message, "error");
+      } catch (error) {
+        console.error("Sign in failed:", error);
+        const errMsg =
+          error && error.message
+            ? error.message
+            : "Sign in failed. Please check your credentials.";
+        showNotification(errMsg, "error");
+      } finally {
+        hideLoading();
+        setButtonLoading(submitBtn, false);
+      }
+    });
   }
 
-  const forgotLink = form.querySelector(".forgot");
+  const rememberedEmail = localStorage.getItem("rememberEmail");
+  if (rememberedEmail && emailInput) {
+    emailInput.value = rememberedEmail;
+    if (rememberCheckbox) rememberCheckbox.checked = true;
+  }
+
+  const forgotLink = form?.querySelector(".forgot");
   if (forgotLink) {
     forgotLink.addEventListener("click", (e) => {
       e.preventDefault();
@@ -88,46 +129,14 @@ function completeSignIn(token, user, rememberMe, email) {
   showNotification("Sign in successful!", "success", 1200);
 
   setTimeout(() => {
-    if (user.role === "super_admin" || user.role === "admin") {
+    if (
+      user.role === "super_admin" ||
+      user.role === "admin" ||
+      user.role === "assistant_admin"
+    ) {
       window.location.href = "adminDashboard.html";
     } else {
       window.location.href = "residentDashboard.html";
     }
   }, 400);
-}
-
-function getDemoUser(email, password) {
-  const normalizedEmail = email.toLowerCase();
-
-  if (normalizedEmail === "admin@gmail.com" && password === "admin578") {
-    return {
-      id: "2026001",
-      email,
-      role: "super_admin",
-      first_name: "Jamiel",
-      last_name: "Rosell",
-    };
-  }
-
-  if (normalizedEmail === "secretary@gmail.com" && password === "secretary123") {
-    return {
-      id: "2026002",
-      email,
-      role: "admin",
-      first_name: "Kiarah",
-      last_name: "Beau",
-    };
-  }
-
-  if (normalizedEmail === "resident@gmail.com" && password === "resident789") {
-    return {
-      id: "2026003",
-      email,
-      role: "resident",
-      first_name: "Aeron",
-      last_name: "Smith",
-    };
-  }
-
-  return null;
 }
