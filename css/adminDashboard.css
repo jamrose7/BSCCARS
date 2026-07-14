@@ -2,22 +2,27 @@ body {
   min-height: 100vh;
   background: linear-gradient(180deg, #0f303d 0%, #163b49 40%, #114455 100%);
   color: #eef7f7;
+  overflow-x: auto;
 }
 
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   padding: 22px 34px;
   background: linear-gradient(135deg, #083540, #0f7c7f);
   color: #f7f7f7;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  position: relative;
+  z-index: 100;
 }
 
 .top-left {
   display: flex;
   align-items: center;
   gap: 18px;
+  min-width: 0;
 }
 
 .logo {
@@ -33,9 +38,12 @@ body {
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .top-right {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -58,10 +66,13 @@ body {
 
 .dashboard-container {
   display: flex;
+  width: 100%;
   min-height: calc(100vh - 88px);
+  overflow: hidden;
 }
 
 .sidebar {
+  flex: 0 0 240px;
   width: 240px;
   background: linear-gradient(
     180deg,
@@ -119,18 +130,16 @@ body {
   margin-top: auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
   padding: 14px 18px;
   border-radius: 16px;
+  text-align: center;
   background: rgba(255, 255, 255, 0.08);
-  color: #f6f9fb;
+  color: #eef7f7;
   text-align: center;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.25s ease,
-    transform 0.2s ease;
+  transition: background 0.25s ease, transform 0.2s ease;
 }
 
 .signout:hover {
@@ -150,7 +159,10 @@ body {
 
 .main-content {
   flex: 1;
+  min-width: 0;
   padding: 32px 40px;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .page-heading {
@@ -192,6 +204,19 @@ body {
   justify-content: space-between;
 }
 
+.stat-card:is(a, button),
+.status-count-card:is(a, button) {
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.stat-card:is(button) {
+  width: 100%;
+  border: 0;
+}
+
 .stat-card h3 {
   font-size: 0.95rem;
   font-weight: 700;
@@ -225,6 +250,39 @@ body {
   border-radius: 28px;
   padding: 28px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+}
+
+.status-panel {
+  margin-bottom: 24px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.status-count-card {
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-count-card:is(a, button) {
+  display: block;
+}
+
+.status-count-card strong {
+  display: block;
+  color: #f7fbff;
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+
+.status-count-card span {
+  color: rgba(238, 247, 247, 0.78);
+  font-weight: 700;
 }
 
 .recent-panel h3 {
@@ -283,12 +341,29 @@ body {
   color: #d7eefb;
 }
 
+.status-in-progress {
+  background: rgba(68, 151, 210, 0.45);
+  color: #d7eefb;
+}
+
+.empty-state,
+.error-state {
+  text-align: center;
+  color: rgba(238, 247, 247, 0.74);
+}
+
+.error-state {
+  color: #f4c9c1;
+}
+
 @media (max-width: 1120px) {
   .dashboard-container {
     flex-direction: column;
+    overflow: visible;
   }
 
   .sidebar {
+    flex-basis: auto;
     width: 100%;
     padding-bottom: 20px;
   }
