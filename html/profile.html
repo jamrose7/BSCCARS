@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile - BSCCARS</title>
+    <link rel="stylesheet" href="../css/global.css" /><link rel="stylesheet" href="../css/residentDashboard.css" /><link rel="stylesheet" href="../css/dashboardWidgets.css" /><link rel="stylesheet" href="../css/profile.css" />
+  </head>
+  <body class="profile-page" data-profile-page="view" data-profile-return-url="profile.html">
+    <header class="topbar"><div class="top-left"><img src="../images/logo.png" class="logo" alt="Barangay Sillon logo" /><h1>Barangay Sillon Community Complaint and Response System</h1></div><div class="top-right"><button class="icon-badge" aria-label="Notifications"><img src="../images/notification_icon.png" alt="Notifications" class="notification-icon" /></button><button class="icon-badge" aria-label="User profile"><img src="../images/profile_icon.png" alt="Profile" class="profile-icon" /></button></div></header>
+    <div class="dashboard-container"><aside class="sidebar"><ul><li><a href="residentDashboard.html"><img src="../images/dashboard_icon.png" alt="" class="sidebar-icon" />Dashboard</a></li><li><a href="submitComplaint.html"><img src="../images/submit_complaint_icon.png" alt="" class="sidebar-icon" />Submit Complaint</a></li><li><a href="myComplaints.html"><img src="../images/my_complaints_icon.png" alt="" class="sidebar-icon" />My complaints</a></li><li><a href="publicFeed.html"><img src="../images/public_feed_icon.png" alt="" class="sidebar-icon" />Public Feed</a></li></ul><div class="signout" role="button" tabindex="0"><img src="../images/sign-out_icon.png" alt="" class="sidebar-icon" />Sign out</div></aside>
+      <main class="content"><div class="page-heading"><div><h2>My Profile</h2><p>Review your account details and the photo used across the system.</p></div></div><section class="profile-panel" aria-live="polite"><p class="profile-status" id="profileStatus"></p><div class="profile-card"><div class="profile-avatar-large"><img id="profilePicture" src="../images/profile_icon.png" alt="Profile photo" /></div><div class="profile-details"><h3 id="profileName"></h3><p class="profile-role" id="profileRole"></p><p><strong>Email:</strong> <span id="profileEmail"></span></p><p><strong>User ID:</strong> <span id="profileUserId"></span></p><p><strong>Joined:</strong> <span id="profileJoined"></span></p><div class="profile-actions"><a class="btn btn-primary" href="profile-edit.html">Edit Profile</a><button class="btn btn-secondary" id="refreshProfileBtn" type="button">Refresh</button></div></div></div></section></main>
+    </div>
+    <script src="../js/utils/ui.js"></script><script src="../js/services/api.js"></script><script src="../js/services/notificationManager.js"></script><script src="../js/services/profileManager.js"></script><script src="../js/authGuard.js"></script><script src="../js/profilePage.js"></script>
+  </body>
+</html>
