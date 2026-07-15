@@ -107,7 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
         id: `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         title: "New resident registration",
         message: `${resident.firstName} ${resident.lastName} registered and is awaiting approval.`,
-        roles: ["admin", "super_admin"],
+        residentId: resident.id,
+        roles: ["assistant_admin", "super_admin"],
         created_at: new Date().toISOString(),
         is_read: false,
       });

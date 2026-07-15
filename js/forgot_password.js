@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const email = document.getElementById("email").value.trim();
@@ -48,13 +48,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (password.length < 6) {
-      showNotification("Password must be at least 6 characters long.", "error");
+    if (password.length < 8) {
+      showNotification("Password must be at least 8 characters long.", "error");
       return;
     }
 
-    console.log("Password reset request for:", email);
-
+    try {
+  const response = await fetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, newPassword: password }),
+  });
+  const data = await response.json();
+  if (data.success) {
     modal.classList.add("show");
+  } else {
+    showNotification(data.message || "Reset failed.", "error");
+  }
+} catch (err) {
+  showNotification("Server error. Please try again.", "error");
+}
+
   });
 });

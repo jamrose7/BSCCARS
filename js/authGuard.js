@@ -36,6 +36,10 @@
     return residentPages.includes(currentPage);
   }
 
+  function currentPageName() {
+    return window.location.pathname.split("/").pop();
+  }
+
   function isAuthRequiredPage() {
     const path = window.location.pathname.toLowerCase();
     const unauthenticatedPages = [
@@ -85,6 +89,12 @@
 
     if (isAdminRoute() && !adminRoles.includes(user.role)) {
         return redirectToResident();
+    }
+
+    // User account management exposes staff account details and is reserved for
+    // the Barangay Captain / Super Admin.
+    if (currentPageName() === "adminUsers.html" && user.role !== "super_admin") {
+        return redirectToAdmin();
     }
 
     if (isResidentRoute() && adminRoles.includes(user.role)) {

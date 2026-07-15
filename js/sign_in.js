@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         setButtonLoading(submitBtn, true);
         showLoading("Signing in...");
 
-        const response = await api.signin(email, password);
+        const response = await api.signIn(email, password);
 
         if (response && response.success) {
           completeSignIn(response.token, response.user, rememberMe, email);
@@ -129,14 +129,16 @@ function completeSignIn(token, user, rememberMe, email) {
   showNotification("Sign in successful!", "success", 1200);
 
   setTimeout(() => {
-    if (
-      user.role === "super_admin" ||
-      user.role === "admin" ||
-      user.role === "assistant_admin"
-    ) {
-      window.location.href = "adminDashboard.html";
-    } else {
-      window.location.href = "residentDashboard.html";
-    }
+  if (
+  user.role === "super_admin" ||
+  user.role === "assistant_admin"
+  ) {
+  window.location.href = "adminDashboard.html";
+  } else if (user.role === "resident") {
+  window.location.href = "residentDashboard.html";
+  } else {
+  console.error("Unknown role:", user.role);
+  window.location.href = "sign_in.html";
+  }
   }, 400);
 }

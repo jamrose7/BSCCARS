@@ -145,7 +145,7 @@
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
     }
-    window.location.href = "sign_in.html";
+    window.location.href = "index.html";
   }
 
   function init() {
