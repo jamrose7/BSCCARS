@@ -3,30 +3,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const categoryFilter = document.getElementById("categoryFilter");
   const statusFilter = document.getElementById("statusFilter");
-  const signoutBtn = document.querySelector(".signout");
   const detailModal = document.getElementById("detailModal");
   const detailCloseBtn = document.getElementById("detailCloseBtn");
+  let complaints = [];
 
   const sampleComplaints = [
     {
+      id: "CMP-2026-0001",
       title: "Loud music past midnight",
-      category: "Public Disturbance",
-      purok: "Purok Bilabid 1",
-      date: "2026-01-19",
-      time: "9:30 PM",
+      category: "Noise and Public Disturbance",
+      purok: "Purok Sara-Sara 1",
+      date: "2026-07-11",
+      time: "4:30 PM",
       status: "In Progress",
       details:
         "A resident reported a loud music disturbance after midnight. The sound carried to nearby houses and disrupted sleep. The complaint is under investigation.",
-    },
-    {
-      title: "Vehicle blocking driveways",
-      category: "Illegal Parking",
-      purok: "Purok Aguma-a 2",
-      date: "2026-01-07",
-      time: "10:00 AM",
-      status: "Resolved",
-      details:
-        "A parked truck was blocking the driveway of a residential home. Barangay officials moved the vehicle and reminded the driver about parking rules.",
     },
   ];
 
@@ -38,24 +29,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  const complaints = [
-    ...getStoredComplaints().map((complaint) => ({
-      title: complaint.title,
-      category: complaint.category,
-      purok: complaint.purok,
-      date: complaint.date,
-      time: complaint.time,
-      status: complaint.status,
-      details: complaint.details,
-    })),
-    ...sampleComplaints,
-  ];
+  function getFallbackComplaints() {
+    return [
+      ...getStoredComplaints().map((complaint) => ({
+        id: complaint.id,
+        title: complaint.title,
+        category: complaint.category,
+        purok: complaint.purok,
+        date: complaint.date,
+        time: complaint.time || complaint.incidentTime || "",
+        status: complaint.status,
+        details: complaint.details,
+        submittedBy: "Anonymous",
+      })),
+      ...sampleComplaints.map((complaint) => ({
+        ...complaint,
+        submittedBy: "Anonymous",
+      })),
+    ];
+  }
 
-  function handleSignout() {
-    const confirmSignout = confirm("Are you sure you want to sign out?");
-    if (confirmSignout) {
-      window.location.href = "index.html";
+  async function loadComplaints() {
+    try {
+      if (typeof api === "undefined" || !api.getPublicComplaintFeed) {
+        throw new Error("Public feed API unavailable.");
+      }
+
+      const response = await api.getPublicComplaintFeed();
+      complaints = Array.isArray(response?.data) ? response.data : [];
+      if (!complaints.length) {
+        complaints = getFallbackComplaints();
+      }
+    } catch (error) {
+      complaints = getFallbackComplaints();
     }
+
+    render(complaints);
   }
 
   function setDetailText(id, value) {
@@ -66,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openDetailModal(complaint) {
+    setDetailText("detailId", complaint.id);
     setDetailText("detailTitle", complaint.title);
     setDetailText("detailCategory", complaint.category);
     setDetailText("detailPurok", complaint.purok);
@@ -91,6 +101,16 @@ document.addEventListener("DOMContentLoaded", () => {
     card.appendChild(paragraph);
   }
 
+  function categoryMatchesFilter(complaintCategory, selectedCategory) {
+    if (!selectedCategory) return true;
+    if (selectedCategory === "Other") {
+      return (
+        complaintCategory === "Other" || complaintCategory.startsWith("Other:")
+      );
+    }
+    return complaintCategory === selectedCategory;
+  }
+
   function render(data) {
     container.innerHTML = "";
 
@@ -107,7 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "card";
 
       const title = document.createElement("h3");
-      title.textContent = `Complaint Title: ${complaint.title}`;
+      title.textContent = complaint.id
+        ? `${complaint.id} - ${complaint.title}`
+        : `Complaint Title: ${complaint.title}`;
       card.appendChild(title);
 
       addDetailLine(card, "Category", complaint.category);
@@ -115,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
       addDetailLine(card, "Incident Date", complaint.date);
       addDetailLine(card, "Incident Time", complaint.time);
       addDetailLine(card, "Status", complaint.status);
-      addDetailLine(card, "Submitted by", "Anonymous");
+      addDetailLine(card, "Submitted by", complaint.submittedBy || "Anonymous");
 
       const button = document.createElement("button");
       button.className = "view-btn";
@@ -136,16 +158,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const filtered = complaints.filter((complaint) => {
       return (
         complaint.title.toLowerCase().includes(search) &&
-        (category === "" || complaint.category === category) &&
+        categoryMatchesFilter(complaint.category, category) &&
         (status === "" || complaint.status === status)
       );
     });
 
     render(filtered);
-  }
-
-  if (signoutBtn) {
-    signoutBtn.addEventListener("click", handleSignout);
   }
 
   searchInput.addEventListener("input", filterData);
@@ -170,5 +188,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  render(complaints);
+  loadComplaints();
 });

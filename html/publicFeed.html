@@ -23,37 +23,48 @@
       </div>
 
       <div class="top-right">
-        <span class="icon">🔔</span>
-        <span class="icon">👤</span>
+        <button class="icon-badge" aria-label="Notifications">
+          <img
+            src="../images/notification_icon.png"
+            alt="Notifications"
+            class="notification-icon"
+          />
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img
+            src="../images/profile_icon.png"
+            alt="Profile"
+            class="profile-icon"
+          />
+        </button>
       </div>
     </header>
 
-    <div class="dashboard-container">
+       <div class="dashboard-container">
       <aside class="sidebar">
-        <ul>
-          <li>
-            <a href="residentDashboard.html">
-              <span class="menu-icon">🏠</span> Dashboard</a
-            >
-          </li>
-          <li>
-            <a href="submitComplaint.html">
-              <span class="menu-icon">📝</span> Submit Complaint</a
-            >
-          </li>
-          <li>
-            <a href="myComplaints.html">
-              <span class="menu-icon">📋</span> My Complaints</a
-            >
-          </li>
-          <li>
-            <a class="active" href="publicFeed.html">
-              <span class="menu-icon">🌐</span> Public Feed</a
-            >
-          </li>
-        </ul>
+        <nav class="sidebar-menu">
+          <a href="residentDashboard.html">
+            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon"/>
+            Dashboard
+          </a>
+          <a href="submitComplaint.html">
+            <img src="../images/submit_complaint_icon.png" alt="Submit Complaint" class="sidebar-icon"/>
+            Submit Complaint
+          </a>
+          <a href="myComplaints.html" aria-current="page">
+            <img src="../images/my_complaints_icon.png" alt="My Complaints" class="sidebar-icon"/>
+            My Complaints
+          </a>
+          <a class="active" href="publicFeed.html">
+            <img src="../images/public_feed_icon.png" alt="Public Feed" class="sidebar-icon"/>
+            Public Feed
+          </a>
+        </nav>
 
-        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img src="../images/sign-out_icon.png" alt="Sign out" class="sidebar-icon"/>
+          Sign out
+        </div>
       </aside>
 
       <main class="content">
@@ -64,22 +75,48 @@
             <input
               type="text"
               id="searchInput"
-              placeholder="Search Complaint"
-            />
-            <span class="search-icon">🔍</span>
+              placeholder="Search Complaint"/>
+            <span class="search-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              stroke-width="2" 
+              stroke-linecap="round" 
+              stroke-linejoin="round" 
+              class="lucide lucide-search-icon lucide-search">
+              <path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+            </span>
           </div>
 
           <select name="categoryFilter" id="categoryFilter">
             <option value="" disabled selected>Select a category</option>
-            <option value="Money Debt">Money Debt</option>
-            <option value="Public Disturbance">Public Disturbance</option>
-            <option value="Waste Management">Waste Management</option>
-            <option value="Road Issue">Road Issue</option>
-            <option value="Illegal Parking">Illegal Parking</option>
-            <option value="Property Damage">Property Damage</option>
-            <option value="Animal Concerns">Animal Concerns</option>
-            <option value="Sanitation">Sanitation</option>
-            <option value="Other">Other</option>
+            <optgroup label="── Urgent Categories (Auto High Priority) ──">
+              <option value="Physical Harm, Violence, or Threats">
+                Physical Harm, Violence, or Threats
+              </option>
+              <option value="Public Health Hazard">Public Health Hazard</option>
+            </optgroup>
+            <optgroup label="── General Categories ──">
+              <option value="Noise and Public Disturbance">
+                Noise and Public Disturbance
+              </option>
+              <option value="Waste, Sanitation, and Environment">
+                Waste, Sanitation, and Environment
+              </option>
+              <option value="Road and Infrastructure">
+                Road and Infrastructure
+              </option>
+              <option value="Property Damage">Property Damage</option>
+              <option value="Animal Concerns">Animal Concerns</option>
+              <option value="Money Debt">Money Debt</option>
+              <option value="Illegal or Criminal Activity">
+                Illegal or Criminal Activity
+              </option>
+              <option value="Other">Other</option>
+            </optgroup>
           </select>
 
           <select name="statusFilter" id="statusFilter">
@@ -101,7 +138,8 @@
           <button
             id="detailCloseBtn"
             class="close-btn"
-            aria-label="Close details modal">
+            aria-label="Close details modal"
+          >
             ×
           </button>
         </div>
@@ -142,8 +180,11 @@
       </div>
     </div>
 
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
-    <script src="../js/dashboardWidgets.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
     <script src="../js/publicFeed.js"></script>
   </body>
 </html>

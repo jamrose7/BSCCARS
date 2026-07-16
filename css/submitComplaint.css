@@ -5,11 +5,11 @@
   background:
     radial-gradient(
       circle at top left,
-      rgba(15, 152, 157, 0.2),
-      transparent 28%
+      rgba(20, 170, 175, 0.16),
+      transparent 30%
     ),
-    linear-gradient(135deg, #071d23 0%, #13434b 45%, #1d5e6a 100%);
-  color: #eef7f7;
+    linear-gradient(135deg, #051a20 0%, #0f3441 45%, #103f4c 100%);
+  color: #dbe8ea;
 }
 
 .topbar {
@@ -55,19 +55,6 @@
   white-space: nowrap;
   overflow: visible;
   text-overflow: clip;
-}
-
-.top-right span,
-.icons span {
-  font-size: 1.45rem;
-  margin-left: 16px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.top-right span:hover,
-.icons span:hover {
-  transform: translateY(-2px);
 }
 
 .top-right .icon:hover {
@@ -128,29 +115,34 @@
 }
 
 .sidebar-icon {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter: brightness(0) saturate(100%) invert(100%);
 }
 
 .signout {
   margin-top: auto;
-  padding: 14px 16px;
-  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 16px;
   text-align: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: #eef7f7;
+  background: rgba(12, 52, 61, 0.86);
+  color: #e3f1f3;
+  text-align: center;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
 }
 
 .signout:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(16, 67, 77, 0.92);
 }
 
 .content {
@@ -159,8 +151,8 @@
 }
 
 .form-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(9, 41, 49, 0.98);
+  border: 1px solid rgba(115, 206, 214, 0.12);
   border-radius: 30px;
   padding: 34px;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.22);
@@ -183,9 +175,9 @@
 
 .lead {
   margin: 12px 0 0;
-  color: rgba(238, 247, 247, 0.78);
+  color: rgba(220, 236, 239, 0.92);
   max-width: 680px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .form-group {
@@ -195,8 +187,8 @@
 .form-group label {
   display: block;
   margin-bottom: 10px;
-  font-size: 0.98rem;
-  color: #d9f3f3;
+  font-size: 1rem;
+  color: #d3eef1;
   font-weight: 700;
 }
 
@@ -204,16 +196,27 @@ input,
 select,
 textarea {
   width: 100%;
-  padding: 14px 16px;
+  padding: 15px 18px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  color: #f5f9f9;
+  background: rgba(14, 52, 61, 0.96);
+  color: #e6f4f6;
   font-size: 1rem;
+  line-height: 1.7;
   outline: none;
   transition:
     border-color 0.2s ease,
     transform 0.2s ease;
+}
+
+select option {
+  background: #0e5e67;
+  color: #eef7f7;
+}
+
+select option:checked {
+  background: #1a7c8d;
+  color: #ffffff;
 }
 
 input:focus,
@@ -256,7 +259,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(12, 58, 69, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
   padding: 14px 16px;
   border-radius: 18px;
@@ -275,7 +278,7 @@ textarea {
 small {
   display: block;
   margin-top: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(216, 234, 238, 0.8);
 }
 
 .btn-submit {
@@ -340,7 +343,7 @@ small {
 .modal-content li {
   font-size: 1rem;
   line-height: 1.8;
-  color: rgba(238, 247, 247, 0.9);
+  color: rgba(230, 242, 244, 0.92);
 }
 
 .modal-content ul {
@@ -381,8 +384,8 @@ small {
   height: 30px;
   border: none;
   border-radius: 50%;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: #e8f3f6;
+  background: rgba(15, 57, 68, 0.76);
   cursor: pointer;
   font-size: 1.4rem;
   line-height: 1;
@@ -395,7 +398,7 @@ small {
 }
 
 .close-modal:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(16, 70, 82, 0.9);
   transform: translateY(-1px);
 }
 
@@ -403,10 +406,10 @@ small {
   margin: 18px 0 24px;
   padding: 18px 20px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(11, 53, 62, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #edf7f7;
-  line-height: 1.7;
+  color: #e8f3f4;
+  line-height: 1.75;
 }
 
 .summary-block strong {

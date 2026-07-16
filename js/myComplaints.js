@@ -1,92 +1,202 @@
 "use strict";
 
-const complaints = [
+const sampleComplaints = [
   {
-    id: "127",
+    id: "CMP-2026-0001",
     title: "Loud music past midnight",
-    category: "Public Disturbance",
+    category: "Noise and Public Disturbance",
     priority: "High",
     status: "In Progress",
-    date: "2026-01-19",
-    time: "9:30 PM",
-    purok: "Purok Bilabid 1",
+    date: "2026-07-11",
+    time: "4:30 PM",
+    purok: "Purok Sara-Sara 1",
     details: "Loud music played repeatedly past midnight.",
     confidential: "Yes (Public-hidden)",
-    attachments: ["Image_127.jpg", "Video_127.mp4"],
+    attachments: [],
     responses: [
       {
-        date: "2026-01-19",
-        time: "9:30 PM",
+        date: "2026-07-11",
+        time: "4:30 PM",
         text: "Complaint acknowledged. We have dispatched an officer to investigate.",
       },
     ],
     history: [
-      { label: "Submitted",    status: "Pending",     date: "2026-01-19", time: "9:30 PM" },
-      { label: "Acknowledged", status: "In Progress", date: "2026-01-19", time: "9:45 PM" },
-    ],
-  },
-  {
-    id: "119",
-    title: "Illegal dumping near canal",
-    category: "Waste Management",
-    priority: "Normal",
-    status: "Resolved",
-    date: "2026-01-08",
-    time: "3:10 PM",
-    purok: "Purok Bilabid 3",
-    details: "Garbage being dumped beside the canal regularly.",
-    confidential: "Yes (Public-hidden)",
-    attachments: ["Image_119.jpg"],
-    responses: [
       {
-        date: "2026-01-10",
-        time: "10:00 AM",
-        text: "Clean-up crew has been deployed. Area has been cleared.",
+        label: "Submitted",
+        status: "Pending",
+        date: "2026-07-11",
+        time: "4:30 PM",
       },
-    ],
-    history: [
-      { label: "Submitted",  status: "Pending",     date: "2026-01-08", time: "3:10 PM" },
-      { label: "Reviewed",   status: "In Progress", date: "2026-01-09", time: "8:00 AM" },
-      { label: "Resolved",   status: "Resolved",    date: "2026-01-10", time: "10:30 AM" },
-    ],
-  },
-  {
-    id: "128",
-    title: "Vehicles blocking driveways",
-    category: "Illegal Parking",
-    priority: "Normal",
-    status: "Pending",
-    date: "2026-01-07",
-    time: "10:00 AM",
-    purok: "Purok Aguma-a 2",
-    details: "Multiple vehicles blocking residential driveways on Purok 2.",
-    confidential: "No",
-    attachments: [],
-    responses: [],
-    history: [
-      { label: "Submitted", status: "Pending", date: "2026-01-07", time: "10:00 AM" },
+      {
+        label: "Acknowledged",
+        status: "In Progress",
+        date: "2026-07-11",
+        time: "4:45 PM",
+      },
     ],
   },
 ];
 
 let _lastFocusedViewBtn = null;
+let complaints = [];
+
+function getStoredComplaints() {
+  try {
+    return JSON.parse(localStorage.getItem("bsccarsComplaints")) || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function formatComplaintNumber(value) {
+  const raw = String(value || "").trim();
+  if (/^CMP-\d{4}-\d{4}$/.test(raw)) {
+    return raw;
+  }
+
+  const yearSequence = raw.match(/(?:#C-)?(?:CMP-)?(\d{4})[-\s]?(\d+)/);
+  if (yearSequence) {
+    return `CMP-${yearSequence[1]}-${yearSequence[2].padStart(4, "0").slice(-4)}`;
+  }
+
+  const sequenceOnly = raw.match(/^(\d+)$/);
+  if (sequenceOnly) {
+    return `CMP-2026-${sequenceOnly[1].padStart(4, "0").slice(-4)}`;
+  }
+
+  return raw;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  renderTable();
-  initSignOut();
+  loadComplaints();
   initModalClose();
   initEscapeKey();
 });
 
-function initSignOut() {
-  const btn = document.getElementById("signoutBtn") || document.querySelector(".signout");
-  if (!btn) return;
-  btn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to sign out?")) {
-      sessionStorage.removeItem("residentSignedIn");
-      window.location.href = "sign_in.html";
-    }
-  });
+function currentUserId() {
+  try {
+    return JSON.parse(localStorage.getItem("user"))?.id || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function normalizeStatus(status) {
+  const key = String(status || "Pending")
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-");
+  if (["resolved", "closed", "completed"].includes(key)) return "Resolved";
+  if (["in-progress", "progress", "ongoing"].includes(key))
+    return "In Progress";
+  return "Pending";
+}
+
+function normalizeApiComplaint(complaint) {
+  const created = new Date(
+    complaint.createdAt || complaint.submittedAt || Date.now(),
+  );
+  const attachments = Array.isArray(complaint.attachments)
+    ? complaint.attachments
+        .map((item) => {
+          if (typeof item === "string") return { name: item, type: "", url: "" };
+          return {
+            name: item.originalName || item.name || "",
+            type: item.type || "",
+            url: item.path || item.url || "",
+          };
+        })
+        .filter((item) => item.name)
+    : [];
+  const status = normalizeStatus(complaint.status);
+  const apiHistory = Array.isArray(complaint.statusHistory)
+    ? complaint.statusHistory.map((item) => {
+        const itemDate = new Date(item.createdAt || created);
+        return {
+          label: item.label || "Status updated",
+          status: normalizeStatus(item.newStatus || item.status),
+          date: itemDate.toISOString().slice(0, 10),
+          time: itemDate.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+        };
+      })
+    : [];
+  return {
+    id: formatComplaintNumber(complaint.id || complaint.referenceId),
+    referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
+    title: complaint.title || "Untitled complaint",
+    category: complaint.category || "Uncategorized",
+    priority: complaint.priority || "Normal",
+    status,
+    date: complaint.incidentDate || created.toISOString().slice(0, 10),
+    time:
+      complaint.incidentTime ||
+      created.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    purok: complaint.purok || "",
+    details: complaint.details || "",
+    confidential: complaint.confidential || "No",
+    attachments,
+    responses: complaint.adminNotes
+      ? [
+          {
+            date: new Date().toISOString().slice(0, 10),
+            time: "",
+            text: complaint.adminNotes,
+          },
+        ]
+      : [],
+    history: apiHistory.length
+      ? apiHistory
+      : [
+          {
+            label: "Submitted",
+            status: "Pending",
+            date: created.toISOString().slice(0, 10),
+            time: "",
+          },
+          ...(status !== "Pending"
+            ? [
+                {
+                  label: "Updated",
+                  status,
+                  date: created.toISOString().slice(0, 10),
+                  time: "",
+                },
+              ]
+            : []),
+        ],
+  };
+}
+
+async function loadComplaints() {
+  const localComplaints = getStoredComplaints();
+  try {
+    const userId = currentUserId();
+    const response = await api.getComplaints(
+      userId ? { submitterId: userId } : {},
+    );
+    const apiComplaints = Array.isArray(response?.data) ? response.data : [];
+    complaints = [
+      ...apiComplaints.map(normalizeApiComplaint),
+      ...localComplaints,
+    ].map((complaint) => ({
+      ...complaint,
+      status: normalizeStatus(complaint.status),
+      id: formatComplaintNumber(complaint.id || complaint.referenceId),
+      referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
+    }));
+  } catch (error) {
+    complaints = [...localComplaints, ...sampleComplaints].map((complaint) => ({
+      ...complaint,
+      status: normalizeStatus(complaint.status),
+      id: formatComplaintNumber(complaint.id || complaint.referenceId),
+      referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
+    }));
+  }
+
+  renderTable();
 }
 
 function renderTable() {
@@ -152,15 +262,18 @@ function openDetailModal(complaint, triggerBtn) {
 
   _lastFocusedViewBtn = triggerBtn || null;
 
-  setText("detailModalTitle", `Complaint #${complaint.id} — Detail View`);
-  setText("detailId",          complaint.id);
-  setText("detailCategory",    complaint.category);
-  setText("detailPurok",       complaint.purok);
-  setText("detailPriority",    complaint.priority);
-  setText("detailConfidential",complaint.confidential);
-  setText("detailDate",        complaint.date);
-  setText("detailTime",        complaint.time);
-  setText("detailDetails",     complaint.details);
+  setText(
+    "detailModalTitle",
+    `${formatComplaintNumber(complaint.id)} - Detail View`,
+  );
+  setText("detailId", formatComplaintNumber(complaint.id));
+  setText("detailCategory", complaint.category);
+  setText("detailPurok", complaint.purok);
+  setText("detailPriority", complaint.priority);
+  setText("detailConfidential", complaint.confidential);
+  setText("detailDate", complaint.date);
+  setText("detailTime", complaint.time);
+  setText("detailDetails", complaint.details);
 
   buildAttachments(complaint.attachments);
   buildResponses(complaint.responses);
@@ -219,12 +332,46 @@ function buildAttachments(attachments) {
   if (!attachments || attachments.length === 0) {
     const msg = document.createElement("p");
     msg.className = "detail-empty-msg";
-    msg.textContent = "No attachments.";
+    msg.textContent = "No attachments uploaded.";
     container.appendChild(msg);
     return;
   }
 
-  attachments.forEach((filename) => {
+  attachments.forEach((attachment) => {
+    const filename =
+      typeof attachment === "string" ? attachment : attachment.name || "";
+    const type = typeof attachment === "string" ? "" : attachment.type || "";
+    const url = typeof attachment === "string" ? "" : attachment.url || "";
+    const isVideo = type === "video" || /\.(mp4|mov|avi)$/i.test(filename);
+    const isImage =
+      type === "image" || /\.(jpe?g|png|gif|webp)$/i.test(filename);
+    const preview = document.createElement("article");
+    preview.className = "attachment-preview";
+
+    if (url && (isImage || isVideo)) {
+      if (isImage) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.setAttribute("aria-label", `Open image: ${filename}`);
+        const image = document.createElement("img");
+        image.src = url;
+        image.alt = filename;
+        image.addEventListener("error", () => {
+          link.replaceWith(createAttachmentUnavailableMessage());
+        });
+        link.appendChild(image);
+        preview.appendChild(link);
+      } else {
+        const video = document.createElement("video");
+        video.src = url;
+        video.controls = true;
+        video.preload = "metadata";
+        video.setAttribute("aria-label", filename);
+        preview.appendChild(video);
+      }
+    }
     const tag = document.createElement("div");
     tag.className = "attachment-tag";
 
@@ -238,8 +385,16 @@ function buildAttachments(attachments) {
 
     tag.appendChild(icon);
     tag.appendChild(name);
-    container.appendChild(tag);
+    preview.appendChild(tag);
+    container.appendChild(preview);
   });
+}
+
+function createAttachmentUnavailableMessage() {
+  const message = document.createElement("p");
+  message.className = "attachment-unavailable";
+  message.textContent = "Preview unavailable";
+  return message;
 }
 
 function buildResponses(responses) {
@@ -301,17 +456,19 @@ function buildTimeline(history) {
   history.forEach((item) => {
     const statusKey = item.status.toLowerCase().replace(/\s+/g, "-");
 
-    const dotClass = {
-      "pending":     "dot-pending",
-      "in-progress": "dot-progress",
-      "resolved":    "dot-resolved",
-    }[statusKey] || "dot-pending";
+    const dotClass =
+      {
+        pending: "dot-pending",
+        "in-progress": "dot-progress",
+        resolved: "dot-resolved",
+      }[statusKey] || "dot-pending";
 
-    const statusClass = {
-      "pending":     "s-pending",
-      "in-progress": "s-progress",
-      "resolved":    "s-resolved",
-    }[statusKey] || "s-pending";
+    const statusClass =
+      {
+        pending: "s-pending",
+        "in-progress": "s-progress",
+        resolved: "s-resolved",
+      }[statusKey] || "s-pending";
 
     const timelineItem = document.createElement("div");
     timelineItem.className = "timeline-item";

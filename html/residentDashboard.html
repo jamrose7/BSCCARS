@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/residentDashboard.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
   </head>
 
   <body>
@@ -17,8 +18,12 @@
       </div>
 
       <div class="top-right">
-        <span>🔔</span>
-        <span>👤</span>
+        <button class="icon-badge" aria-label="Notifications">
+          <img src="../images/notification_icon.png" alt="Notifications" class="notification-icon"/>
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img src="../images/profile_icon.png" alt="Profile" class="profile-icon"/>
+        </button>
       </div>
     </header>
 
@@ -27,23 +32,30 @@
         <ul>
           <li>
             <a class="active" href="residentDashboard.html">
-              <span class="menu-icon">🏠</span> Dashboard</a>
+            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon"/>
+            Dashboard</a>
           </li>
           <li>
             <a href="submitComplaint.html">
-              <span class="menu-icon">📝</span> Submit Complaint</a>
+              <img src="../images/submit_complaint_icon.png" alt="Submit Complaint" class="sidebar-icon"/>
+              Submit Complaint</a>
           </li>
           <li>
             <a href="myComplaints.html">
-              <span class="menu-icon">📋</span> My Complaints</a>
+              <img src="../images/my_complaints_icon.png" alt="My Complaints" class="sidebar-icon"/>
+              My complaints</a>
           </li>
           <li>
             <a href="publicFeed.html">
-              <span class="menu-icon">🌐</span> Public Feed</a>
+              <img src="../images/public_feed_icon.png" alt="Public Feed" class="sidebar-icon"/>
+              Public Feed</a>
           </li>
         </ul>
 
-        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img src="../images/sign-out_icon.png" alt="Sign out" class="sidebar-icon"/>
+          Sign out
+        </div>
       </aside>
 
       <main class="content">
@@ -56,59 +68,61 @@
             </p>
           </div>
           <div class="badge-pill">
-            <span class="badge-icon">🏅</span>
-            Verified Resident
+            <span class="badge-icon">
+            <img src="../images/badge_icon.png" alt="Users" class="sidebar-icon"/>
+           Verified Resident</span>
           </div>
         </div>
 
         <div class="cards">
           <div class="card total">
             <h3>TOTAL</h3>
-            <p class="number">12</p>
-            <span>(+2 this week)</span>
+            <p class="number" id="residentTotalComplaints">--</p>
+            <span>Live complaints</span>
           </div>
 
           <div class="card pending">
             <h3>PENDING</h3>
-            <p class="number">3</p>
-            <span>(Needs review)</span>
+            <p class="number" id="residentPendingComplaints">--</p>
+            <span>Needs review</span>
           </div>
 
           <div class="card progress">
             <h3>IN PROGRESS</h3>
-            <p class="number">2</p>
-            <span>(Ongoing)</span>
+            <p class="number" id="residentProgressComplaints">--</p>
+            <span>Ongoing</span>
           </div>
 
           <div class="card resolved">
             <h3>RESOLVED</h3>
-            <p class="number">7</p>
-            <span>(Completed)</span>
+            <p class="number" id="residentResolvedComplaints">--</p>
+            <span>Completed</span>
           </div>
         </div>
 
-        <div class="alert">⚠️ High Priority Complaints: <strong>1</strong></div>
+        <div class="alert">
+          High Priority Complaints:
+          <strong id="residentHighPriorityComplaints">--</strong>
+        </div>
 
         <a class="btn" href="myComplaints.html">View My Complaints</a>
 
-        <div class="last-action">
-          🕒 Last Admin Action: <strong>#127</strong> → Status changed to In
-          Progress<br />
-          01-19-2026, 9:30 PM
+        <div class="last-action" id="residentLastAction">
+          Loading latest complaint activity...
         </div>
 
         <div class="activity">
           <h3>Recent Activity</h3>
-          <ul>
-            <li>#127 → Status changed to In Progress (01-19-2026, 9:30 PM)</li>
-            <li>#119 → Resolved (01-18-2026, 4:10 PM)</li>
-            <li>#118 → Admin responded (01-18-2026, 2:05 PM)</li>
-          </ul>
+          <ul id="residentRecentActivity"></ul>
         </div>
       </main>
     </div>
 
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
     <script src="../js/residentDashboard.js"></script>
   </body>
 </html>

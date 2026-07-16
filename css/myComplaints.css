@@ -119,25 +119,28 @@
 }
 
 .sidebar-icon {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter:brightness(0) saturate(100%) invert(100%);
 }
 
 .signout {
   margin-top: auto;
-  padding: 14px 16px;
-  border-radius: 14px;
+  display:inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 16px;
   text-align: center;
   background: rgba(255, 255, 255, 0.08);
   color: #eef7f7;
+  text-align: center;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.25s ease, transform 0.2s ease;
 }
 
 .signout:hover {
@@ -434,7 +437,43 @@
 .detail-attachments {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
+}
+
+.attachment-preview {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 260px);
+  overflow: hidden;
+  border: 1px solid rgba(168, 216, 212, 0.2);
+  border-radius: 12px;
+  background: rgba(4, 31, 35, 0.38);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.attachment-preview img,
+.attachment-preview video {
+  display: block;
+  width: 100%;
+  height: 168px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.attachment-preview a:focus-visible {
+  outline: 2px solid #a8d8d4;
+  outline-offset: 3px;
+}
+
+.attachment-unavailable {
+  display: grid;
+  min-height: 108px;
+  margin: 0;
+  padding: 16px;
+  place-items: center;
+  color: rgba(232, 244, 244, 0.7);
+  font-size: 0.86rem;
+  font-style: italic;
 }
 
 .attachment-tag {
@@ -442,12 +481,13 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1a7c8d, #0f5567);
+  border-radius: 0;
+  background: rgba(26, 124, 141, 0.5);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 600;
   word-break: break-all;
+  min-height: 42px;
 }
 
 .response-entry {

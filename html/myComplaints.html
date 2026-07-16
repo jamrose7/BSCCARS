@@ -5,6 +5,7 @@
     <title>My Complaints - BSCCARS</title>
 
     <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
     <link rel="stylesheet" href="../css/myComplaints.css" />
     <link
       rel="icon"
@@ -19,8 +20,20 @@
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
       <div class="top-right">
-        <span class="icon">🔔</span>
-        <span class="icon">👤</span>
+        <button class="icon-badge" aria-label="Notifications">
+          <img
+            src="../images/notification_icon.png"
+            alt="Notifications"
+            class="notification-icon"
+          />
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img
+            src="../images/profile_icon.png"
+            alt="Profile"
+            class="profile-icon"
+          />
+        </button>
       </div>
     </header>
 
@@ -28,20 +41,27 @@
       <aside class="sidebar">
         <nav class="sidebar-menu">
           <a href="residentDashboard.html">
-            <span class="sidebar-icon">🏠</span> Dashboard
+            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon"/>
+            Dashboard
           </a>
           <a href="submitComplaint.html">
-            <span class="sidebar-icon">📝</span> Submit Complaint
+            <img src="../images/submit_complaint_icon.png" alt="Submit Complaint" class="sidebar-icon"/>
+            Submit Complaint
           </a>
           <a class="active" href="myComplaints.html" aria-current="page">
-            <span class="sidebar-icon">📋</span> My Complaints
+            <img src="../images/my_complaints_icon.png" alt="My Complaints" class="sidebar-icon"/>
+            My Complaints
           </a>
           <a href="publicFeed.html">
-            <span class="sidebar-icon">🌐</span> Public Feed
+            <img src="../images/public_feed_icon.png" alt="Public Feed" class="sidebar-icon"/>
+            Public Feed
           </a>
         </nav>
 
-        <div class="signout"><span class="sidebar-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img src="../images/sign-out_icon.png" alt="Sign out" class="menu-icon"/>
+          Sign out
+        </div>
       </aside>
 
       <section class="content">
@@ -98,7 +118,22 @@
         <div class="detail-modal-body">
           <div class="detail-card">
             <div class="detail-card-header">
-              <span class="detail-card-icon">📄</span>
+              <span class="detail-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                class="lucide lucide-info-icon lucide-info">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+              </span>
               <h3>Complaint Information</h3>
             </div>
             <div class="detail-grid">
@@ -111,7 +146,7 @@
                 <span class="detail-value" id="detailCategory">—</span>
               </div>
               <div class="detail-field">
-                <span class="detail-label">Purok / Sitio</span>
+                <span class="detail-label">Purok</span>
                 <span class="detail-value" id="detailPurok">—</span>
               </div>
               <div class="detail-field">
@@ -139,17 +174,41 @@
 
           <div class="detail-card">
             <div class="detail-card-header">
-              <span class="detail-card-icon">📎</span>
+              <span class="detail-card-icon"> 
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                class="lucide lucide-paperclip-icon lucide-paperclip">
+                <path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg></span>
               <h3>Attachments</h3>
             </div>
             <div class="detail-attachments" id="detailAttachments">
-              <p class="detail-empty-msg">No attachments.</p>
+              <p class="detail-empty-msg">No attachments uploaded.</p>
             </div>
           </div>
 
           <div class="detail-card">
             <div class="detail-card-header">
-              <span class="detail-card-icon">💬</span>
+              <span class="detail-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                class="lucide lucide-message-circle-more-icon lucide-message-circle-more">
+                <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
+                </svg>
+              </span>
               <h3>Admin Responses</h3>
             </div>
             <div id="detailResponses">
@@ -159,7 +218,20 @@
 
           <div class="detail-card">
             <div class="detail-card-header">
-              <span class="detail-card-icon">🕓</span>
+              <span class="detail-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                class="lucide lucide-history-icon lucide-history">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+              </span>
               <h3>Status History</h3>
             </div>
             <div class="detail-timeline" id="detailTimeline">
@@ -170,7 +242,11 @@
       </div>
     </div>
 
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
     <script src="../js/myComplaints.js"></script>
   </body>
 </html>

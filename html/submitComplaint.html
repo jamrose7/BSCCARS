@@ -6,12 +6,14 @@
     <title>Submit Complaint - BSCCARS</title>
 
     <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
     <link rel="stylesheet" href="../css/submitComplaint.css" />
 
     <link
       rel="icon"
       type="image/png"
-      href="/images/favicon_io/favicon-32x32.png"/>
+      href="/images/favicon_io/favicon-32x32.png"
+    />
   </head>
 
   <body>
@@ -22,8 +24,20 @@
       </div>
 
       <div class="top-right">
-        <span class="icon">🔔</span>
-        <span class="icon">👤</span>
+        <button class="icon-badge" aria-label="Notifications">
+          <img
+            src="../images/notification_icon.png"
+            alt="Notifications"
+            class="notification-icon"
+          />
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img
+            src="../images/profile_icon.png"
+            alt="Profile"
+            class="profile-icon"
+          />
+        </button>
       </div>
     </header>
 
@@ -31,16 +45,47 @@
       <aside class="sidebar">
         <nav class="sidebar-menu">
           <a href="residentDashboard.html">
-            <span class="sidebar-icon">🏠</span> Dashboard</a>
-          <a class="active" href="submitComplaint.html" aria-current="page">
-            <span class="sidebar-icon">📝</span> Submit Complaint</a>
-          <a href="myComplaints.html">
-            <span class="sidebar-icon">📋</span> My Complaints</a>
+            <img
+              src="../images/dashboard_icon.png"
+              alt="Dashboard"
+              class="sidebar-icon"
+            />
+            Dashboard
+          </a>
+          <a class="active" href="submitComplaint.html">
+            <img
+              src="../images/submit_complaint_icon.png"
+              alt="Submit Complaint"
+              class="sidebar-icon"
+            />
+            Submit Complaint
+          </a>
+          <a href="myComplaints.html" aria-current="page">
+            <img
+              src="../images/my_complaints_icon.png"
+              alt="My Complaints"
+              class="sidebar-icon"
+            />
+            My Complaints
+          </a>
           <a href="publicFeed.html">
-            <span class="sidebar-icon">🌐</span> Public Feed</a>
+            <img
+              src="../images/public_feed_icon.png"
+              alt="Public Feed"
+              class="sidebar-icon"
+            />
+            Public Feed
+          </a>
         </nav>
 
-        <div class="signout"><span class="sidebar-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img
+            src="../images/sign-out_icon.png"
+            alt="Sign out"
+            class="sidebar-icon"
+          />
+          Sign out
+        </div>
       </aside>
 
       <section class="content">
@@ -51,10 +96,21 @@
               Provide details, location, and priority so barangay staff can
               respond faster.
             </p>
+            <p class="input-help" style="margin-top: 0.5rem">
+              You may describe your complaint in English, Cebuano, Tagalog, or
+              Bisaya — whichever language helps you explain the issue clearly.
+            </p>
           </div>
         </div>
 
         <div class="form-card">
+          <div
+            id="eligibilityBanner"
+            class="warning-banner"
+            style="display: none; margin-bottom: 16px"
+            role="alert"
+            aria-live="polite"
+          ></div>
           <form id="complaintForm">
             <div class="form-group">
               <label>Complaint Title:</label>
@@ -65,16 +121,56 @@
               <label>Complaint Category:</label>
               <select name="categoryId" id="categoryId" required>
                 <option value="" disabled selected>Select a category</option>
-                <option value="Money Debt">Money Debt</option>
-                <option value="Public Disturbance">Public Disturbance</option>
-                <option value="Waste Management">Waste Management</option>
-                <option value="Road Issue">Road Issue</option>
-                <option value="Illegal Parking">Illegal Parking</option>
-                <option value="Property Damage">Property Damage</option>
-                <option value="Animal Concerns">Animal Concerns</option>
-                <option value="Sanitation">Sanitation</option>
-                <option value="Other">Other</option>
+                <optgroup label="── Urgent Categories (Auto High Priority) ──">
+                  <option value="Physical Harm, Violence, or Threats">
+                    Physical Harm, Violence, or Threats
+                  </option>
+                  <option value="Public Health Hazard">
+                    Public Health Hazard
+                  </option>
+                </optgroup>
+                <optgroup label="── General Categories ──">
+                  <option value="Noise and Public Disturbance">
+                    Noise and Public Disturbance
+                  </option>
+                  <option value="Waste, Sanitation, and Environment">
+                    Waste, Sanitation, and Environment
+                  </option>
+                  <option value="Road and Infrastructure">
+                    Road and Infrastructure
+                  </option>
+                  <option value="Property Damage">Property Damage</option>
+                  <option value="Animal Concerns">Animal Concerns</option>
+                  <option value="Money Debt">Money Debt</option>
+                  <option value="Illegal or Criminal Activity">
+                    Illegal or Criminal Activity
+                  </option>
+                  <option value="Other">Other</option>
+                </optgroup>
               </select>
+              <p id="categoryHint" class="input-help" style="display: none"></p>
+              <div
+                id="categoryOtherGroup"
+                class="form-group"
+                style="display: none; margin-top: 12px"
+              >
+                <label for="categoryOtherText">Other:</label>
+                <input
+                  type="text"
+                  name="categoryOtherText"
+                  id="categoryOtherText"
+                  maxlength="100"
+                  disabled
+                  placeholder="Specify complaint category"
+                />
+              </div>
+              <p
+                id="priorityNotice"
+                class="warning-banner"
+                style="display: none; margin-top: 12px"
+                role="alert"
+                aria-live="polite"
+              ></p>
             </div>
 
             <div class="form-group">
@@ -83,12 +179,54 @@
                 name="details"
                 id="details"
                 rows="4"
-                required></textarea>
+                required
+              ></textarea>
             </div>
+
+            <section class="form-group" aria-labelledby="respondentInfoHeading">
+              <h3 id="respondentInfoHeading">Respondent Information</h3>
+              <p class="input-help">
+                Optional. Provide if known. Barangay staff can add or correct
+                this later.
+              </p>
+              <div class="form-row">
+                <div>
+                  <label for="respondentName">Respondent Full Name</label>
+                  <input
+                    type="text"
+                    name="respondentName"
+                    id="respondentName"
+                    maxlength="255"
+                  />
+                </div>
+                <div>
+                  <label for="respondentContactNumber">
+                    Respondent Contact Number
+                  </label>
+                  <input
+                    type="text"
+                    name="respondentContactNumber"
+                    id="respondentContactNumber"
+                    maxlength="20"
+                  />
+                </div>
+                <div>
+                  <label for="respondentAddress">
+                    Respondent Purok
+                  </label>
+                  <input
+                    type="text"
+                    name="respondentAddress"
+                    id="respondentAddress"
+                    maxlength="255"
+                  />
+                </div>
+              </div>
+            </section>
 
             <div class="form-row">
               <div>
-                <label>Purok/Sitio:</label>
+                <label>Purok:</label>
                 <select name="purokId" id="purokId" required>
                   <option value="" disabled selected>Select a location</option>
                   <option value="PUROK AGUMA-A 1">PUROK AGUMA-A 1</option>
@@ -137,25 +275,56 @@
                 type="file"
                 name="image"
                 id="image"
-                accept="image/jpeg,image/jpg,image/png,application/pdf"/>
+                accept="image/jpeg,image/jpg,image/png"
+              />
+              <p class="input-help">
+                Allowed image formats: JPG, JPEG, PNG. Maximum size: 5MB.
+              </p>
+              <p class="input-error" id="imageError"></p>
             </div>
 
             <div class="form-group">
               <label>Attach Video (optional)</label>
               <input type="file" name="video" id="video" accept="video/mp4" />
+              <p class="input-help">
+                Allowed video format: MP4. Maximum size: 10MB. Maximum duration:
+                20 seconds.
+              </p>
+              <p class="input-error" id="videoError"></p>
             </div>
 
             <div class="form-group">
               <label>Priority</label>
-              <div class="radio-group">
-                <label><input
+              <div class="radio-group" id="priorityGroup">
+                <label
+                  ><input
                     type="radio"
                     name="priority"
                     value="normal"
-                    checked/>Normal</label>
-                <label><input type="radio" name="priority" value="high" /> High
-                  Priority</label>
+                    checked
+                  />Normal</label
+                >
+                <label
+                  ><input type="radio" name="priority" value="high" /> High
+                  Priority</label
+                >
               </div>
+              <div
+                id="highPriorityConfirmation"
+                style="display: none; margin-top: 12px"
+              >
+                <label class="toggle">
+                  <input type="checkbox" id="confirmHighPriority" />
+                  <span
+                    >I confirm this is a high priority concern. This is only for
+                    urgent cases that need faster review.</span
+                  >
+                </label>
+              </div>
+              <p id="priorityHelp" class="input-help">
+                Select Normal for routine concerns. High Priority is for
+                emergencies, threats, or urgent hazards that need faster review.
+              </p>
             </div>
 
             <div class="form-group">
@@ -168,6 +337,10 @@
             </div>
 
             <button type="submit" class="btn-submit">Submit Complaint</button>
+            <p class="input-help" style="margin-top: 0.75rem">
+              You may have up to 3 active complaints at a time. New complaints
+              can be submitted once an existing one is resolved.
+            </p>
           </form>
         </div>
       </section>
@@ -179,7 +352,9 @@
         <hr />
 
         <p>Your complaint has been recorded.</p>
-        <p><strong>Reference ID:</strong> <span id="refId">#C-0000</span></p>
+        <p>
+          <strong>Reference ID:</strong> <span id="refId">CMP-2026-0000</span>
+        </p>
         <div id="summaryBlock" class="summary-block" hidden></div>
 
         <h3>What happens next:</h3>
@@ -205,7 +380,11 @@
     </div>
 
     <script src="../js/utils/validators.js"></script>
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
     <script src="../js/submitComplaint.js"></script>
   </body>
 </html>

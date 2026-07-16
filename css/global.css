@@ -4,11 +4,24 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg-base: #081d21;
+  --bg-surface: rgba(7, 40, 46, 0.96);
+  --bg-surface-strong: rgba(7, 50, 57, 0.98);
+  --border-soft: rgba(115, 206, 214, 0.16);
+  --text-primary: #d7edef;
+  --text-secondary: #aac9cc;
+  --text-muted: #91adb0;
+  --text-soft: #e5f3f4;
+  --accent: #61d2cc;
+}
+
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
-  color: #222;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, #071d23 0%, #0d3b47 40%, #0f5561 100%);
 }
 
 button,
@@ -19,6 +32,74 @@ a {
   font-family: inherit;
 }
 
+select {
+  color-scheme: dark;
+  background-color: rgba(12, 58, 70, 0.95);
+  color: var(--text-soft);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+select option {
+  background-color: #0e5e67;
+  color: var(--text-soft);
+}
+
+select option:disabled {
+  color: rgba(238, 247, 247, 0.5);
+}
+
+select option:checked {
+  background-color: #1a9db0;
+  color: #ffffff;
+}
+
 .btn:hover {
   background-color: #0c2f36;
+}
+
+img.sidebar-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+img.menu-icon {
+  filter: brightness(0) saturate(100%) invert(100%) contrast(120%);
+  image-rendering: auto;
+}
+
+.signout img {
+  margin-right: 10px;
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(8, 39, 48, 0.72);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.icon-badge:hover {
+  background: rgba(10, 56, 68, 0.78);
+  transform: translateY(-2px);
+}
+
+.notification-icon,
+.profile-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter: brightness(0) saturate(100%) invert(100%);
 }
