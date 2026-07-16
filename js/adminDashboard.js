@@ -1,39 +1,10 @@
 const DASHBOARD_REFRESH_MS = 5000;
 
 document.addEventListener("DOMContentLoaded", () => {
-  initSignout();
   loadDashboardStats();
   setInterval(loadDashboardStats, DASHBOARD_REFRESH_MS);
   window.addEventListener("focus", loadDashboardStats);
 });
-
-function initSignout() {
-  const signout = document.querySelector(".signout");
-
-  if (!signout) {
-    return;
-  }
-
-  signout.addEventListener("click", async () => {
-    const confirmSignout = confirm("Are you sure you want to sign out?");
-    if (!confirmSignout) return;
-
-    try {
-      if (typeof api !== "undefined" && api.logout) {
-        await api.logout();
-      } else {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-      }
-    } catch (e) {
-      console.warn("Logout failed, clearing local storage as fallback", e);
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-    }
-
-    window.location.href = "sign_in.html";
-  });
-}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -122,7 +93,7 @@ async function loadDashboardStats() {
     ]);
     const data = response?.data || {};
     const approvedResidents = getStoredList("bsccarsApprovedResidents").filter(
-      (resident) => /^2026\d{3}$/.test(String(resident.id || "")),
+      (resident) => /^RES-2026-\d{3}$/.test(String(resident.id || "")),
     );
 
     setText("totalResidents", Number(data.totalResidents || 0) + approvedResidents.length);
