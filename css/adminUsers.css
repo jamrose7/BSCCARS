@@ -148,9 +148,29 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.action-archive:hover {
+  background: rgba(255, 206, 84, 0.22);
+  color: #ffd166;
+}
+
 .action-delete:hover {
   background: rgba(255, 107, 107, 0.2);
   color: #ff6b6b;
+}
+
+.archive-toggle-control {
+  margin-top: 12px;
+  color: #d8eef1;
+  font-size: 0.95rem;
+}
+
+.archive-toggle-control input {
+  margin-right: 8px;
+}
+
+.archive-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .export-controls {
@@ -176,6 +196,51 @@
 
 .activity-section {
   margin-top: 40px;
+}
+
+.archive-panel {
+  margin-bottom: 40px;
+}
+
+.archive-list {
+  display: grid;
+  gap: 12px;
+}
+
+.archive-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.archive-card strong {
+  color: #f7fbff;
+}
+
+.archive-card span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(238, 247, 247, 0.72);
+}
+
+.archive-card button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #eef7f7;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.archive-card button:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .activity-section h2 {
@@ -209,6 +274,7 @@
 .activity-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
 
 .modal-overlay {
   position: fixed;
@@ -313,6 +379,16 @@
   border-color: #4ecdc4;
 }
 
+.form-group select option {
+  background: #123a40;
+  color: #eef7f7;
+}
+
+.form-group select option:checked {
+  background: #1a7c8d;
+  color: #ffffff;
+}
+
 .form-group input::placeholder {
   color: rgba(238, 247, 247, 0.6);
 }
@@ -407,4 +483,10 @@
     padding: 12px 8px;
     font-size: 0.8rem;
   }
+}
+
+.export-status {
+  color: rgba(238, 247, 247, 0.86);
+  font-size: 0.9rem;
+  min-height: 1.2em;
 }
