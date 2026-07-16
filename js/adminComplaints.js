@@ -8,7 +8,7 @@ let liveComplaints = [];
 let activeStatusFilter = "";
 let activePriorityFilter = "";
 document.addEventListener("DOMContentLoaded", () => {
-  initSignOut();
+  restrictAssistantAdminActions();
   initModalBackdrop();
   initEscapeKey();
   initComplaintFilters();
@@ -19,16 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
   renderArchivedComplaints();
 });
 
-function initSignOut() {
-  const signoutBtn = document.querySelector(".signout");
-  if (!signoutBtn) return;
+function restrictAssistantAdminActions() {
+  try {
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    if (user.role !== "assistant_admin") return;
 
-  signoutBtn.addEventListener("click", () => {
-    const confirmed = window.confirm("Are you sure you want to sign out?");
-    if (confirmed) {
-      window.location.href = "index.html";
-    }
-  });
+    document
+      .querySelectorAll('button[onclick="archiveCurrentComplaint()"]')
+      .forEach((button) => button.remove());
+  } catch (error) {
+    // The server remains the authority for permissions.
+  }
 }
 
 function viewComplaint(btn) {
@@ -54,6 +55,9 @@ function viewComplaint(btn) {
   setTextById("complaintPriority", d.priority);
   setTextById("complaintConfidential", d.confidential);
   setTextById("complaintTitle", d.title);
+  setTextById("complaintPurok", d.purok || "Not specified");
+  setTextById("complaintIncidentDate", formatIncidentDate(d.date));
+  setTextById("complaintIncidentTime", d.time || "Not specified");
   setTextById("complaintDetails", d.details);
 
   const statusSelect = document.getElementById("statusSelect");
@@ -460,8 +464,12 @@ function normalizeComplaintForTable(complaint) {
   const attachments = Array.isArray(complaint.attachments)
     ? complaint.attachments
     : [];
-  const imageAttachment = attachments.find((item) => item.type === "image");
-  const videoAttachment = attachments.find((item) => item.type === "video");
+  const imageAttachment = attachments.find(
+    (item) => attachmentType(item) === "image",
+  );
+  const videoAttachment = attachments.find(
+    (item) => attachmentType(item) === "video",
+  );
   return {
     id: complaint.id,
     name:
@@ -473,21 +481,57 @@ function normalizeComplaintForTable(complaint) {
     middleName: complainant.middleName || "",
     lastName: complainant.lastName || "",
     category: complaint.category || "Uncategorized",
+    purok: complaint.purok || "",
     source: complaint.source || "Digital Submission",
     priority: complaint.priority || "Normal",
     status: normalizeStatus(complaint.status) || "pending",
     title: complaint.title || "Untitled complaint",
     details: complaint.details || "",
+    date: complaint.incidentDate || complaint.date || "",
+    time: complaint.incidentTime || complaint.time || "",
     respondent_name: complaint.respondent_name || "",
     respondent_contact_number: complaint.respondent_contact_number || "",
     respondent_address: complaint.respondent_address || "",
     confidential: complaint.confidential || "No",
-    image: imageAttachment?.path || imageAttachment?.originalName || "",
-    video: videoAttachment?.path || videoAttachment?.originalName || "",
+    image: attachmentLocation(imageAttachment),
+    video: attachmentLocation(videoAttachment),
     note: complaint.adminNotes || "",
     respondent_email:
       complaint.respondent_email || complaint.respondentEmail || "",
   };
+}
+
+function attachmentType(attachment) {
+  if (typeof attachment === "object" && attachment?.type) {
+    return String(attachment.type).toLowerCase();
+  }
+
+  const filename =
+    typeof attachment === "string"
+      ? attachment
+      : attachment?.originalName || attachment?.name || "";
+  return /\.(jpe?g|png|gif|webp)$/i.test(filename)
+    ? "image"
+    : /\.(mp4|webm|mov)$/i.test(filename)
+      ? "video"
+      : "";
+}
+
+function attachmentLocation(attachment) {
+  if (typeof attachment === "string") return attachment;
+  return (
+    attachment?.path ||
+    attachment?.url ||
+    attachment?.originalName ||
+    attachment?.name ||
+    ""
+  );
+}
+
+function formatIncidentDate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "Not specified";
+  return raw;
 }
 
 function initModalBackdrop() {
@@ -523,7 +567,7 @@ function buildEvidence(image, video) {
     const msg = document.createElement("p");
     msg.style.cssText =
       "color: rgba(255,255,255,0.45); font-style: italic; margin: 0;";
-    msg.textContent = "No evidence attached.";
+    msg.textContent = "No attachments uploaded.";
     container.appendChild(msg);
     return;
   }
@@ -609,7 +653,7 @@ function removeEvidence(filename, cardElement) {
     const msg = document.createElement("p");
     msg.style.cssText =
       "color: rgba(255,255,255,0.45); font-style: italic; margin: 0;";
-    msg.textContent = "No evidence attached.";
+    msg.textContent = "No attachments uploaded.";
     container.appendChild(msg);
   }
 }
@@ -1104,6 +1148,9 @@ function getComplaintDataFromButton(button) {
     status: data.status || "pending",
     title: data.title || "",
     details: data.details || "",
+    purok: data.purok || "",
+    date: data.date || "",
+    time: data.time || "",
     confidential: data.confidential || "",
     image: data.image || "",
     video: data.video || "",
