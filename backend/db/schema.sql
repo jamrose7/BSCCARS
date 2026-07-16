@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
-  id CHAR(7) PRIMARY KEY,
+  id VARCHAR(20) PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role ENUM('resident', 'assistant_admin', 'super_admin') NOT NULL DEFAULT 'resident',
@@ -13,12 +13,12 @@ CREATE TABLE IF NOT EXISTS users (
   restricted_until DATE NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT chk_users_id_format CHECK (id REGEXP '^2026[0-9]{3}$')
+  CONSTRAINT chk_users_id_format CHECK (id REGEXP '^(RES|ADM)-2026-[0-9]{3}$')
 );
 
 CREATE TABLE IF NOT EXISTS resident_warnings (
   id VARCHAR(64) PRIMARY KEY,
-  resident_id CHAR(7) NOT NULL,
+  resident_id VARCHAR(20) NOT NULL,
   complaint_id VARCHAR(32) NULL,
   warning_type ENUM('duplicate_submission', 'under_review', 'restriction_applied') NOT NULL,
   reason TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE INDEX idx_users_status ON users (status);
 
 CREATE TABLE IF NOT EXISTS complaints (
   id VARCHAR(32) PRIMARY KEY,
-  submitter_id CHAR(7) NOT NULL,
+  submitter_id VARCHAR(20) NOT NULL,
   title VARCHAR(120) NOT NULL,
   category VARCHAR(150) NOT NULL,
   category_base VARCHAR(100) NULL,
@@ -87,7 +87,7 @@ CREATE INDEX idx_complaint_attachments_complaint ON complaint_attachments (compl
 CREATE TABLE IF NOT EXISTS complaint_comments (
   id VARCHAR(64) PRIMARY KEY,
   complaint_id VARCHAR(32) NOT NULL,
-  author_id CHAR(7) NOT NULL,
+  author_id VARCHAR(20) NOT NULL,
   comment TEXT NOT NULL,
   is_internal BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -101,7 +101,7 @@ CREATE INDEX idx_complaint_comments_internal ON complaint_comments (is_internal)
 CREATE TABLE IF NOT EXISTS complaint_status_history (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   complaint_id VARCHAR(32) NOT NULL,
-  changed_by CHAR(7) NOT NULL,
+  changed_by VARCHAR(20) NOT NULL,
   previous_status VARCHAR(30) NULL,
   new_status VARCHAR(30) NOT NULL,
   notes TEXT NULL,
@@ -114,7 +114,7 @@ CREATE INDEX idx_status_history_complaint ON complaint_status_history (complaint
 
 CREATE TABLE IF NOT EXISTS notifications (
   id VARCHAR(64) PRIMARY KEY,
-  user_id CHAR(7) NOT NULL,
+  user_id VARCHAR(20) NOT NULL,
   title VARCHAR(150) NOT NULL,
   message TEXT NOT NULL,
   is_read BOOLEAN NOT NULL DEFAULT FALSE,
@@ -127,7 +127,7 @@ CREATE INDEX idx_notifications_user_read ON notifications (user_id, is_read);
 
 CREATE TABLE IF NOT EXISTS activity_logs (
   id VARCHAR(64) PRIMARY KEY,
-  user_id CHAR(7) NULL,
+  user_id VARCHAR(20) NULL,
   action VARCHAR(150) NOT NULL,
   target_type VARCHAR(50) NULL,
   target_id VARCHAR(64) NULL,
@@ -143,7 +143,7 @@ CREATE INDEX idx_activity_logs_created_at ON activity_logs (created_at);
 CREATE TABLE IF NOT EXISTS hearing_notices (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   complaint_id VARCHAR(32) NOT NULL,
-  generated_by CHAR(7) NOT NULL,
+  generated_by VARCHAR(20) NOT NULL,
   hearing_date DATE NULL,
   hearing_time TIME NULL,
   stage ENUM('first_mediation', 'second_mediation', 'conciliation', 'cfa_issued') NOT NULL DEFAULT 'first_mediation',

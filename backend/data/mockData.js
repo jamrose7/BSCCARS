@@ -26,9 +26,9 @@ const SEED_ID_IMAGES = {
 };
 
 const demoUsersByEmail = {
-  "admin@gmail.com": {
-    id: "2026001",
-    email: "admin@gmail.com",
+  "superadmin@gmail.com": {
+    id: "ADM-2026-001",
+    email: "superadmin@gmail.com",
     role: "super_admin",
     first_name: "Jamiel",
     last_name: "Rosell",
@@ -41,9 +41,9 @@ const demoUsersByEmail = {
     is_restricted: false,
     restricted_until: null,
   },
-  "secretary@gmail.com": {
-    id: "2026002",
-    email: "secretary@gmail.com",
+  "assistantadmin@gmail.com": {
+    id: "ADM-2026-002",
+    email: "assistantadmin@gmail.com",
     role: "assistant_admin",
     first_name: "Kiarah",
     last_name: "Beau",
@@ -57,7 +57,7 @@ const demoUsersByEmail = {
     restricted_until: null,
   },
   "resident@gmail.com": {
-    id: "2026003",
+    id: "RES-2026-003",
     email: "resident@gmail.com",
     role: "resident",
     first_name: "Aeron",
@@ -72,7 +72,7 @@ const demoUsersByEmail = {
     restricted_until: null,
   },
   "jam7@gmail.com": {
-    id: "2026004",
+    id: "RES-2026-004",
     email: "jam7@gmail.com",
     role: "resident",
     first_name: "Jamaica",
@@ -88,7 +88,7 @@ const demoUsersByEmail = {
     restricted_until: null,
   },
   "franz@gmail.com": {
-    id: "2026005",
+    id: "RES-2026-005",
     email: "franz@gmail.com",
     role: "resident",
     first_name: "Franz Antonette",
@@ -104,7 +104,7 @@ const demoUsersByEmail = {
     restricted_until: null,
   },
   "belastanford7@gmail.com": {
-    id: "2026006",
+    id: "RES-2026-006",
     email: "belastanford7@gmail.com",
     role: "resident",
     first_name: "Bela",
@@ -122,8 +122,8 @@ const demoUsersByEmail = {
 };
 
 const demoPasswordHashes = {
-  "admin@gmail.com": bcrypt.hashSync("admin578", PASSWORD_SALT_ROUNDS),
-  "secretary@gmail.com": bcrypt.hashSync("secretary123", PASSWORD_SALT_ROUNDS),
+  "superadmin@gmail.com": bcrypt.hashSync("SuperAdmin2026!", PASSWORD_SALT_ROUNDS),
+  "assistantadmin@gmail.com": bcrypt.hashSync("AssistantAdmin2026!", PASSWORD_SALT_ROUNDS),
   "resident@gmail.com": bcrypt.hashSync("Resident719", PASSWORD_SALT_ROUNDS),
   // Demo password for the 3 pre-approved seed residents below.
   // Change or share with them as needed — it's the same for all three
@@ -134,7 +134,7 @@ const demoPasswordHashes = {
 };
 
 const notificationsByUserId = {
-  2026001: [
+  "ADM-2026-001": [
     {
       id: "ntf-admin-1",
       title: "New resident application",
@@ -150,7 +150,7 @@ const notificationsByUserId = {
       is_read: true,
     },
   ],
-  2026002: [
+  "ADM-2026-002": [
     {
       id: "ntf-assistant-1",
       title: "Weekly permit reminder",
@@ -159,7 +159,7 @@ const notificationsByUserId = {
       is_read: false,
     },
   ],
-  2026003: [
+  "RES-2026-003": [
     {
       id: "ntf-resident-1",
       title: "Complaint received",
@@ -175,7 +175,7 @@ const activityLogs = [];
 const complaints = [
   {
     id: "CMP-2026-0001",
-    submitterId: "2026003",
+    submitterId: "RES-2026-003",
     title: "Loud music past midnight",
     category: "Noise and Public Disturbance",
     purok: "Purok Sara-Sara 1",
@@ -210,10 +210,6 @@ const WARNING_TYPES = {
 // promotePendingResidentToUser() below, carrying over the password
 // hash that was set at registration time so the resident can sign in
 // immediately after approval.
-//
-// The two seed entries below (Liza, Mark) predate the password-hash
-// field, so a fallback demo password is used if you approve them
-// without registration having set one. See promotePendingResidentToUser.
 // ---------------------------------------------------------------
 
 const FALLBACK_SEED_PASSWORD_HASH = bcrypt.hashSync(
@@ -223,7 +219,7 @@ const FALLBACK_SEED_PASSWORD_HASH = bcrypt.hashSync(
 
 const residentApplications = [
   {
-    id: "2026003",
+    id: "RES-2026-003",
     firstName: "Aeron",
     lastName: "Smith",
     middleName: "",
@@ -239,7 +235,7 @@ const residentApplications = [
     is_restricted: false,
   },
   {
-    id: "2026004",
+    id: "RES-2026-004",
     firstName: "Jamaica",
     lastName: "Rosello",
     middleName: "",
@@ -255,7 +251,7 @@ const residentApplications = [
     is_restricted: false,
   },
   {
-    id: "2026005",
+    id: "RES-2026-005",
     firstName: "Franz Antonette",
     lastName: "Rivera",
     middleName: "Almohallas",
@@ -271,7 +267,7 @@ const residentApplications = [
     is_restricted: false,
   },
   {
-    id: "2026006",
+    id: "RES-2026-006",
     firstName: "Bela",
     lastName: "Stanford",
     middleName: "Miller",
@@ -332,17 +328,17 @@ function addActivityLog({
 // ---------------------------------------------------------------
 
 function generateNextUserId() {
-  const idPattern = /^2026\d{3}$/;
+  const idPattern = /^RES-2026-\d{3}$/;
 
   const existingIds = [
     ...Object.values(demoUsersByEmail).map((user) => user.id),
     ...residentApplications.map((resident) => resident.id),
   ].filter((id) => idPattern.test(String(id)));
 
-  const sequences = existingIds.map((id) => Number(String(id).slice(4)));
+  const sequences = existingIds.map((id) => Number(String(id).slice(-3)));
   const nextSequence = sequences.length ? Math.max(...sequences) + 1 : 1;
 
-  return `2026${String(nextSequence).padStart(3, "0")}`;
+  return `RES-2026-${String(nextSequence).padStart(3, "0")}`;
 }
 
 function isEmailRegistered(email) {
