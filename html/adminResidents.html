@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminDashboard.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
     <link rel="stylesheet" href="../css/adminResidents.css" />
   </head>
 
@@ -18,172 +19,151 @@
       </div>
 
       <div class="top-right">
-        <div class="icon-badge">🔔</div>
-        <div class="icon-badge">👤</div>
+        <button class="icon-badge" aria-label="Notifications">
+          <img src="../images/notification_icon.png" alt="Notifications" class="notification-icon"/>
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img src="../images/profile_icon.png" alt="Profile" class="profile-icon"/>
+        </button>
       </div>
     </header>
 
     <div class="dashboard-container">
       <aside class="sidebar">
         <nav>
-          <a href="adminDashboard.html"><span>🏠</span> Dashboard</a>
-          <a href="adminComplaints.html"><span>📋</span> Complaints</a>
-          <a class="active" href="adminResidents.html"
-            ><span>👥</span> Residents</a
-          >
-          <a href="adminReports.html"><span>📊</span> Reports</a>
-          <a href="adminUsers.html"><span>🧑‍💼</span> Users</a>
+          <a href="adminDashboard.html">
+            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon"/>
+            Dashboard</a>
+          <a href="adminComplaints.html">
+            <img src="../images/complaints_icon.png" alt="Complaints" class="sidebar-icon"/>
+            Complaints</a>
+          <a class="active" href="adminResidents.html">
+            <img src="../images/residents_icon.png" alt="Residents" class="sidebar-icon"/>
+            Residents</a>
+          <a href="adminReports.html">
+            <img src="../images/reports_icon.png" alt="Reports" class="sidebar-icon"/>
+            Reports</a>
+          <a href="adminUsers.html">
+            <img src="../images/user_icon.png" alt="Users" class="sidebar-icon"/>
+            Users</a>
         </nav>
-        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img src="../images/sign-out_icon.png" alt="Sign out" class="sidebar-icon"/>
+          Sign out
+        </div>
       </aside>
 
       <main class="main-content">
         <div class="page-heading">
           <div>
             <h2>Residents</h2>
-            <p>Manage and approve pending resident account applications.</p>
+            <p>Manage, approve, archive, and review resident account applications.</p>
           </div>
         </div>
 
         <section class="residents-panel">
-          <h3>Pending Resident Approvals</h3>
-          <table class="residents-table">
-            <thead>
-              <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Middle Name</th>
-                <th>Suffix</th>
-                <th>Date of Birth</th>
-                <th>Purok</th>
-                <th>Contact Number</th>
-                <th>Email Address</th>
-                <th>ID Uploaded</th>
-                <th>Action (Approve or Rejected)</th>
-              </tr>
-            </thead>
-            <tbody id="residentsBody">
-              <tr>
-                <td>Aeron</td>
-                <td>Smith</td>
-                <td>J</td>
-                <td>None</td>
-                <td>05-07-1997</td>
-                <td>Purok Bilabid 1</td>
-                <td>09223157781</td>
-                <td>@aeron77@gmail.com</td>
-                <td>aeronID.jpg</td>
-                <td>
-                  <button
-                    class="btn-action btn-approve"
-                    onclick="approveResident(this)">
-                    Approve
-                  </button>
-                  <button
-                    class="btn-action btn-reject"
-                    onclick="rejectResident(this)">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Bella</td>
-                <td>Stanford</td>
-                <td>M</td>
-                <td>None</td>
-                <td>07-19-2001</td>
-                <td>Purok Aguma-a 2</td>
-                <td>09737862071</td>
-                <td>@bela19@gmail.com</td>
-                <td>belaID.jpg</td>
-                <td>
-                  <button
-                    class="btn-action btn-approve"
-                    onclick="approveResident(this)">
-                    Approve
-                  </button>
-                  <button
-                    class="btn-action btn-reject"
-                    onclick="rejectResident(this)">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Nathalia</td>
-                <td>Rosseau</td>
-                <td>B</td>
-                <td>None</td>
-                <td>08-17-2002</td>
-                <td>Purok Lambay 1</td>
-                <td>09873221076</td>
-                <td>@nathalia17@gmail.com</td>
-                <td>nathaliaID.jpg</td>
-                <td>
-                  <button
-                    class="btn-action btn-approve"
-                    onclick="approveResident(this)">
-                    Approve
-                  </button>
-                  <button
-                    class="btn-action btn-reject"
-                    onclick="rejectResident(this)">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Jim</td>
-                <td>Lim</td>
-                <td>A</td>
-                <td>Jr</td>
-                <td>01-27-1998</td>
-                <td>Purok Aguma-a 1</td>
-                <td>09332871109</td>
-                <td>@jim27@gmail.com</td>
-                <td>jimID.jpg</td>
-                <td>
-                  <button
-                    class="btn-action btn-approve"
-                    onclick="approveResident(this)">
-                    Approve
-                  </button>
-                  <button
-                    class="btn-action btn-reject"
-                    onclick="rejectResident(this)">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>Caleb</td>
-                <td>Nazar</td>
-                <td>T</td>
-                <td>III</td>
-                <td>10-02-1996</td>
-                <td>Purok Bolinao 2</td>
-                <td>09897762213</td>
-                <td>@caleb2@gmail.com</td>
-                <td>calebID.jpg</td>
-                <td>
-                  <button
-                    class="btn-action btn-approve"
-                    onclick="approveResident(this)">
-                    Approve
-                  </button>
-                  <button
-                    class="btn-action btn-reject"
-                    onclick="rejectResident(this)">
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="panel-heading">
+            <h3>Pending Resident Approvals</h3>
+            <label class="archive-toggle" for="showArchivedResidents">
+              <input type="checkbox" id="showArchivedResidents" />
+              <span>Show archived</span>
+            </label>
+          </div>
+          <div class="residents-table-wrap">
+            <table class="residents-table">
+              <colgroup>
+                <col class="col-name" />
+                <col class="col-name" />
+                <col class="col-middle" />
+                <col class="col-suffix" />
+                <col class="col-date" />
+                <col class="col-purok" />
+                <col class="col-contact" />
+                <col class="col-email" />
+                <col class="col-id" />
+                <col class="col-action" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Middle Name</th>
+                  <th>Suffix</th>
+                  <th>Date of Birth</th>
+                  <th>Purok</th>
+                  <th>Contact Number</th>
+                  <th>Email Address</th>
+                  <th>ID Uploaded</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="residentsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="residents-panel archive-panel">
+          <h3>Archived Resident Applications</h3>
+          <div class="archive-list" id="residentArchiveList"></div>
         </section>
       </main>
     </div>
+
+    <div class="id-modal" id="idModal" aria-hidden="true">
+  <div class="id-modal-dialog" role="dialog" aria-modal="true">
+    <div class="id-modal-header">
+      <div>
+        <h3 id="idModalTitle">Uploaded ID</h3>
+        <p id="idModalFileName"></p>
+      </div>
+
+      <button
+        class="id-modal-close"
+        id="closeIdModal"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="id-modal-body" id="idModalBody"></div>
+  </div>
+</div>
+
+    <div class="id-modal" id="deleteResidentModal" aria-hidden="true">
+  <div
+    class="confirm-modal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="deleteResidentTitle"
+  >
+    <div class="confirm-modal-header">
+      <h3 id="deleteResidentTitle">Delete Resident?</h3>
+      <p id="deleteResidentMessage"></p>
+    </div>
+
+    <div class="confirm-modal-actions">
+      <button
+        class="confirm-secondary"
+        id="cancelDeleteResident"
+        type="button">
+        Cancel
+      </button>
+
+      <button
+        class="confirm-danger"
+        id="confirmDeleteResident"
+        type="button">
+        Delete Resident
+      </button>
+    </div>
+  </div>
+</div>
+    
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
     <script src="../js/adminResidents.js"></script>
   </body>
 </html>
