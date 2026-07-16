@@ -91,10 +91,18 @@
         return redirectToResident();
     }
 
-    // User account management exposes staff account details and is reserved for
-    // the Barangay Captain / Super Admin.
-    if (currentPageName() === "adminUsers.html" && user.role !== "super_admin") {
+    // Staff-account management belongs to the Barangay Captain / Super Admin.
+    if (
+      currentPageName() === "adminUsers.html" &&
+      user.role !== "super_admin"
+    ) {
         return redirectToAdmin();
+    }
+
+    if (user.role === "assistant_admin") {
+      document
+        .querySelectorAll('a[href="adminUsers.html"]')
+        .forEach((link) => link.remove());
     }
 
     if (isResidentRoute() && adminRoles.includes(user.role)) {
