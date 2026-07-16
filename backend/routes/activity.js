@@ -4,7 +4,8 @@ const { getActivityLogs } = require("../data/mockData");
 
 const router = express.Router();
 
-router.use(requireRoles("assistant_admin", "super_admin"));
+// System-wide activity oversight is reserved for the Super Admin.
+router.use(requireRoles("super_admin"));
 
 router.get("/", (req, res) => {
   res.json({ success: true, data: getActivityLogs() });

@@ -32,6 +32,8 @@ function residentName(resident) {
   );
 }
 
+// Both staff roles process resident applications; destructive and restriction
+// actions below remain reserved for the Super Admin.
 router.use(requireRoles("assistant_admin", "super_admin"));
 
 // GET /api/residents/pending
@@ -61,7 +63,7 @@ router.get("/:id/warnings", (req, res) => {
 });
 
 // POST /api/residents/:id/lift-restriction
-router.post("/:id/lift-restriction", (req, res) => {
+router.post("/:id/lift-restriction", requireRoles("super_admin"), (req, res) => {
   const user = findResidentUser(req.params.id);
   if (!user) {
     return res
@@ -144,7 +146,7 @@ router.post("/:id/reject", (req, res) => {
 });
 
 // PATCH /api/residents/:id/archive
-router.patch("/:id/archive", (req, res) => {
+router.patch("/:id/archive", requireRoles("super_admin"), (req, res) => {
   const resident = findResident(req.params.id);
   if (!resident) {
     return res
@@ -182,7 +184,7 @@ router.patch("/:id/archive", (req, res) => {
 // DELETE /api/residents/:id
 // Active records are soft-deleted into the archive. Only archived records are
 // permanently removed.
-router.delete("/:id", (req, res) => {
+router.delete("/:id", requireRoles("super_admin"), (req, res) => {
   const index = residentApplications.findIndex(
     (resident) => resident.id === req.params.id,
   );

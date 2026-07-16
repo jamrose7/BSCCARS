@@ -974,7 +974,7 @@ router.patch(
 // be restored from the archive view.
 router.patch(
   "/:id/archive",
-  requireRoles("assistant_admin", "super_admin"),
+  requireRoles("super_admin"),
   async (req, res) => {
     const complaint = findComplaint(req.params.id);
     if (!complaint) {
@@ -1018,7 +1018,7 @@ router.patch(
 // complaint is deleted, treat it as a recoverable archive action.
 router.delete(
   "/:id",
-  requireRoles("assistant_admin", "super_admin"),
+  requireRoles("super_admin"),
   async (req, res) => {
     const complaint = findComplaint(req.params.id);
     if (!complaint) {
