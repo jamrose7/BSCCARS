@@ -7,6 +7,7 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminDashboard.css" />
+    <link rel="stylesheet" href="../css/dashboardWidgets.css" />
     <link rel="stylesheet" href="../css/adminReports.css" />
   </head>
 
@@ -18,21 +19,75 @@
       </div>
 
       <div class="top-right">
-        <div class="icon-badge">🔔</div>
-        <div class="icon-badge">👤</div>
+        <button class="icon-badge" aria-label="Notifications">
+          <img
+            src="../images/notification_icon.png"
+            alt="Notifications"
+            class="notification-icon"
+          />
+        </button>
+        <button class="icon-badge" aria-label="User profile">
+          <img
+            src="../images/profile_icon.png"
+            alt="Profile"
+            class="profile-icon"
+          />
+        </button>
       </div>
     </header>
 
     <div class="dashboard-container">
       <aside class="sidebar">
         <nav>
-          <a href="adminDashboard.html"><span>🏠</span> Dashboard</a>
-          <a href="adminComplaints.html"><span>📋</span> Complaints</a>
-          <a href="adminResidents.html"><span>👥</span> Residents</a>
-          <a class="active" href="adminReports.html"><span>📊</span> Reports</a>
-          <a href="adminUsers.html"><span>🧑‍💼</span> Users</a>
+          <a href="adminDashboard.html"
+            ><img
+              src="../images/dashboard_icon.png"
+              alt="Dashboard"
+              class="sidebar-icon"
+            />
+            Dashboard</a
+          >
+          <a href="adminComplaints.html"
+            ><img
+              src="../images/complaints_icon.png"
+              alt="Complaints"
+              class="sidebar-icon"
+            />
+            Complaints</a
+          >
+          <a href="adminResidents.html"
+            ><img
+              src="../images/residents_icon.png"
+              alt="Residents"
+              class="sidebar-icon"
+            />
+            Residents</a
+          >
+          <a class="active" href="adminReports.html"
+            ><img
+              src="../images/reports_icon.png"
+              alt="Reports"
+              class="sidebar-icon"
+            />
+            Reports</a
+          >
+          <a href="adminUsers.html"
+            ><img
+              src="../images/user_icon.png"
+              alt="Users"
+              class="sidebar-icon"
+            />
+            Users</a
+          >
         </nav>
-        <div class="signout"><span class="menu-icon">🔒</span> Sign out</div>
+        <div class="signout">
+          <img
+            src="../images/sign-out_icon.png"
+            alt="Sign out"
+            class="sidebar-icon"
+          />
+          Sign out
+        </div>
       </aside>
 
       <main class="main-content">
@@ -80,15 +135,20 @@
               Select a report type above to view detailed BSCCARS analytics.
             </h3>
             <p>
-              Each report uses example data from Barangay Sillon complaints:
-              category examples, monthly volumes, resolution times, and high-priority trend analysis.
+              Reports are loaded from live complaint and resident database
+              records.
             </p>
           </div>
         </section>
       </main>
     </div>
 
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
+    <script src="../js/services/notificationManager.js"></script>
+    <script src="../js/services/profileManager.js"></script>
+    <script src="../js/authGuard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="../js/adminReports.js"></script>
   </body>
 </html>
