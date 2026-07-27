@@ -45,13 +45,39 @@ function viewComplaint(btn) {
 
   setTextById("complainantName", d.name);
   renderRespondentDetails(d);
-  setTextById("complaintCategory", d.category);
+  
+  const baseCategory =
+    splitOtherDisplayValue(d.category || "").base || d.category || "";
+  const hearingNoticeBtn = document.querySelector(
+    'button[onclick="openHearingNotice()"]',
+  );
+  if (hearingNoticeBtn) {
+    hearingNoticeBtn.style.display =
+      baseCategory === "Money Debt" ? "" : "none";
+  }
+  const respondentInfoItem = document.getElementById("respondentInfoItem");
+  if (respondentInfoItem) {
+    respondentInfoItem.style.display =
+      baseCategory === "Money Debt" ? "" : "none";
+  }
+  const timelineSection = document.getElementById("timelineSection");
+  if (timelineSection) {
+    timelineSection.style.display =
+      baseCategory === "Money Debt" ? "" : "none";
+  }
+  const modalWorkflowSummary = document.getElementById("modalWorkflowSummary");
+  if (modalWorkflowSummary) {
+    modalWorkflowSummary.style.display =
+      baseCategory === "Money Debt" ? "" : "none";
+  }
+
   const sourceSelect = document.getElementById("complaintSourceSelect");
   if (sourceSelect) {
     const source = splitOtherDisplayValue(d.source || "Digital Submission");
     sourceSelect.value = source.base || "Digital Submission";
     setSourceOtherControls(sourceSelect.value === "Other", source.specify);
   }
+  setTextById("complaintCategory", d.category);
   setTextById("complaintPriority", d.priority);
   setTextById("complaintConfidential", d.confidential);
   setTextById("complaintTitle", d.title);
@@ -134,7 +160,7 @@ function getRespondentFields(data = {}) {
     respondent_name: data.respondent_name || data.respondentName || "",
     respondent_contact_number:
       data.respondent_contact_number || data.respondentContactNumber || "",
-    respondent_address: data.respondent_address || data.respondentAddress || "",
+    respondent_purok: data.respondent_purok || data.respondentPurok || "",
   };
 }
 
@@ -142,7 +168,7 @@ function respondentSummaryText(fields) {
   const parts = [
     fields.respondent_name,
     fields.respondent_contact_number,
-    fields.respondent_address,
+    fields.respondent_purok,
   ].filter(Boolean);
   return parts.length ? parts.join(" | ") : "No respondent details yet.";
 }
@@ -161,10 +187,10 @@ function setRespondentEditVisible(visible) {
 function populateRespondentInputs(fields) {
   const nameInput = document.getElementById("respondentNameInput");
   const contactInput = document.getElementById("respondentContactInput");
-  const addressInput = document.getElementById("respondentAddressInput");
+  const purokInput = document.getElementById("respondentPurokInput");
   if (nameInput) nameInput.value = fields.respondent_name || "";
   if (contactInput) contactInput.value = fields.respondent_contact_number || "";
-  if (addressInput) addressInput.value = fields.respondent_address || "";
+  if (purokInput) purokInput.value = fields.respondent_purok || "";
 }
 
 function renderRespondentDetails(data = {}) {
@@ -175,9 +201,11 @@ function renderRespondentDetails(data = {}) {
     display.textContent = respondentSummaryText(fields);
   }
   if (editButton) {
-    editButton.textContent = fields.respondent_name
-      ? "Edit respondent details"
+    const hasName = Boolean(fields.respondent_name);
+    editButton.textContent = hasName
+      ? "Correct respondent details"
       : "Add respondent details";
+    editButton.disabled = !hasName;
   }
   populateRespondentInputs(fields);
   setRespondentEditVisible(false);
@@ -194,8 +222,8 @@ async function saveRespondentDetails() {
       document.getElementById("respondentNameInput")?.value.trim() || "",
     respondent_contact_number:
       document.getElementById("respondentContactInput")?.value.trim() || "",
-    respondent_address:
-      document.getElementById("respondentAddressInput")?.value.trim() || "",
+    respondent_purok:
+      document.getElementById("respondentPurokInput")?.value.trim() || "",
   };
 
   if (fields.respondent_name.length > 255) {
@@ -491,7 +519,7 @@ function normalizeComplaintForTable(complaint) {
     time: complaint.incidentTime || complaint.time || "",
     respondent_name: complaint.respondent_name || "",
     respondent_contact_number: complaint.respondent_contact_number || "",
-    respondent_address: complaint.respondent_address || "",
+    respondent_purok: complaint.respondent_purok || "",
     confidential: complaint.confidential || "No",
     image: attachmentLocation(imageAttachment),
     video: attachmentLocation(videoAttachment),
@@ -1249,37 +1277,6 @@ async function restoreArchivedComplaint(id) {
   });
 }
 
-async function permanentlyDeleteArchivedComplaint(id) {
-  const archived = getArchivedComplaints();
-  const complaint = archived.find((item) => item.id === id);
-  if (!complaint) {
-    return;
-  }
-
-  const confirmed = confirm(
-    `Permanently delete ${formatComplaintNumber(id)} from archived complaints? This cannot be undone.`,
-  );
-  if (!confirmed) {
-    return;
-  }
-
-  if (typeof api !== "undefined" && api.deleteComplaint) {
-    try {
-      await api.deleteComplaint(id);
-    } catch (error) {
-      alert(error.message || "Unable to permanently delete complaint.");
-      return;
-    }
-  }
-
-  saveArchivedComplaints(archived.filter((item) => item.id !== id));
-  renderArchivedComplaints();
-  window.BSCCARSNotifications?.add?.({
-    title: "Archived complaint permanently deleted",
-    message: `${formatComplaintNumber(id)} was permanently deleted from the archive.`,
-  });
-}
-
 function createComplaintRow(complaint) {
   const row = document.createElement("tr");
   const nameParts = complaint.name.split(" ").filter(Boolean);
@@ -1356,7 +1353,6 @@ function renderArchivedComplaints() {
           </div>
           <div class="archive-actions">
             <button type="button" data-restore-complaint="${complaint.id}">Restore</button>
-            <button type="button" data-delete-complaint="${complaint.id}">Delete Permanently</button>
           </div>
         </div>
       `,
@@ -1368,11 +1364,6 @@ function renderArchivedComplaints() {
       restoreArchivedComplaint(button.dataset.restoreComplaint);
     });
   });
-  archiveList.querySelectorAll("[data-delete-complaint]").forEach((button) => {
-    button.addEventListener("click", () => {
-      permanentlyDeleteArchivedComplaint(button.dataset.deleteComplaint);
-    });
-  });
 }
 
 function openHearingNotice() {
@@ -1382,6 +1373,14 @@ function openHearingNotice() {
   }
 
   const d = _lastFocusedButton.dataset;
+
+  const baseCategory =
+    splitOtherDisplayValue(d.category || "").base || d.category || "";
+  if (baseCategory !== "Money Debt") {
+    alert("Hearing notices are only available for Money Debt complaints.");
+    return;
+  }
+
   const sourceSelect = document.getElementById("complaintSourceSelect");
   const source = sourceSelect ? sourceSelect.value : d.source || "";
 

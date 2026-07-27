@@ -128,12 +128,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function setPriorityControls(category) {
+    function setPriorityControls(category) {
     const isUrgent = highPriorityCategories.includes(category);
     const isOther = category === "Other";
     const radios = Array.from(
       document.querySelectorAll("input[name='priority']"),
     );
+
+    setRespondentSectionVisibility(category);
 
     radios.forEach((radio) => {
       radio.disabled = isUrgent;
@@ -196,6 +198,27 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.warn("Unable to fetch complaint eligibility:", error);
       setEligibilityBanner("");
+    }
+  }
+
+  function setRespondentSectionVisibility(category) {
+    const section = document.getElementById("respondentInfoSection");
+    if (!section) return;
+
+    const isMoneyDebt = category === "Money Debt";
+    section.style.display = isMoneyDebt ? "block" : "none";
+
+    const nameInput = document.getElementById("respondentName");
+    if (nameInput) nameInput.required = isMoneyDebt;
+
+    if (!isMoneyDebt) {
+      // Clear stale data so it can't be submitted under the wrong category
+      const nameInput = document.getElementById("respondentName");
+      const contactInput = document.getElementById("respondentContactNumber");
+      const purokInput = document.getElementById("respondentPurok");
+      if (nameInput) nameInput.value = "";
+      if (contactInput) contactInput.value = "";
+      if (purokInput) purokInput.value = "";
     }
   }
 
@@ -382,8 +405,19 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("respondentName")?.value.trim() || "";
     const respondentContactNumber =
       document.getElementById("respondentContactNumber")?.value.trim() || "";
-    const respondentAddress =
-      document.getElementById("respondentAddress")?.value.trim() || "";
+      if (
+          respondentContactNumber &&
+          !/^09\d{9}$/.test(respondentContactNumber)
+      ) {
+        showNotification(
+        "Respondent contact number must be 11 digits and start with 09.",
+        "error",
+      );
+      document.getElementById("respondentContactNumber")?.focus();
+      return;
+    }
+    const respondentPurok =
+      document.getElementById("respondentPurok")?.value.trim() || "";
     const purok = document.getElementById("purokId").value;
     const date = document.getElementById("incidentDate").value;
     const time = document.getElementById("incidentTime").value;
@@ -410,6 +444,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (category === "Other" && !categoryOther) {
       showNotification("Please specify the Other complaint category.", "error");
       categoryOtherText?.focus();
+      return;
+    }
+
+    if (category === "Money Debt" && !respondentName) {
+      showNotification(
+      "Please provide the respondent's full name for Money Debt complaints.",
+      "error",
+    );
+      document.getElementById("respondentName")?.focus();
       return;
     }
 
@@ -475,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("details", details);
     formData.append("respondent_name", respondentName);
     formData.append("respondent_contact_number", respondentContactNumber);
-    formData.append("respondent_address", respondentAddress);
+    formData.append("respondent_purok", respondentPurok);
     formData.append("purok", purok);
     formData.append("incidentDate", date);
     formData.append("incidentTime", time);

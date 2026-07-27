@@ -87,18 +87,15 @@ class ApiService {
       const responseText = await response.text();
       const data = responseText ? JSON.parse(responseText) : {};
 
-      // Centralized error handling for API responses
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.clearToken();
-          // Only redirect on 401 if this is a genuine session expiry,
-          // not an intentional sign-out (which handles its own redirect)
-          if (!this.signingOut) {
-            window.location.href = "sign_in.html";
-          }
+    if (!response.ok) {
+      if (response.status === 401 && endpoint !== "/auth/sign-in") {
+        this.clearToken();
+        if (!this.signingOut) {
+      window.location.href = "sign_in.html";
         }
-        throw new Error(data.message || "API request failed");
       }
+      throw new Error(data.message || "API request failed");
+    }
 
       return data;
     } catch (error) {
@@ -182,10 +179,6 @@ class ApiService {
     return this.patch(`/complaints/${id}/archive`, { is_archived: false });
   }
 
-  deleteComplaint(id) {
-    return this.delete(`/complaints/${id}`);
-  }
-
   addComplaintComment(id, comment, isInternal = false) {
     return this.post(`/complaints/${id}/comment`, { comment, isInternal });
   }
@@ -212,14 +205,6 @@ class ApiService {
 
   rejectResident(id, reason) {
     return this.post(`/residents/${id}/reject`, { reason });
-  }
-
-  getResidentWarnings(id) {
-    return this.get(`/residents/${id}/warnings`);
-  }
-
-  liftResidentRestriction(id) {
-    return this.post(`/residents/${id}/lift-restriction`, {});
   }
 
   getAllResidents() {
@@ -307,6 +292,18 @@ class ApiService {
 
   exportReport(format = "pdf", reportType = "all") {
     return this.get(`/reports/export?format=${format}&type=${reportType}`);
+  }
+
+  getAdminUsers() {
+    return this.get("/admin-users");
+  }
+
+  activateAdminUser(id) {
+    return this.post(`/admin-users/${id}/activate`, {});
+  }
+
+  deactivateAdminUser(id) {
+    return this.post(`/admin-users/${id}/deactivate`, {});
   }
 }
 

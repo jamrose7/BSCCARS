@@ -221,7 +221,7 @@
                 <td>CMP-2026-0001</td>
                 <td>Aeron</td>
                 <td>Smith</td>
-                <td>Jones</td>
+                <td>-</td>
                 <td>
                   <span class="category-badge badge-general"
                     >Noise and Public Disturbance</span
@@ -339,7 +339,7 @@
               <label>Complainant:</label>
               <span id="complainantName">—</span>
             </div>
-            <div class="info-item respondent-info-item">
+            <div class="info-item respondent-info-item" id="respondentInfoItem">
               <label>Respondent:</label>
               <div class="respondent-summary" id="respondentSummary">
                 <span id="respondentDisplay">No respondent details yet.</span>
@@ -365,11 +365,36 @@
                   id="respondentContactInput"
                   maxlength="20"
                   placeholder="Contact number"/>
-                <input
-                  type="text"
-                  id="respondentAddressInput"
-                  maxlength="255"
-                  placeholder="Address / Purok"/>
+                  <select id="respondentPurokInput">
+                    <option value="">Select Purok</option>
+                    <option value="PUROK AGUMA-A 1">PUROK AGUMA-A 1</option>
+                    <option value="PUROK AGUMA-A 2">PUROK AGUMA-A 2</option>
+                    <option value="PUROK BILABID 1">PUROK BILABID 1</option>
+                    <option value="PUROK BILABID 2">PUROK BILABID 2</option>
+                    <option value="PUROK BILABID 3">PUROK BILABID 3</option>
+                    <option value="PUROK BOLINAO 1">PUROK BOLINAO 1</option>
+                    <option value="PUROK BOLINAO 2">PUROK BOLINAO 2</option>
+                    <option value="PUROK LAMBAY 1">PUROK LAMBAY 1</option>
+                    <option value="PUROK LAMBAY 2">PUROK LAMBAY 2</option>
+                    <option value="PUROK SAP-SAP 1">PUROK SAP-SAP 1</option>
+                    <option value="PUROK SAP-SAP 2">PUROK SAP-SAP 2</option>
+                    <option value="PUROK SARA-SARA 1">PUROK SARA-SARA 1</option>
+                    <option value="PUROK SARA-SARA 2">PUROK SARA-SARA 2</option>
+                    <option value="PUROK SARA-SARA 3">PUROK SARA-SARA 3</option>
+                    <option value="PUROK DANGGIT 1">PUROK DANGGIT 1</option>
+                    <option value="PUROK DANGGIT 2">PUROK DANGGIT 2</option>
+                    <option value="PUROK DANGGIT 3">PUROK DANGGIT 3</option>
+                    <option value="PUROK BANGUS">PUROK BANGUS</option>
+                    <option value="PUROK PANDAWAN">PUROK PANDAWAN</option>
+                    <option value="PUROK TULINGAN">PUROK TULINGAN</option>
+                    <option value="PUROK LUKON">PUROK LUKON</option>
+                    <option value="PUROK BAT-OG">PUROK BAT-OG</option>
+                    <option value="PUROK KATAMBAK">PUROK KATAMBAK</option>
+                    <option value="PUROK PUGAPO">PUROK PUGAPO</option>
+                    <option value="PUROK MAMSA">PUROK MAMSA</option>
+                    <option value="PUROK GUSAW">PUROK GUSAW</option>
+                  </select>
+                
                 <div style="display: flex; gap: 8px; flex-wrap: wrap">
                   <button
                     type="button"
@@ -521,7 +546,7 @@
           </section>
 
           <section
-            class="detail-section timeline-section"
+            class="detail-section timeline-section" id="timelineSection"
             aria-labelledby="timelineHeading">
             <h3 id="timelineHeading">Proceedings Timeline</h3>
             <div id="timelineSummary" class="timeline-summary">

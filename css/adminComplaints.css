@@ -243,6 +243,11 @@
   transform: translateY(-2px);
 }
 
+.btn-evidence:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .signout {
   margin-top: auto;
   padding: 14px 16px;
