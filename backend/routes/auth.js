@@ -8,6 +8,7 @@ const {
   addUserActivity,
   addActivityLog,
   addAdminNotification,
+  hasDuplicateRegistrationNotification,
   verifyUserPassword,
   updateUserPassword,
   isEmailRegistered,
@@ -77,20 +78,15 @@ router.post("/sign-in", async (req, res) => {
 });
 
 // POST /api/auth/register
-//
-// Registration no longer creates a logged-in-capable account directly.
-// It creates a Pending entry in residentApplications, exactly like the
-// admin Residents page expects. The account only becomes real (added to
-// demoUsersByEmail, able to sign in) once an admin approves it via
-// POST /api/residents/:id/approve, which calls
-// promotePendingResidentToUser() using the password hash set here.
 router.post("/register", async (req, res) => {
   try {
     const email = cleanString(req.body.email).toLowerCase();
     const password = cleanString(req.body.password);
     const firstName = cleanString(req.body.firstName || req.body.first_name);
     const lastName = cleanString(req.body.lastName || req.body.last_name);
-    const middleNameRaw = cleanString(req.body.middleName || req.body.middle_name);
+    const middleNameRaw = cleanString(
+      req.body.middleName || req.body.middle_name,
+    );
     const noMiddleName = Boolean(req.body.noMiddleName);
     const suffix = cleanString(req.body.suffix) || "None";
     const dateOfBirth = cleanString(req.body.dateOfBirth);
@@ -133,7 +129,8 @@ router.post("/register", async (req, res) => {
     if (isEmailRegistered(email)) {
       return res.status(409).json({
         success: false,
-        message: "An account with this email already exists or is pending approval.",
+        message:
+          "An account with this email already exists or is pending approval.",
       });
     }
 
@@ -159,10 +156,8 @@ router.post("/register", async (req, res) => {
         type: validId.type || "",
         dataUrl: validId.dataUrl,
       },
-      warning_count: 0,
-      is_restricted: false,
       submittedAt: new Date().toISOString(),
-      _passwordHash: passwordHash, // never sent to the client; see toSafeResident
+      _passwordHash: passwordHash,
     };
 
     residentApplications.push(resident);
@@ -176,10 +171,14 @@ router.post("/register", async (req, res) => {
       details: email,
     });
 
-    addAdminNotification({
-      title: "New resident registration",
-      message: `${firstName} ${lastName} registered and is awaiting approval.`,
-    });
+    if (!hasDuplicateRegistrationNotification(residentId)) {
+      addAdminNotification({
+        title: "New resident registration",
+        message: `${firstName} ${lastName} registered and is awaiting approval.`,
+        type: "resident_registration",
+        residentId: residentId,
+      });
+    }
 
     return res.status(201).json({
       success: true,

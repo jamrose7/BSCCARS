@@ -1,16 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const { getUserNotifications, addUserActivity } = require("../data/mockData");
+const {
+  getUserNotifications,
+  addUserActivity,
+  cleanOrphanResidentNotifications,
+} = require("../data/mockData");
 
 // GET /api/notifications
 router.get("/", (req, res) => {
-  const notifications = getUserNotifications(req.user.id);
+  // Automatically clean any orphan notifications before returning
+  cleanOrphanResidentNotifications();
+  let notifications = getUserNotifications(req.user.id);
   res.json({ success: true, data: notifications });
 });
 
 // GET /api/notifications/unread
 router.get("/unread", (req, res) => {
-  const notifications = getUserNotifications(req.user.id).filter(
+  // Automatically clean any orphan notifications before returning
+  cleanOrphanResidentNotifications();
+  let notifications = getUserNotifications(req.user.id).filter(
     (notification) => !notification.is_read,
   );
   res.json({ success: true, data: notifications });

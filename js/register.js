@@ -14,55 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const submitButton = form.querySelector('button[type="submit"]');
 
-  const PENDING_RESIDENTS_KEY = "bsccarsPendingResidents";
-  const USER_ID_YEAR = "2026";
-
-  // IndexedDB is used because ID uploads are binary (Base64 DataURL),
-  // which exceed localStorage limits and are not suitable for JSON storage.
-  const ID_DB_NAME = "bsccarsResidentUploads";
-  const ID_STORE = "residentIds";
-
-  // IndexedDB: file storage layer
-
-  function openIdDatabase() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(ID_DB_NAME, 1);
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-
-        if (!db.objectStoreNames.contains(ID_STORE)) {
-          db.createObjectStore(ID_STORE);
-        }
-      };
-
-      request.onsuccess = () => resolve(request.result);
-
-      request.onerror = () =>
-        reject(new Error("Failed to initialize ID storage database."));
-    });
-  }
-
-  async function storeResidentId(residentId, fileDataUrl) {
-    const db = await openIdDatabase();
-
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(ID_STORE, "readwrite");
-      tx.objectStore(ID_STORE).put(fileDataUrl, residentId);
-
-      tx.oncomplete = () => {
-        db.close();
-        resolve();
-      };
-
-      tx.onerror = () => {
-        db.close();
-        reject(new Error("Failed to store uploaded ID file."));
-      };
-    });
-  }
-
   // File processing
+  // Converts the uploaded ID image into a base64 Data URL so it can be
+  // sent as part of the JSON payload to POST /api/auth/register.
 
   function fileToDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -74,69 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       reader.readAsDataURL(file);
     });
-  }
-
-  // Temporary storage layer
-  // localStorage is used only for metadata because there is no backend API yet.
-  // This will be replaced with database persistence in production.
-
-  function getPendingResidents() {
-    try {
-      return JSON.parse(localStorage.getItem(PENDING_RESIDENTS_KEY)) || [];
-    } catch {
-      return [];
-    }
-  }
-
-  function savePendingResident(resident) {
-    const list = getPendingResidents();
-    list.unshift(resident);
-    localStorage.setItem(PENDING_RESIDENTS_KEY, JSON.stringify(list));
-  }
-
-  // Writes into the same storage key notificationManager.js reads
-  // (bsccarsLocalNotifications), so the admin notification panel shows
-  // the actual resident who just registered instead of a generic count.
-  const LOCAL_NOTIFICATIONS_KEY = "bsccarsLocalNotifications";
-
-  function notifyAdminsOfNewRegistration(resident) {
-    try {
-      const notifications =
-        JSON.parse(localStorage.getItem(LOCAL_NOTIFICATIONS_KEY)) || [];
-      notifications.unshift({
-        id: `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        title: "New resident registration",
-        message: `${resident.firstName} ${resident.lastName} registered and is awaiting approval.`,
-        residentId: resident.id,
-        roles: ["assistant_admin", "super_admin"],
-        created_at: new Date().toISOString(),
-        is_read: false,
-      });
-      localStorage.setItem(
-        LOCAL_NOTIFICATIONS_KEY,
-        JSON.stringify(notifications.slice(0, 100)),
-      );
-    } catch (error) {
-      console.warn("Unable to record registration notification:", error);
-    }
-  }
-
-  function formatUserId(sequence) {
-    return `${USER_ID_YEAR}${String(sequence).padStart(3, "0")}`;
-  }
-
-  function generateResidentUserId() {
-    const pendingIds = getPendingResidents()
-      .map((resident) => resident.id)
-      .filter((id) => /^2026\d{3}$/.test(String(id)));
-    const currentUser =
-      typeof api !== "undefined" ? api.getStoredUser?.() : null;
-    const knownIds = [...pendingIds, currentUser?.id].filter((id) =>
-      /^2026\d{3}$/.test(String(id)),
-    );
-    const sequences = knownIds.map((id) => Number(String(id).slice(4)));
-    const nextSequence = sequences.length ? Math.max(...sequences) + 1 : 4;
-    return formatUserId(nextSequence);
   }
 
   // UI behavior
@@ -220,9 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Submission flow
-  // Combines:
-  // - file storage (IndexedDB for binary data)
-  // - metadata storage (localStorage as temporary backend replacement)
+  // Sends the registration payload to the real backend via api.register(),
+  // which calls POST /api/auth/register. The backend creates a Pending
+  // entry in residentApplications and notifies admins itself — this file
+  // must not write any local mock data or local notifications.
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -233,33 +125,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!form.checkValidity()) {
-      alert("Please complete all required fields.");
+      showNotification("Please complete all required fields.", "error");
       return;
     }
 
     if (password.value !== confirmPassword.value) {
-      alert("Passwords do not match.");
+      showNotification("Passwords do not match.", "error");
       return;
     }
 
     const terms = form.querySelector("#terms");
     if (terms && !terms.checked) {
-      alert("Please confirm your information.");
+      showNotification("Please confirm your information.", "error");
       return;
     }
 
     const file = validId.files[0];
 
     if (!file) {
-      alert("Please upload a valid ID.");
+      showNotification("Please upload a valid ID.", "error");
       return;
     }
 
     const MAX_SIZE = 5 * 1024 * 1024;
 
-    // Prevent browser storage overload and performance issues
     if (file.size > MAX_SIZE) {
-      alert("File must not exceed 5MB.");
+      showNotification("File must not exceed 5MB.", "error");
       return;
     }
 
@@ -269,39 +160,41 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const fileDataUrl = await fileToDataUrl(file);
 
-      const residentId = generateResidentUserId();
-
-      const resident = {
-        id: residentId,
+      const payload = {
         firstName: form.firstName.value.trim(),
         lastName: form.lastName.value.trim(),
-        middleName: noMiddleName.checked ? null : middleName.value.trim(),
+        middleName: noMiddleName.checked ? "" : middleName.value.trim(),
         noMiddleName: noMiddleName.checked,
         suffix: form.suffix.value || "None",
         dateOfBirth: form.dateOfBirth.value,
         purok: form.purokId.value,
         contactNumber: form.contactNumber.value.trim(),
         email: form.email.value.trim(),
-        status: "Pending",
+        password: password.value,
         validId: {
           name: file.name,
           type: file.type,
           dataUrl: fileDataUrl,
         },
-        warning_count: 0,
-        is_restricted: false,
-        submittedAt: new Date().toISOString(),
       };
 
-      await storeResidentId(residentId, fileDataUrl);
-      savePendingResident(resident);
-      notifyAdminsOfNewRegistration(resident);
+      const response = await api.register(payload);
+
+      if (!response || !response.success) {
+        throw new Error(
+          (response && response.message) ||
+            "Registration failed. Please try again.",
+        );
+      }
 
       form.reset();
       syncMiddleNameState({ validate: false });
       successModal.classList.add("show");
     } catch (err) {
-      alert(err.message);
+      showNotification(
+        err.message || "Registration failed. Please try again.",
+        "error",
+      );
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = "Register";

@@ -35,23 +35,19 @@ async function loadResidents() {
 
 function updateRegistrationNotification(resident, status) {
   try {
-    const notifications = JSON.parse(localStorage.getItem(localNotificationKey)) || [];
+    const notifications =
+      JSON.parse(localStorage.getItem(localNotificationKey)) || [];
     const residentName = getResidentName(resident);
-    const notification = notifications.find((item) =>
-      item.residentId === resident.id ||
-      (item.title === "New resident registration" && item.message?.includes(residentName)),
+    const filtered = notifications.filter(
+      (item) =>
+        !(
+          item.residentId === resident.id ||
+          (item.title === "New resident registration" &&
+            item.message?.includes(residentName))
+        ),
     );
-    if (!notification) return;
-
-    const approved = status === "Approved";
-    notification.residentId = resident.id;
-    notification.title = approved ? "Resident account approved" : "Resident account rejected";
-    notification.message = approved
-      ? `${residentName}'s account was approved.`
-      : `${residentName}'s account was rejected.`;
-    notification.created_at = new Date().toISOString();
-    notification.is_read = false;
-    localStorage.setItem(localNotificationKey, JSON.stringify(notifications));
+    if (filtered.length === notifications.length) return;
+    localStorage.setItem(localNotificationKey, JSON.stringify(filtered));
   } catch (error) {
     console.warn("Unable to update resident notification:", error);
   }
@@ -377,7 +373,9 @@ async function approveResident(resident) {
     await loadResidents();
     renderResidents();
   } catch (error) {
-    alert(`Unable to approve ${getResidentName(resident) || "resident"}: ${error.message}`);
+    alert(
+      `Unable to approve ${getResidentName(resident) || "resident"}: ${error.message}`,
+    );
   }
 }
 
@@ -389,7 +387,9 @@ async function rejectResident(resident) {
     await loadResidents();
     renderResidents();
   } catch (error) {
-    alert(`Unable to reject ${getResidentName(resident) || "resident"}: ${error.message}`);
+    alert(
+      `Unable to reject ${getResidentName(resident) || "resident"}: ${error.message}`,
+    );
   }
 }
 
@@ -413,11 +413,17 @@ async function archiveResident(resident) {
 async function restoreResident(resident) {
   try {
     await api.restoreResident(resident.id); // PATCH /api/residents/:id/archive (is_archived: false)
-    logResidentAction("Restore Resident", { ...resident, archived: false, is_archived: false });
+    logResidentAction("Restore Resident", {
+      ...resident,
+      archived: false,
+      is_archived: false,
+    });
     await loadResidents();
     renderResidents();
   } catch (error) {
-    alert(`Unable to restore ${getResidentName(resident) || "resident"}: ${error.message}`);
+    alert(
+      `Unable to restore ${getResidentName(resident) || "resident"}: ${error.message}`,
+    );
   }
 }
 
@@ -454,6 +460,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await loadResidents();
   renderResidents();
+
+  // Handle highlight query parameter for actionable notifications
+  const params = new URLSearchParams(window.location.search);
+  const highlightId = params.get("highlight");
+  if (highlightId) {
+    setTimeout(() => {
+      const rows = document.querySelectorAll("#residentsBody tr");
+      for (const row of rows) {
+        const actionBtn = row.querySelector(
+          'button[data-id="' + highlightId + '"]',
+        );
+        if (actionBtn) {
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+          row.style.outline = "3px solid #4ecdc4";
+          row.style.outlineOffset = "-3px";
+          // Remove highlight after 3 seconds
+          setTimeout(() => {
+            row.style.outline = "";
+            row.style.outlineOffset = "";
+          }, 3000);
+          break;
+        }
+      }
+      // Clean up the URL without reloading
+      if (window.history.replaceState) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+      }
+    }, 300);
+  }
 
   if (residentsBody) {
     residentsBody.addEventListener("click", async (event) => {

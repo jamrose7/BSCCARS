@@ -71,6 +71,12 @@
     return true;
   }
 
+  // Clears every locally-stored (prototype) notification for this browser.
+  // Does NOT touch real backend notification records.
+  function clearLocalNotifications() {
+    localStorage.removeItem(localNotificationKey);
+  }
+
   function getUser() {
     if (typeof api !== "undefined" && api.getStoredUser)
       return api.getStoredUser();
@@ -87,7 +93,40 @@
       : "resident";
   }
 
+  function cleanupOrphanLocalNotifications() {
+    // Remove local "New resident registration" notifications that reference
+    // residentIds that are no longer in a pending state. Since we can't
+    // reliably query the backend here, we remove any local registration
+    // notification that was created more than 10 minutes ago — the backend
+    // will have handled it by then (approve/reject cleans up).
+    try {
+      const notifications = getStoredList(localNotificationKey);
+      const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+      const cleaned = notifications.filter((n) => {
+        const isRegistration =
+          n.type === "resident_registration" ||
+          n.title === "New resident registration" ||
+          n.title === "New resident application";
+        if (isRegistration) {
+          const createdAt = new Date(n.created_at).getTime();
+          // Remove if older than 10 minutes (backend should have processed it)
+          // OR if it has no residentId (invalid/incomplete notification)
+          if (isNaN(createdAt) || createdAt < tenMinutesAgo || !n.residentId) {
+            return false;
+          }
+        }
+        return true;
+      });
+      if (cleaned.length !== notifications.length) {
+        localStorage.setItem(localNotificationKey, JSON.stringify(cleaned));
+      }
+    } catch (error) {
+      // Silently fail – not critical for core functionality
+    }
+  }
+
   function getFallbackNotifications(role) {
+    cleanupOrphanLocalNotifications();
     const localNotifications = getLocalNotifications(role);
     if (role === "resident") {
       return [
@@ -109,22 +148,12 @@
       ];
     }
 
-    const pending = getStoredList("bsccarsPendingResidents").filter(
-      (r) => !r.archived && r.status === "Pending",
-    );
     const complaints = getStoredList("bsccarsComplaints").filter(
       (c) => !c.archived,
     );
 
     return [
       ...localNotifications,
-      {
-        id: 1,
-        is_read: false,
-        title: `${pending.length} pending resident approval${pending.length !== 1 ? "s" : ""}`,
-        message: "Review submitted IDs before approving accounts.",
-        created_at: new Date().toISOString(),
-      },
       {
         id: 2,
         is_read: false,
@@ -136,7 +165,10 @@
   }
 
   function isObsoleteDemoApproval(notification, role) {
-    if (role === "resident" || notification.title !== "New resident application") {
+    if (
+      role === "resident" ||
+      notification.title !== "New resident application"
+    ) {
       return false;
     }
     return !getStoredList("bsccarsPendingResidents").some(
@@ -157,35 +189,60 @@
         });
   }
 
-  function buildPanelHTML(notifications) {
-    const unread = notifications.filter((n) => !n.is_read).length;
-
-    const items = notifications
-      .slice(0, 5)
-      .map(
-        (n) => `
-      <div class="notif-item ${n.is_read ? "" : "notif-item--unread"}" data-id="${n.id}">
+  // Shared row markup used by both the dropdown panel and the "all
+  // notifications" modal, so the two stay visually consistent.
+  function buildNotificationItemHTML(n) {
+    const typeAttr = n.type ? ` data-type="${escapeHtml(n.type)}"` : "";
+    const residentAttr = n.residentId
+      ? ` data-resident-id="${escapeHtml(n.residentId)}"`
+      : "";
+    const clickable =
+      n.type === "resident_registration" ? ' style="cursor:pointer;"' : "";
+    return `
+      <div class="notif-item ${n.is_read ? "" : "notif-item--unread"}" data-id="${n.id}"${typeAttr}${residentAttr}${clickable}>
         <div class="notif-item__body">
           <p class="notif-item__title">${escapeHtml(n.title)}</p>
-          <p class="notif-item__msg">${escapeHtml(n.message)}</p>
+          <p class="notif-item__msg" style="white-space:normal;">${escapeHtml(n.message)}</p>
           <span class="notif-item__time">${formatTime(n.created_at)}</span>
         </div>
         ${!n.is_read ? `<button class="notif-item__mark" data-mark="${n.id}" title="Mark as read">•</button>` : ""}
-      </div>`,
-      )
-      .join("");
-
-    return `
-      <div class="notif-panel__header">
-        <span class="notif-panel__title">Notifications</span>
-        ${unread > 0 ? `<span class="notif-panel__badge">${unread} new</span>` : ""}
-      </div>
-      <div class="notif-panel__list" id="notifList">
-        ${items || '<p class="notif-panel__empty">No notifications yet.</p>'}
-      </div>
-      <div class="notif-panel__footer">
-        <a href="#" class="notif-panel__view-all">View all</a>
       </div>`;
+  }
+
+  function buildPanelHTML(notifications, isExpanded) {
+  const unread = notifications.filter((n) => !n.is_read).length;
+  const visible = isExpanded ? notifications : notifications.slice(0, 5);
+  const items = visible.map(buildNotificationItemHTML).join("");
+  const showViewAll = !isExpanded && notifications.length > 5;
+
+  return `
+    <div class="notif-panel__header">
+      <span class="notif-panel__title">Notifications</span>
+      ${unread > 0 ? `<span class="notif-panel__badge">${unread} new</span>` : ""}
+    </div>
+    <div class="notif-panel__list" id="notifList">
+      ${items || '<p class="notif-panel__empty">No notifications yet.</p>'}
+    </div>
+    ${showViewAll ? `
+      <div class="notif-panel__footer">
+        <a href="#" class="notif-panel__view-all" id="notifViewAllLink">View all (${notifications.length})</a>
+      </div>` : ""}
+  `;
+}
+
+  function wireMarkAsRead(scopeEl, onMarked) {
+    scopeEl.querySelectorAll("[data-mark]").forEach((markBtn) => {
+      markBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = markBtn.dataset.mark;
+        if (!markLocalNotificationAsRead(id)) {
+          try {
+            await api.markNotificationAsRead?.(id);
+          } catch {}
+        }
+        await onMarked();
+      });
+    });
   }
 
   function init() {
@@ -204,15 +261,23 @@
     panel.setAttribute("role", "dialog");
     btn.insertAdjacentElement("afterend", panel);
 
+    let lastNotifications = [];
+
+    let expanded = false;
+
     async function loadAndRender() {
       let notifications = [];
+      // Clean up stale local registration notifications on every load
+      cleanupOrphanLocalNotifications();
       try {
         const res = await api.getNotifications?.();
         if (res?.success && Array.isArray(res.data)) {
           const role = getUser()?.role || inferRole();
           notifications = [
             ...getLocalNotifications(role),
-            ...res.data.filter((notification) => !isObsoleteDemoApproval(notification, role)),
+            ...res.data.filter(
+              (notification) => !isObsoleteDemoApproval(notification, role),
+            ),
           ];
         } else {
           throw new Error("no backend data");
@@ -222,7 +287,8 @@
         notifications = getFallbackNotifications(role);
       }
 
-      panel.innerHTML = buildPanelHTML(notifications);
+      lastNotifications = notifications;
+      panel.innerHTML = buildPanelHTML(notifications, expanded);
 
       const unread = notifications.filter((n) => !n.is_read).length;
       let badge = btn.querySelector(".notif-btn-badge");
@@ -238,18 +304,33 @@
         badge.style.display = "none";
       }
 
-      panel.querySelectorAll("[data-mark]").forEach((markBtn) => {
-        markBtn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const id = markBtn.dataset.mark;
-          if (!markLocalNotificationAsRead(id)) {
-            try {
-              await api.markNotificationAsRead?.(id);
-            } catch {}
-          }
-          await loadAndRender();
+      wireMarkAsRead(panel, loadAndRender);
+
+      // Click-to-navigate for resident_registration notifications
+      panel
+        .querySelectorAll('[data-type="resident_registration"]')
+        .forEach((item) => {
+          item.addEventListener("click", (e) => {
+            const markBtn = item.querySelector("[data-mark]");
+            if (markBtn && e.target.closest("[data-mark]")) return;
+            const residentId = item.dataset.residentId;
+            if (residentId) {
+              window.location.href =
+                "adminResidents.html?highlight=" +
+                encodeURIComponent(residentId);
+            }
+          });
         });
-      });
+
+    const viewAllLink = document.getElementById("notifViewAllLink");
+    if (viewAllLink) {
+      viewAllLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        expanded = true;
+        loadAndRender(); // re-renders panel content, now with expanded = true
+  });
+}
     }
 
     loadAndRender();
@@ -278,6 +359,7 @@
       if (!topRight.contains(e.target)) {
         panel.classList.remove("is-open");
         btn.setAttribute("aria-expanded", "false");
+        expanded = false;
       }
     });
 
@@ -285,6 +367,7 @@
       if (e.key === "Escape") {
         panel.classList.remove("is-open");
         btn.setAttribute("aria-expanded", "false");
+        expanded = false;
       }
     });
   }
@@ -292,6 +375,7 @@
   window.BSCCARSNotifications = {
     add: addLocalNotification,
     markAsRead: markLocalNotificationAsRead,
+    clearLocal: clearLocalNotifications,
   };
 
   document.addEventListener("DOMContentLoaded", init);

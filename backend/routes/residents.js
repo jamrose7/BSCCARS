@@ -5,11 +5,10 @@ const {
   residentApplications,
   addUser,
   getUserById,
-  getUserWarnings,
-  clearUserRestriction,
   addUserActivity,
   addUserNotification,
   addAdminNotification,
+  removeResidentRegistrationNotifications,
   removeUserById,
 } = require("../data/mockData");
 
@@ -49,43 +48,6 @@ router.get("/all", (req, res) => {
   res.json({ success: true, data: residentApplications });
 });
 
-// GET /api/residents/:id/warnings
-router.get("/:id/warnings", (req, res) => {
-  const user = findResidentUser(req.params.id);
-  if (!user) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Resident not found." });
-  }
-
-  const warnings = getUserWarnings(user.id);
-  res.json({ success: true, data: warnings });
-});
-
-// POST /api/residents/:id/lift-restriction
-router.post("/:id/lift-restriction", requireRoles("super_admin"), (req, res) => {
-  const user = findResidentUser(req.params.id);
-  if (!user) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Resident not found." });
-  }
-
-  const updatedUser = clearUserRestriction(user.id);
-  addUserActivity(req.user.id, "Lifted resident restriction", {
-    targetType: "resident",
-    targetId: user.id,
-    resident_id: user.id,
-    details: residentName(user),
-  });
-  addUserNotification(
-    user.id,
-    "Account restriction lifted",
-    "Your complaint submission restriction has been lifted by barangay staff.",
-  );
-  res.json({ success: true, data: updatedUser });
-});
-
 // POST /api/residents/:id/approve
 router.post("/:id/approve", (req, res) => {
   const resident = findResident(req.params.id);
@@ -96,6 +58,7 @@ router.post("/:id/approve", (req, res) => {
   }
 
   resident.status = "Approved";
+  removeResidentRegistrationNotifications(resident.id);
   addUser(
     {
       id: resident.id,
@@ -131,6 +94,7 @@ router.post("/:id/reject", (req, res) => {
   }
 
   resident.status = "Rejected";
+  removeResidentRegistrationNotifications(resident.id);
   addUserActivity(req.user.id, "Rejected resident registration", {
     targetType: "resident",
     targetId: resident.id,
@@ -223,6 +187,7 @@ router.delete("/:id", requireRoles("super_admin"), (req, res) => {
   }
 
   const [deleted] = residentApplications.splice(index, 1);
+  removeResidentRegistrationNotifications(deleted.id);
   removeUserById(deleted.id);
   addUserActivity(req.user.id, "Permanently deleted archived resident", {
     targetType: "resident",

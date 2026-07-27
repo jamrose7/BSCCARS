@@ -121,12 +121,16 @@
               type="file"
               name="validId"
               id="validId"
-              accept="image/jpeg,image/jpg,image/png,application/pdf"
+              accept="image/jpeg,image/jpg,image/png"
               required/>
             <div class="file-picker">
               <span>Click to upload or drag and drop</span>
-              <span>PNG, JPG, or PDF up to 5MB</span>
+              <span>PNG, JPEG, or JPG up to 5MB</span>
             </div>
+
+            <p style="font-size: 13px; color: #556770; margin: -4px 0 10px;">
+              Please upload a clear photo of your valid government-issued ID (e.g. national ID, driver's license, voter's ID). Do not upload a selfie or personal photo - applications with an invalid or unclear ID will be rejected during manual review.
+            </p>
 
             <div class="terms">
               <input type="checkbox" name="terms" id="terms" required />
@@ -160,6 +164,11 @@
           <p class="modal-message">
             Please wait for verification before signing in.
           </p>
+          <p class="modal-message">
+            Your registration request will be reviewed and approved by the Barangay Administrator during office hours (8:00 AM to 5:00 PM). Please wait for verification before signing in. Thank you.
+          </p>
+           <p class="modal-message">
+            Ang imong rehistrasyon susihon ug aprobahan sa Barangay Administrator sulod sa oras sa opisina (8:00 sa buntag hangtod 5:00 sa hapon). Palihug hulata ang pag-apruba sa dili pa mosulod sa sistema. Salamat.  
           <button id="backToSignin" class="btn btn-back-sign-in">
             Back to Sign in
           </button>
@@ -168,6 +177,7 @@
     </div>
 
     <script src="../js/utils/validators.js"></script>
+    <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
     <script src="../js/register.js"></script>
   </body>
