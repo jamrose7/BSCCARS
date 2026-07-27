@@ -7,8 +7,6 @@ const db = require("../db");
 const { requireRoles } = require("../middleware/auth");
 const {
   getUserById,
-  logResidentWarning,
-  getUserWarnings,
   addUserActivity,
   addUserNotification,
   addAdminNotification,
@@ -21,7 +19,6 @@ const RESPONDENT_MAX = {
   name: 255,
   contactNumber: 20,
   email: 255,
-  address: 1000,
   purok: 100,
 };
 let complaintSequence = complaints.length + 1;
@@ -140,9 +137,6 @@ function normalizeRespondentFields(body = {}) {
       body.respondent_contact_number || body.respondentContactNumber,
     ),
     respondent_email: cleanText(body.respondent_email || body.respondentEmail),
-    respondent_address: cleanLongText(
-      body.respondent_address || body.respondentAddress,
-    ),
     respondent_purok: cleanText(body.respondent_purok || body.respondentPurok),
   };
 }
@@ -154,6 +148,12 @@ function validateRespondentFields(fields) {
   if (fields.respondent_contact_number.length > RESPONDENT_MAX.contactNumber) {
     return "Respondent contact number must be 20 characters or fewer.";
   }
+  if (
+  fields.respondent_contact_number &&
+  !/^09\d{9}$/.test(fields.respondent_contact_number)
+  ) {
+  return "Respondent contact number must be 11 digits and start with 09.";
+  }
   if (fields.respondent_email.length > RESPONDENT_MAX.email) {
     return "Respondent email must be 255 characters or fewer.";
   }
@@ -162,9 +162,6 @@ function validateRespondentFields(fields) {
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.respondent_email)
   ) {
     return "Respondent email format is invalid.";
-  }
-  if (fields.respondent_address.length > RESPONDENT_MAX.address) {
-    return "Respondent address must be 1000 characters or fewer.";
   }
   if (fields.respondent_purok.length > RESPONDENT_MAX.purok) {
     return "Respondent purok must be 100 characters or fewer.";
@@ -256,68 +253,18 @@ function getOpenComplaints(userId) {
   );
 }
 
-function getSameCategoryComplaints(
-  userId,
-  category,
-  days = 30,
-  resolvedOnly = false,
-) {
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return complaints.filter((complaint) => {
-    if (complaint.submitterId !== userId) {
-      return false;
-    }
-    if (isArchived(complaint)) {
-      return false;
-    }
-    if (complaint.category !== category) {
-      return false;
-    }
-
-    const createdAt = new Date(complaint.createdAt).getTime();
-    if (createdAt < cutoff) {
-      return false;
-    }
-
-    if (resolvedOnly) {
-      const status = String(complaint.status || "").toLowerCase();
-      return normalizeStatusValue(status) === "resolved";
-    }
-
-    return true;
-  });
-}
-
 function computeEligibility(user) {
   const open = getOpenComplaints(user.id).length;
 
-  if (user.is_restricted && user.restricted_until) {
-    const restrictedUntil = new Date(user.restricted_until);
-    if (restrictedUntil >= new Date()) {
-      return {
-        eligible: false,
-        reason: `Your complaint submission has been temporarily restricted until ${restrictedUntil.toLocaleDateString()}. Please contact the Barangay Office for assistance.`,
-        open,
-      };
-    }
-
-    user.is_restricted = false;
-    user.restricted_until = null;
-  }
-
-  if (open >= 3) {
+  if (open >= 5) {
     return {
       eligible: false,
-      reason:
-        "You already have 3 active complaints. Please wait for one to be resolved before submitting a new one.",
+      reason: "You already have 5 active complaints. Please wait for one to be resolved before submitting a new one.",
       open,
     };
   }
 
-  return {
-    eligible: true,
-    open,
-  };
+  return { eligible: true, open };
 }
 
 // GET all complaints
@@ -359,15 +306,10 @@ router.get("/check-eligibility", async (req, res) => {
   }
 
   const eligibility = computeEligibility(user);
-  const warnings = getUserWarnings(user.id);
 
   return res.json({
     success: true,
-    data: {
-      ...eligibility,
-      warnings: warnings || [],
-      warningCount: warnings.length,
-    },
+    data: eligibility,
   });
 });
 
@@ -382,6 +324,9 @@ router.get("/public-feed", async (req, res) => {
           .toLowerCase(),
       );
 
+      // Respondent fields (respondent_name/contact/address) must NEVER be
+      // added to this response — this is the public feed. Keep this an
+      // explicit allow-list of fields, not a spread of the complaint object.
       return {
         id: complaint.id,
         title: complaint.title || "Untitled complaint",
@@ -531,6 +476,17 @@ router.post(
 
     const eligibility = computeEligibility(user);
     if (!eligibility.eligible) {
+      if (!user._limitNotified) {
+        addAdminNotification({
+         title: "Resident reached active complaint limit",
+        message: `${fullName(user)} (${user.id}) has reached the 5 active complaint limit and attempted to submit another. Please review their pending complaints.`,
+        });
+        // _limitNotified is temporary in-memory runtime state, not
+        // intended to become a persisted field.
+        user._limitNotified = true;
+      }
+
+
       return res.status(403).json({
         success: false,
         message: eligibility.reason,
@@ -602,14 +558,32 @@ router.post(
 
     const displayCategory = formatOtherValue(category, categorySpecify);
     const respondentFields = normalizeRespondentFields(complaintData);
+
+    // Respondent identity fields are only permitted for Money Debt complaints.
+    // Stripped here server-side regardless of what the client sends, since a
+    // direct API call could bypass the frontend's category-based toggle.
+    if (category !== "Money Debt") {
+      respondentFields.respondent_name = "";
+      respondentFields.respondent_contact_number = "";
+      respondentFields.respondent_purok = "";
+    }
+
+    if (category === "Money Debt" && !respondentFields.respondent_name) {
+    cleanupUploadedFiles();
+    return res.status(400).json({
+      success: false,
+      message: "Respondent full name is required for Money Debt complaints.",
+    });
+  }
+
     const respondentError = validateRespondentFields(respondentFields);
     if (respondentError) {
-      cleanupUploadedFiles();
-      return res.status(400).json({
-        success: false,
-        message: respondentError,
-      });
-    }
+    cleanupUploadedFiles();
+    return res.status(400).json({
+      success: false,
+      message: respondentError,
+    });
+  }
 
     if (imageFile && imageFile.size > 5 * 1024 * 1024) {
       cleanupUploadedFiles();
@@ -636,13 +610,6 @@ router.post(
       });
     }
 
-    const previousSameCategoryCount30 = getSameCategoryComplaints(
-      user.id,
-      displayCategory,
-      30,
-    ).length;
-    const hasRecentResolvedSameCategory15 =
-      getSameCategoryComplaints(user.id, displayCategory, 15, true).length > 0;
     const createdAt = new Date().toISOString();
     const isAutoHighPriority = AUTO_HIGH_PRIORITY_CATEGORIES.includes(category);
     const normalizedPriority = String(complaintData.priority || "Normal")
@@ -657,32 +624,6 @@ router.post(
         category,
         requested_priority: "High",
         applied_priority: "Normal",
-      });
-    }
-
-    if (previousSameCategoryCount30 >= 3) {
-      user.is_restricted = true;
-      user.restricted_until = null;
-      logResidentWarning({
-        residentId: user.id,
-        complaintId: null,
-        type: "account_suspended",
-        reason:
-          "Fourth same-category complaint within 30 days. Account suspended for review by the Barangay Captain.",
-      });
-    } else if (previousSameCategoryCount30 === 2) {
-      const restrictionDate = new Date();
-      restrictionDate.setDate(restrictionDate.getDate() + 7);
-      const restrictionUntil = restrictionDate.toISOString().slice(0, 10);
-      user.is_restricted = true;
-      user.restricted_until = restrictionUntil;
-      logResidentWarning({
-        residentId: user.id,
-        complaintId: null,
-        type: "submission_restricted",
-        reason:
-          "Third same-category complaint within 30 days. Submission restricted for 7 days while the pending complaint is reviewed.",
-        expiresAt: restrictionUntil,
       });
     }
 
@@ -746,41 +687,6 @@ router.post(
       message: `${fullName(user)} submitted ${createdComplaint.id}: ${createdComplaint.title}.`,
     });
 
-    if (previousSameCategoryCount30 >= 3) {
-      addUserNotification(
-        user.id,
-        "Your complaint has been submitted and your account is under review.",
-        "Your complaint has been submitted successfully. We noticed multiple complaints under the same category within 30 days. Your account is temporarily restricted and will be reviewed by the Barangay Captain.",
-      );
-      addAdminNotification({
-        title:
-          "Urgent: Resident account suspended for repeated same-category complaints",
-        message: `Note: ${user.first_name} ${user.last_name} has submitted a complaint under ${displayCategory} within 30 days of previous complaints in the same category. The account is now suspended for review.`,
-        roles: ["super_admin"],
-      });
-    } else if (previousSameCategoryCount30 === 2) {
-      addUserNotification(
-        user.id,
-        "Your complaint has been submitted and is under review.",
-        "Your complaint has been submitted successfully. We noticed multiple complaints under the same category within 30 days. It remains Pending while barangay staff review it.",
-      );
-      addAdminNotification({
-        title:
-          "Notice: Resident has submitted a repeated same-category complaint",
-        message: `Note: ${fullName(user)} has submitted a complaint under ${displayCategory} within 30 days of previous complaints in the same category. It remains pending for review.`,
-      });
-    } else if (hasRecentResolvedSameCategory15) {
-      addUserNotification(
-        user.id,
-        "Your complaint has been submitted successfully.",
-        "Your complaint has been submitted successfully. We noticed you have recently submitted a concern under the same category. The barangay will review your records. Please ensure each complaint describes a new and distinct situation.",
-      );
-      addAdminNotification({
-        title: "Note: Resident submitted a similar complaint within 15 days",
-        message: `Note: ${user.first_name} ${user.last_name} has submitted a complaint under ${displayCategory} within 15 days of a previously resolved complaint in the same category. No action required — for your awareness only.`,
-      });
-    }
-
     return res.status(201).json({
       success: true,
       data: enrichComplaint(createdComplaint),
@@ -794,6 +700,7 @@ router.post(
 router.patch(
   "/:id/status",
   requireRoles("assistant_admin", "super_admin"),
+  
   async (req, res) => {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -863,6 +770,15 @@ router.patch(
     }
     if (normalizedStatus === "resolved" && !complaint.resolvedAt) {
       complaint.resolvedAt = new Date().toISOString();
+    }
+
+    // If this status change freed up a slot under the 5-active-complaint
+    // limit, allow the resident to be notified about hitting it again later.
+    if (complaint.submitterId) {
+      const submitter = getUserById(complaint.submitterId);
+      if (submitter && getOpenComplaints(submitter.id).length < 5) {
+        submitter._limitNotified = false;
+      }
     }
 
     addComplaintTimelineEntry(complaint, {
@@ -984,6 +900,14 @@ router.patch(
     }
 
     const archived = Boolean(req.body.is_archived);
+
+    if (archived && normalizeStatusValue(complaint.status) !== "resolved") {
+      return res.status(400).json({
+        success: false,
+        message: "Only resolved complaints can be archived.",
+      });
+    }
+
     complaint.archived = archived;
     complaint.is_archived = archived;
     complaint.archivedAt = archived ? new Date().toISOString() : null;
@@ -1011,57 +935,6 @@ router.patch(
     }
 
     res.json({ success: true, data: enrichComplaint(complaint) });
-  },
-);
-
-// DELETE is only destructive after an item is already archived. If an active
-// complaint is deleted, treat it as a recoverable archive action.
-router.delete(
-  "/:id",
-  requireRoles("super_admin"),
-  async (req, res) => {
-    const complaint = findComplaint(req.params.id);
-    if (!complaint) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Complaint not found." });
-    }
-
-    if (!isArchived(complaint)) {
-      complaint.archived = true;
-      complaint.is_archived = true;
-      complaint.archivedAt = new Date().toISOString();
-      addUserActivity(req.user.id, "Archived complaint through delete action", {
-        targetType: "complaint",
-        targetId: complaint.id,
-        complaint_id: complaint.id,
-        details: complaint.title || "",
-      });
-      addAdminNotification({
-        title: "Complaint moved to archive",
-        message: `${complaint.id} was not permanently deleted. It is available in the archive for restore or final deletion.`,
-      });
-      return res.json({
-        success: true,
-        message: "Complaint moved to archive.",
-        data: enrichComplaint(complaint),
-      });
-    }
-
-    const index = complaints.findIndex((item) => item.id === complaint.id);
-    const [deleted] = complaints.splice(index, 1);
-    addUserActivity(req.user.id, "Permanently deleted archived complaint", {
-      targetType: "complaint",
-      targetId: deleted.id,
-      complaint_id: deleted.id,
-      details: deleted.title || "",
-    });
-    addAdminNotification({
-      title: "Archived complaint permanently deleted",
-      message: `${deleted.id} was permanently deleted from archived complaints.`,
-    });
-
-    res.json({ success: true, data: enrichComplaint(deleted) });
   },
 );
 
