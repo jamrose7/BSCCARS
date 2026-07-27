@@ -7,28 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
   middle_name VARCHAR(100) NULL,
   last_name VARCHAR(100) NOT NULL,
   profile_picture_url TEXT NULL,
-  status ENUM('pending', 'approved', 'active', 'rejected', 'archived') NOT NULL DEFAULT 'pending',
-  warning_count INT NOT NULL DEFAULT 0,
-  is_restricted BOOLEAN NOT NULL DEFAULT FALSE,
-  restricted_until DATE NULL,
+  account_status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT chk_users_id_format CHECK (id REGEXP '^(RES|ADM)-2026-[0-9]{3}$')
 );
-
-CREATE TABLE IF NOT EXISTS resident_warnings (
-  id VARCHAR(64) PRIMARY KEY,
-  resident_id VARCHAR(20) NOT NULL,
-  complaint_id VARCHAR(32) NULL,
-  warning_type ENUM('duplicate_submission', 'under_review', 'restriction_applied') NOT NULL,
-  reason TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATE NULL,
-  FOREIGN KEY (resident_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_resident_warnings_resident_id ON resident_warnings (resident_id);
-CREATE INDEX idx_resident_warnings_complaint_id ON resident_warnings (complaint_id);
 
 CREATE INDEX idx_users_status ON users (status);
 
@@ -43,7 +26,6 @@ CREATE TABLE IF NOT EXISTS complaints (
   respondent_name VARCHAR(255) NULL,
   respondent_contact_number VARCHAR(20) NULL,
   respondent_email VARCHAR(255) NULL,
-  respondent_address TEXT NULL,
   respondent_purok VARCHAR(100) NULL,
   purok VARCHAR(100) NOT NULL,
   incident_date DATE NULL,

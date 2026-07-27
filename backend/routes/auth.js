@@ -45,7 +45,7 @@ router.post("/sign-in", async (req, res) => {
   if (!user || !verifyUserPassword(user.id, password)) {
     return res.status(401).json({
       success: false,
-      message: "Invalid email or password",
+      message: "Incorrect password please try again",
     });
   }
 
@@ -53,6 +53,14 @@ router.post("/sign-in", async (req, res) => {
     return res.status(403).json({
       success: false,
       message: "This account has an unsupported role.",
+    });
+  }
+
+  if (user.account_status === "inactive") {
+    return res.status(403).json({
+      success: false,
+      message:
+        "This account is inactive. Contact the Barangay Captain for assistance.",
     });
   }
 
