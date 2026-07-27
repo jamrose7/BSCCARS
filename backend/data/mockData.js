@@ -6,7 +6,12 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require("../config/auth");
 
 const PASSWORD_SALT_ROUNDS = 10;
 
-const PRIVATE_ID_DIRECTORY = path.join(__dirname, "..", "private-uploads", "resident-ids");
+const PRIVATE_ID_DIRECTORY = path.join(
+  __dirname,
+  "..",
+  "private-uploads",
+  "resident-ids",
+);
 
 function loadSeedIdImage(fileName) {
   const filePath = path.join(PRIVATE_ID_DIRECTORY, fileName);
@@ -32,14 +37,12 @@ const demoUsersByEmail = {
     role: "super_admin",
     first_name: "Jamiel",
     last_name: "Rosell",
+    account_status: "active",
     profile_picture_url: "",
     created_at: "2026-01-01T00:00:00.000Z",
     activity_logs: [
       { action: "Signed in", timestamp: new Date().toISOString() },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
   "assistantadmin@gmail.com": {
     id: "ADM-2026-002",
@@ -47,14 +50,12 @@ const demoUsersByEmail = {
     role: "assistant_admin",
     first_name: "Kiarah",
     last_name: "Beau",
+    account_status: "active",
     profile_picture_url: "",
     created_at: "2026-01-01T00:00:00.000Z",
     activity_logs: [
       { action: "Signed in", timestamp: new Date().toISOString() },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
   "resident@gmail.com": {
     id: "RES-2026-003",
@@ -67,9 +68,6 @@ const demoUsersByEmail = {
     activity_logs: [
       { action: "Signed in", timestamp: new Date().toISOString() },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
   "jam7@gmail.com": {
     id: "RES-2026-004",
@@ -81,11 +79,11 @@ const demoUsersByEmail = {
     profile_picture_url: "",
     created_at: "2026-01-01T00:00:00.000Z",
     activity_logs: [
-      { action: "Account approved and activated", timestamp: new Date().toISOString() },
+      {
+        action: "Account approved and activated",
+        timestamp: new Date().toISOString(),
+      },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
   "franz@gmail.com": {
     id: "RES-2026-005",
@@ -97,11 +95,11 @@ const demoUsersByEmail = {
     profile_picture_url: "",
     created_at: "2026-01-01T00:00:00.000Z",
     activity_logs: [
-      { action: "Account approved and activated", timestamp: new Date().toISOString() },
+      {
+        action: "Account approved and activated",
+        timestamp: new Date().toISOString(),
+      },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
   "belastanford7@gmail.com": {
     id: "RES-2026-006",
@@ -113,62 +111,33 @@ const demoUsersByEmail = {
     profile_picture_url: "",
     created_at: "2026-01-01T00:00:00.000Z",
     activity_logs: [
-      { action: "Account approved and activated", timestamp: new Date().toISOString() },
+      {
+        action: "Account approved and activated",
+        timestamp: new Date().toISOString(),
+      },
     ],
-    warning_count: 0,
-    is_restricted: false,
-    restricted_until: null,
   },
 };
 
 const demoPasswordHashes = {
-  "superadmin@gmail.com": bcrypt.hashSync("SuperAdmin2026!", PASSWORD_SALT_ROUNDS),
-  "assistantadmin@gmail.com": bcrypt.hashSync("AssistantAdmin2026!", PASSWORD_SALT_ROUNDS),
+  "superadmin@gmail.com": bcrypt.hashSync(
+    "SuperAdmin2026!",
+    PASSWORD_SALT_ROUNDS,
+  ),
+  "assistantadmin@gmail.com": bcrypt.hashSync(
+    "AssistantAdmin2026!",
+    PASSWORD_SALT_ROUNDS,
+  ),
   "resident@gmail.com": bcrypt.hashSync("Resident719", PASSWORD_SALT_ROUNDS),
-  // Demo password for the 3 pre-approved seed residents below.
-  // Change or share with them as needed — it's the same for all three
-  // for simplicity; each has their own account/email.
   "jam7@gmail.com": bcrypt.hashSync("Resident123", PASSWORD_SALT_ROUNDS),
   "franz@gmail.com": bcrypt.hashSync("Resident123", PASSWORD_SALT_ROUNDS),
-  "belastanford7@gmail.com": bcrypt.hashSync("Resident123", PASSWORD_SALT_ROUNDS),
+  "belastanford7@gmail.com": bcrypt.hashSync(
+    "Resident123",
+    PASSWORD_SALT_ROUNDS,
+  ),
 };
 
-const notificationsByUserId = {
-  "ADM-2026-001": [
-    {
-      id: "ntf-admin-1",
-      title: "New resident application",
-      message: "A new resident account is waiting for approval.",
-      created_at: new Date().toISOString(),
-      is_read: false,
-    },
-    {
-      id: "ntf-admin-2",
-      title: "Complaint report filed",
-      message: "A new complaint was submitted and is pending review.",
-      created_at: new Date(Date.now() - 3600 * 1000).toISOString(),
-      is_read: true,
-    },
-  ],
-  "ADM-2026-002": [
-    {
-      id: "ntf-assistant-1",
-      title: "Weekly permit reminder",
-      message: "Remember to complete the weekly review of active case files.",
-      created_at: new Date().toISOString(),
-      is_read: false,
-    },
-  ],
-  "RES-2026-003": [
-    {
-      id: "ntf-resident-1",
-      title: "Complaint received",
-      message: "Your complaint has been received by the barangay office.",
-      created_at: new Date().toISOString(),
-      is_read: false,
-    },
-  ],
-};
+const notificationsByUserId = {};
 
 const activityLogs = [];
 
@@ -194,24 +163,6 @@ const complaints = [
   },
 ];
 
-const residentWarnings = [];
-
-const WARNING_TYPES = {
-  duplicate: "duplicate_submission",
-  restriction: "restriction_applied",
-};
-
-// ---------------------------------------------------------------
-// Pending resident applications.
-//
-// This is now the ONLY place a registration lands before approval.
-// POST /api/auth/register pushes here (status "Pending"); approving
-// a resident promotes the entry into demoUsersByEmail via
-// promotePendingResidentToUser() below, carrying over the password
-// hash that was set at registration time so the resident can sign in
-// immediately after approval.
-// ---------------------------------------------------------------
-
 const FALLBACK_SEED_PASSWORD_HASH = bcrypt.hashSync(
   "ChangeMe123",
   PASSWORD_SALT_ROUNDS,
@@ -228,11 +179,13 @@ const residentApplications = [
     purok: "Purok Sara-Sara 1",
     contactNumber: "09170000000",
     email: "resident@gmail.com",
-    validId: { name: "AeronID.png", type: "image/png", dataUrl: SEED_ID_IMAGES.aeron },
+    validId: {
+      name: "AeronID.png",
+      type: "image/png",
+      dataUrl: SEED_ID_IMAGES.aeron,
+    },
     status: "Approved",
     archived: false,
-    warning_count: 0,
-    is_restricted: false,
   },
   {
     id: "RES-2026-004",
@@ -244,11 +197,13 @@ const residentApplications = [
     purok: "Purok Aguma-a 2",
     contactNumber: "09123456789",
     email: "jam7@gmail.com",
-    validId: { name: "JamID.png", type: "image/png", dataUrl: SEED_ID_IMAGES.jamaica },
+    validId: {
+      name: "JamID.png",
+      type: "image/png",
+      dataUrl: SEED_ID_IMAGES.jamaica,
+    },
     status: "Approved",
     archived: false,
-    warning_count: 0,
-    is_restricted: false,
   },
   {
     id: "RES-2026-005",
@@ -260,11 +215,13 @@ const residentApplications = [
     purok: "Purok Danggit 1",
     contactNumber: "09817782349",
     email: "franz@gmail.com",
-    validId: { name: "FranzID.png", type: "image/png", dataUrl: SEED_ID_IMAGES.franz },
+    validId: {
+      name: "FranzID.png",
+      type: "image/png",
+      dataUrl: SEED_ID_IMAGES.franz,
+    },
     status: "Approved",
     archived: false,
-    warning_count: 0,
-    is_restricted: false,
   },
   {
     id: "RES-2026-006",
@@ -276,11 +233,13 @@ const residentApplications = [
     purok: "Purok Bilabid 2",
     contactNumber: "09871339927",
     email: "belastanford7@gmail.com",
-    validId: { name: "BelaID.png", type: "image/png", dataUrl: SEED_ID_IMAGES.bela },
+    validId: {
+      name: "BelaID.png",
+      type: "image/png",
+      dataUrl: SEED_ID_IMAGES.bela,
+    },
     status: "Approved",
     archived: false,
-    warning_count: 0,
-    is_restricted: false,
   },
 ];
 
@@ -312,51 +271,70 @@ function addActivityLog({
     details,
     timestamp: new Date().toISOString(),
   };
-
   activityLogs.unshift(entry);
   return entry;
 }
 
-// ---------------------------------------------------------------
-// Shared ID generation.
-//
-// Looks at BOTH demoUsersByEmail (admin/secretary/Aeron = 001-003)
-// AND residentApplications (every past registrant, pending or not)
-// so there is exactly one counter, server-side, for the whole app.
-// Replaces the old duplicated logic that used to live independently
-// in sign_up.js (client) and auth.js (server, fallbackUserSequence).
-// ---------------------------------------------------------------
-
 function generateNextUserId() {
   const idPattern = /^RES-2026-\d{3}$/;
-
   const existingIds = [
-    ...Object.values(demoUsersByEmail).map((user) => user.id),
-    ...residentApplications.map((resident) => resident.id),
+    ...Object.values(demoUsersByEmail).map((u) => u.id),
+    ...residentApplications.map((r) => r.id),
   ].filter((id) => idPattern.test(String(id)));
+  const seq = existingIds.map((id) => Number(String(id).slice(-3)));
+  return `RES-2026-${String(seq.length ? Math.max(...seq) + 1 : 1).padStart(3, "0")}`;
+}
 
-  const sequences = existingIds.map((id) => Number(String(id).slice(-3)));
-  const nextSequence = sequences.length ? Math.max(...sequences) + 1 : 1;
+function generateNextAdminId() {
+  const idPattern = /^ADM-2026-\d{3}$/;
+  const ids = Object.values(demoUsersByEmail)
+    .map((u) => u.id)
+    .filter((id) => idPattern.test(String(id)));
+  const seq = ids.map((id) => Number(String(id).slice(-3)));
+  return `ADM-2026-${String(seq.length ? Math.max(...seq) + 1 : 1).padStart(3, "0")}`;
+}
 
-  return `RES-2026-${String(nextSequence).padStart(3, "0")}`;
+// Creates a Super Admin or Assistant Admin account (the only two admin
+// roles in the system). New accounts start Inactive by design — Step 2
+// of the turnover workflow requires an explicit activation.
+function createAdministratorAccount({ firstName, lastName, email, password, role }) {
+  const normalizedEmail = normalizeEmail(email);
+  const id = generateNextAdminId();
+  const admin = {
+    id,
+    email: normalizedEmail,
+    role, // must be "super_admin" or "assistant_admin" — enforced by the caller route
+    first_name: firstName,
+    last_name: lastName,
+    account_status: "inactive",
+    profile_picture_url: "",
+    created_at: new Date().toISOString(),
+    activity_logs: [],
+  };
+  demoUsersByEmail[normalizedEmail] = admin;
+  demoPasswordHashes[normalizedEmail] = bcrypt.hashSync(password, PASSWORD_SALT_ROUNDS);
+  return admin;
 }
 
 function isEmailRegistered(email) {
-  const normalized = normalizeEmail(email);
-  const isExistingUser = Boolean(getUserByEmail(normalized));
-  const isExistingApplicant = residentApplications.some(
-    (resident) => normalizeEmail(resident.email) === normalized,
+  const n = normalizeEmail(email);
+  return (
+    Boolean(getUserByEmail(n)) ||
+    residentApplications.some((r) => normalizeEmail(r.email) === n)
   );
-  return isExistingUser || isExistingApplicant;
 }
 
-// Promotes an approved resident application into a real, loggable-in
-// user. Uses the password hash captured at registration time; falls
-// back to a known demo password only for legacy seed entries that
-// predate that field (Liza, Mark).
-function promotePendingResidentToUser(resident) {
-  const passwordHash = resident._passwordHash || FALLBACK_SEED_PASSWORD_HASH;
+function getUserByEmail(email) {
+  return demoUsersByEmail[normalizeEmail(email)] || null;
+}
 
+function getUserById(id) {
+  const entry = Object.entries(demoUsersByEmail).find(([, u]) => u.id === id);
+  return entry ? entry[1] : null;
+}
+
+function promotePendingResidentToUser(resident) {
+  const hash = resident._passwordHash || FALLBACK_SEED_PASSWORD_HASH;
   const user = {
     id: resident.id,
     email: normalizeEmail(resident.email),
@@ -367,21 +345,17 @@ function promotePendingResidentToUser(resident) {
     profile_picture_url: "",
     created_at: new Date().toISOString(),
     activity_logs: [
-      { action: "Account approved and activated", timestamp: new Date().toISOString() },
+      {
+        action: "Account approved and activated",
+        timestamp: new Date().toISOString(),
+      },
     ],
-    warning_count: resident.warning_count || 0,
-    is_restricted: false,
-    restricted_until: null,
   };
-
   demoUsersByEmail[user.email] = user;
-  demoPasswordHashes[user.email] = passwordHash;
-
+  demoPasswordHashes[user.email] = hash;
   return user;
 }
 
-// Strips internal-only fields (like the password hash) before a
-// resident application record is sent to the frontend.
 function toSafeResident(resident) {
   const { _passwordHash, ...safe } = resident;
   return safe;
@@ -412,127 +386,93 @@ function normalizeEmail(email) {
 }
 
 function getUserEntryById(id) {
-  return Object.entries(demoUsersByEmail).find(([, user]) => user.id === id);
+  return Object.entries(demoUsersByEmail).find(([, u]) => u.id === id);
 }
 
-function getUserByEmail(email) {
-  return demoUsersByEmail[normalizeEmail(email)] || null;
-}
-
-function getUserById(id) {
-  const entry = getUserEntryById(id);
-  return entry ? entry[1] : null;
-}
-
-function updateUserProfile(id, updates) {
-  const entry = getUserEntryById(id);
-  if (!entry) {
-    return null;
-  }
-
-  const [currentEmailKey, user] = entry;
-  const allowed = ["first_name", "last_name", "email", "profile_picture_url"];
-
-  allowed.forEach((key) => {
-    if (
-      Object.prototype.hasOwnProperty.call(updates, key) &&
-      updates[key] !== undefined
-    ) {
-      user[key] = key === "email" ? normalizeEmail(updates[key]) : updates[key];
-    }
-  });
-
-  if (user.email && user.email !== currentEmailKey) {
-    const passwordHash = demoPasswordHashes[currentEmailKey];
-    delete demoUsersByEmail[currentEmailKey];
-    demoUsersByEmail[user.email] = user;
-
-    if (passwordHash !== undefined) {
-      delete demoPasswordHashes[currentEmailKey];
-      demoPasswordHashes[user.email] = passwordHash;
-    }
-  }
-
-  user.activity_logs = user.activity_logs || [];
-  user.activity_logs.unshift({
-    action: "Profile updated",
-    timestamp: new Date().toISOString(),
-  });
-
-  return user;
-}
-
-function isEmailTaken(email, exceptUserId = null) {
-  const user = getUserByEmail(email);
-  return Boolean(user && user.id !== exceptUserId);
+function isEmailTaken(email, exceptUserId) {
+  const u = getUserByEmail(email);
+  return Boolean(u && u.id !== exceptUserId);
 }
 
 function verifyUserPassword(id, password) {
   const entry = getUserEntryById(id);
   if (!entry) return false;
-
-  const [email] = entry;
-  const passwordHash = demoPasswordHashes[email];
-  return Boolean(passwordHash && bcrypt.compareSync(password, passwordHash));
+  return Boolean(
+    demoPasswordHashes[entry[0]] &&
+    bcrypt.compareSync(password, demoPasswordHashes[entry[0]]),
+  );
 }
 
 function updateUserPassword(id, newPassword) {
   const entry = getUserEntryById(id);
   if (!entry) return null;
-
-  const [email, user] = entry;
-  demoPasswordHashes[email] = bcrypt.hashSync(
+  demoPasswordHashes[entry[0]] = bcrypt.hashSync(
     newPassword,
     PASSWORD_SALT_ROUNDS,
   );
+  return entry[1];
+}
+
+function updateUserProfile(id, updates) {
+  const entry = getUserEntryById(id);
+  if (!entry) return null;
+  const [key, user] = entry;
+  for (const k of ["first_name", "last_name", "email", "profile_picture_url"]) {
+    if (
+      Object.prototype.hasOwnProperty.call(updates, k) &&
+      updates[k] !== undefined
+    )
+      user[k] = k === "email" ? normalizeEmail(updates[k]) : updates[k];
+  }
+  if (user.email && user.email !== key) {
+    const h = demoPasswordHashes[key];
+    delete demoUsersByEmail[key];
+    demoUsersByEmail[user.email] = user;
+    if (h !== undefined) {
+      delete demoPasswordHashes[key];
+      demoPasswordHashes[user.email] = h;
+    }
+  }
+  (user.activity_logs = user.activity_logs || []).unshift({
+    action: "Profile updated",
+    timestamp: new Date().toISOString(),
+  });
   return user;
 }
 
 function addUserActivity(id, action, metadata = {}) {
   const user = getUserById(id);
   if (!user) return;
-  user.activity_logs = user.activity_logs || [];
-  const entry = {
+  (user.activity_logs = user.activity_logs || []).unshift({
     action,
     timestamp: new Date().toISOString(),
     ...metadata,
-  };
-  user.activity_logs.unshift(entry);
+  });
   addActivityLog({
     userId: id,
     action,
-    targetType: metadata.targetType || metadata.target_type || "",
+    targetType: metadata.targetType || "",
     targetId:
-      metadata.targetId ||
-      metadata.target_id ||
-      metadata.complaint_id ||
-      metadata.resident_id ||
-      "",
+      metadata.targetId || metadata.complaint_id || metadata.resident_id || "",
     details: metadata.details || "",
   });
 }
 
 function addUserNotification(userId, title, message) {
-  if (!notificationsByUserId[userId]) {
-    notificationsByUserId[userId] = [];
-  }
-  notificationsByUserId[userId].unshift({
-    id: `ntf-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    title,
-    message,
-    created_at: new Date().toISOString(),
-    is_read: false,
-  });
+  (notificationsByUserId[userId] = notificationsByUserId[userId] || []).unshift(
+    {
+      id: `ntf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      title,
+      message,
+      created_at: new Date().toISOString(),
+      is_read: false,
+    },
+  );
 }
 
 function removeUserById(userId) {
-  const entry = Object.entries(demoUsersByEmail).find(
-    ([, user]) => user.id === userId,
-  );
-  if (!entry) {
-    return null;
-  }
-
+  const entry = getUserEntryById(userId);
+  if (!entry) return null;
   const [email, user] = entry;
   delete demoUsersByEmail[email];
   delete demoPasswordHashes[email];
@@ -540,114 +480,134 @@ function removeUserById(userId) {
   return user;
 }
 
-// Retained for any other caller that still adds a user directly with a
-// plaintext password (e.g. seeding/testing). Registration and approval
-// now use promotePendingResidentToUser() instead, which preserves the
-// hash set at registration time rather than re-hashing an empty string.
-function addUser(user, password = "") {
-  if (!user || !user.email) {
-    return null;
-  }
-
-  const normalizedEmail = user.email.toLowerCase();
-  demoUsersByEmail[normalizedEmail] = {
+function addUser(user, password) {
+  if (!user || !user.email) return null;
+  const e = user.email.toLowerCase();
+  demoUsersByEmail[e] = {
     id: user.id,
-    email: normalizedEmail,
+    email: e,
     role: user.role || "resident",
-    first_name: user.first_name || user.firstName || "",
-    last_name: user.last_name || user.lastName || "",
-    profile_picture_url: user.profile_picture_url || "",
-    created_at: user.created_at || new Date().toISOString(),
-    activity_logs: user.activity_logs || [],
-    warning_count: user.warning_count || 0,
-    is_restricted: Boolean(user.is_restricted),
-    restricted_until: user.restricted_until || null,
+    first_name: user.first_name || "",
+    last_name: user.last_name || "",
+    profile_picture_url: "",
+    created_at: new Date().toISOString(),
+    activity_logs: [],
   };
-
-  if (password) {
-    demoPasswordHashes[normalizedEmail] = bcrypt.hashSync(
-      password,
-      PASSWORD_SALT_ROUNDS,
-    );
-  }
-
-  return demoUsersByEmail[normalizedEmail];
+  if (password)
+    demoPasswordHashes[e] = bcrypt.hashSync(password, PASSWORD_SALT_ROUNDS);
+  return demoUsersByEmail[e];
 }
 
-function getActivityLogs(limit = 200) {
-  return activityLogs.slice(0, limit);
+function getActivityLogs(limit) {
+  return (activityLogs || []).slice(0, limit || 200);
 }
 
 function getUserNotifications(id) {
-  if (!notificationsByUserId[id]) {
-    notificationsByUserId[id] = [];
-  }
-  return notificationsByUserId[id];
+  return notificationsByUserId[id] || (notificationsByUserId[id] = []);
 }
 
-function addAdminNotification({
-  title,
-  message,
-  roles = ["assistant_admin", "super_admin"],
-}) {
-  Object.values(demoUsersByEmail).forEach((user) => {
-    if (roles.includes(user.role)) {
-      if (!notificationsByUserId[user.id]) {
-        notificationsByUserId[user.id] = [];
+function addAdminNotification({ title, message, roles, ...extra } = {}) {
+  for (const u of Object.values(demoUsersByEmail)) {
+    if ((roles || ["assistant_admin", "super_admin"]).includes(u.role)) {
+      (notificationsByUserId[u.id] = notificationsByUserId[u.id] || []).unshift(
+        {
+          id: `ntf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          title,
+          message,
+          created_at: new Date().toISOString(),
+          is_read: false,
+          ...extra,
+        },
+      );
+    }
+  }
+}
+
+function removeResidentRegistrationNotifications(residentId) {
+  for (const userId of Object.keys(notificationsByUserId)) {
+    const user = getUserById(userId);
+    if (
+      !user ||
+      (user.role !== "super_admin" && user.role !== "assistant_admin")
+    ) {
+      continue;
+    }
+    notificationsByUserId[userId] = (
+      notificationsByUserId[userId] || []
+    ).filter((n) => {
+      // Remove by exact residentId match
+      if (n.type === "resident_registration" && n.residentId === residentId) {
+        return false;
       }
-      notificationsByUserId[user.id].unshift({
-        id: `ntf-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        title,
-        message,
-        created_at: new Date().toISOString(),
-        is_read: false,
-      });
-    }
-  });
-}
-
-function getUserWarnings(userId) {
-  return residentWarnings.filter((warning) => warning.residentId === userId);
-}
-
-function logResidentWarning({
-  residentId,
-  complaintId,
-  type,
-  reason,
-  expiresAt = null,
-}) {
-  const warning = {
-    id: `warning-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    residentId,
-    complaintId,
-    type,
-    reason,
-    created_at: new Date().toISOString(),
-    expires_at: expiresAt,
-  };
-
-  residentWarnings.push(warning);
-
-  const user = getUserById(residentId);
-  if (user) {
-    user.warning_count = (user.warning_count || 0) + 1;
-    if (expiresAt) {
-      user.is_restricted = true;
-      user.restricted_until = expiresAt;
-    }
+      // Remove legacy (title-based) notifications referencing this resident
+      if (
+        (n.title === "New resident registration" ||
+          n.title === "New resident application") &&
+        n.residentId === residentId
+      ) {
+        return false;
+      }
+      return true;
+    });
   }
-
-  return warning;
 }
 
-function clearUserRestriction(userId) {
-  const user = getUserById(userId);
-  if (!user) return null;
+function hasDuplicateRegistrationNotification(residentId) {
+  for (const userId of Object.keys(notificationsByUserId)) {
+    const user = getUserById(userId);
+    if (
+      !user ||
+      (user.role !== "super_admin" && user.role !== "assistant_admin")
+    ) {
+      continue;
+    }
+    const exists = (notificationsByUserId[userId] || []).some(
+      (n) => n.type === "resident_registration" && n.residentId === residentId,
+    );
+    if (exists) return true;
+  }
+  return false;
+}
 
-  user.is_restricted = false;
-  user.restricted_until = null;
-  return user;
+/**
+ * cleanOrphanResidentNotifications
+ *
+ * Scans all administrator notification lists and removes any notification
+ * whose type is "resident_registration" or whose title matches
+ * "New resident registration" / "New resident application" but whose
+ * residentId no longer exists in residentApplications.
+ *
+ * This ensures orphan notifications from testing or edge cases are
+ * cleaned up automatically every time notifications are loaded.
+ */
+function cleanOrphanResidentNotifications() {
+  const validResidentIds = new Set(residentApplications.map((r) => r.id));
+  for (const userId of Object.keys(notificationsByUserId)) {
+    const user = getUserById(userId);
+    if (
+      !user ||
+      (user.role !== "super_admin" && user.role !== "assistant_admin")
+    ) {
+      continue;
+    }
+    notificationsByUserId[userId] = (
+      notificationsByUserId[userId] || []
+    ).filter((n) => {
+      // If it's a resident registration notification type
+      if (n.type === "resident_registration" && n.residentId) {
+        return validResidentIds.has(n.residentId);
+      }
+      // Legacy title-based detection with residentId
+      if (
+        (n.title === "New resident registration" ||
+          n.title === "New resident application") &&
+        n.residentId
+      ) {
+        return validResidentIds.has(n.residentId);
+      }
+      return true;
+    });
+  }
 }
 
 module.exports = {
@@ -665,19 +625,20 @@ module.exports = {
   addUserActivity,
   addUserNotification,
   addAdminNotification,
+  removeResidentRegistrationNotifications,
+  hasDuplicateRegistrationNotification,
+  cleanOrphanResidentNotifications,
   addUser,
   removeUserById,
   getUserNotifications,
   residentApplications,
   complaints,
-  residentWarnings,
-  getUserWarnings,
-  logResidentWarning,
-  clearUserRestriction,
   fullName,
   addActivityLog,
   getActivityLogs,
   generateNextUserId,
   promotePendingResidentToUser,
   toSafeResident,
+  generateNextAdminId,
+  createAdministratorAccount,
 };

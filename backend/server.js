@@ -12,6 +12,7 @@ const notificationRoutes = require("./routes/notifications");
 const residentsRoutes = require("./routes/residents");
 const activityRoutes = require("./routes/activity");
 const hearingNoticeRoutes = require("./routes/hearingNotices");
+const adminUsersRoutes = require("./routes/adminUsers");
 const { authenticateToken, requireRoles } = require("./middleware/auth");
 
 const app = express();
@@ -44,6 +45,12 @@ app.use(
   reportsRoutes,
 );
 app.use("/api/activity", authenticateToken, activityRoutes);
+app.use(
+  "/api/admin-users",
+  authenticateToken,
+  requireRoles("super_admin"),
+  adminUsersRoutes,
+);
 
 // Static Frontend Assets
 app.use(express.static(path.join(publicRoot, "html")));
