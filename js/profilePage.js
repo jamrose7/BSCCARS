@@ -58,29 +58,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (page !== "edit") return;
   const form = document.getElementById("profileEditForm");
-  const firstName = document.getElementById("firstName");
-  const lastName = document.getElementById("lastName");
   const email = document.getElementById("email");
+  const currentPasswordRow = document.getElementById("currentPasswordRow");
+  const currentPassword = document.getElementById("currentPassword");
+
+  const toggleCurrentPassword = document.getElementById("toggleCurrentPassword");
+  if (toggleCurrentPassword && currentPassword) {
+    toggleCurrentPassword.addEventListener("click", () => {
+      const isHidden = currentPassword.type === "password";
+      currentPassword.type = isHidden ? "text" : "password";
+      toggleCurrentPassword.classList.toggle("closed", !isHidden);
+      toggleCurrentPassword.setAttribute(
+        "aria-label",
+        isHidden ? "Hide password" : "Show password",
+      );
+    });
+  }
+
+  let originalEmail = "";
   const photo = document.getElementById("profilePhoto");
   const preview = document.getElementById("photoPreview");
   const status = document.getElementById("profileStatus");
   let photoDataUrl = "";
 
-  async function load() {
-    status.textContent = "Loading profile…";
-    try {
-      const user = await getProfile();
-      firstName.value = user.first_name || "";
-      lastName.value = user.last_name || "";
-      email.value = user.email || "";
-      photoDataUrl = user.profile_picture_url || "";
-      if (photoDataUrl) preview.src = photoDataUrl;
-      status.textContent = "";
-    } catch (error) {
-      console.error("Profile edit load failed:", error);
-      status.textContent = "We could not load your profile. Please return to the dashboard and try again.";
-    }
+  function syncPasswordFieldVisibility() {
+  const emailChanged = email.value.trim().toLowerCase() !== originalEmail.toLowerCase();
+  currentPasswordRow.style.display = emailChanged ? "grid" : "none";
+  currentPassword.required = emailChanged;
+  if (!emailChanged) currentPassword.value = "";
   }
+
+  async function load() {
+  status.textContent = "Loading profile…";
+  try {
+    const user = await getProfile();
+    email.value = user.email || "";
+    originalEmail = user.email || "";         
+    photoDataUrl = user.profile_picture_url || "";
+    if (photoDataUrl) preview.src = photoDataUrl;
+    status.textContent = "";
+    syncPasswordFieldVisibility();              
+  } catch (error) {
+    console.error("Profile edit load failed:", error);
+    status.textContent = "We could not load your profile. Please return to the dashboard and try again.";
+  }
+}
+  email.addEventListener("input", syncPasswordFieldVisibility);
 
   photo.addEventListener("change", () => {
     const file = photo.files?.[0];
@@ -101,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const submit = form.querySelector('[type="submit"]');
     setButtonLoading(submit, true);
     try {
-      const response = await api.updateProfile({ first_name: firstName.value.trim(), last_name: lastName.value.trim(), email: email.value.trim(), profile_picture_url: photoDataUrl });
+      const response = await api.updateProfile({ email: email.value.trim(), profile_picture_url: photoDataUrl });
       if (!response?.success) throw new Error(response?.message || "Unable to save profile.");
       api.setUser(response.data);
       window.location.assign(returnUrl);

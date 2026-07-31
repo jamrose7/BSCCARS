@@ -5,6 +5,7 @@ const {
   updateUserProfile,
   isEmailTaken,
   addUserActivity,
+  verifyUserPassword,
 } = require("../data/mockData");
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -37,14 +38,33 @@ router.get("/", async (req, res) => {
 });
 
 // PATCH /api/profile - update the authenticated user's own profile.
+// Names are intentionally NOT accepted here — BSCCARS treats first/last name
+// as identity-of-record (tied to verified ID and KP hearing notice
+// documents), not a self-service profile field. Only email and photo are
+// editable through this endpoint. Email changes additionally require the
+// user's current password to confirm the account holder authorized the
+// change.
 router.patch("/", (req, res) => {
-  const first_name = String(req.body?.first_name || "").trim();
-  const last_name = String(req.body?.last_name || "").trim();
+  if (
+    Object.prototype.hasOwnProperty.call(req.body || {}, "first_name") ||
+    Object.prototype.hasOwnProperty.call(req.body || {}, "last_name")
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Name changes are not permitted through profile editing. Contact the Barangay Office to correct your name on record.",
+    });
+  }
+
+  const currentUser = getUserById(req.user.id);
+  if (!currentUser) {
+    return res.status(404).json({ success: false, message: "User not found." });
+  }
+
   const email = String(req.body?.email || "").trim().toLowerCase();
   const profile_picture_url = req.body?.profile_picture_url;
 
-  if (!first_name || !last_name || !email) {
-    return res.status(400).json({ success: false, message: "First name, last name, and email are required." });
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email is required." });
   }
   if (!EMAIL_PATTERN.test(email)) {
     return res.status(400).json({ success: false, message: "Enter a valid email address." });
@@ -53,13 +73,23 @@ router.patch("/", (req, res) => {
       (typeof profile_picture_url !== "string" || profile_picture_url.length > 3 * 1024 * 1024)) {
     return res.status(400).json({ success: false, message: "Profile image is invalid or too large." });
   }
-  if (isEmailTaken(email, req.user.id)) {
-    return res.status(409).json({ success: false, message: "That email address is already in use." });
+
+  const emailChanged = email !== currentUser.email.toLowerCase();
+
+  if (emailChanged) {
+    const currentPassword = String(req.body?.current_password || "");
+    if (!currentPassword || !verifyUserPassword(req.user.id, currentPassword)) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is required and must be correct to change your email address.",
+      });
+    }
+    if (isEmailTaken(email, req.user.id)) {
+      return res.status(409).json({ success: false, message: "That email address is already in use." });
+    }
   }
 
   const user = updateUserProfile(req.user.id, {
-    first_name,
-    last_name,
     email,
     ...(typeof profile_picture_url === "string" ? { profile_picture_url } : {}),
   });
@@ -67,7 +97,13 @@ router.patch("/", (req, res) => {
     return res.status(404).json({ success: false, message: "User not found." });
   }
 
-  addUserActivity(user.id, "Updated profile", { targetType: "account", targetId: user.id });
+  addUserActivity(user.id, emailChanged ? "Updated account email" : "Updated profile photo", {
+    targetType: "account",
+    targetId: user.id,
+    details: emailChanged
+      ? `Email changed from ${currentUser.email} to ${email}`
+      : "Profile photo updated",
+  });
   return res.json({ success: true, data: profileResponse(user) });
 });
 
