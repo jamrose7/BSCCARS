@@ -28,6 +28,18 @@ function isStrongEnoughPassword(password) {
   return typeof password === "string" && password.length >= 8;
 }
 
+function isAdult(dateOfBirthString) {
+  const birthDate = new Date(dateOfBirthString);
+  if (Number.isNaN(birthDate.getTime())) return false;
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age >= 18;
+}
+
 // POST /api/auth/sign-in
 router.post("/sign-in", async (req, res) => {
   const email = cleanString(req.body?.email).toLowerCase();
@@ -108,6 +120,14 @@ router.post("/register", async (req, res) => {
         message: "Please complete all required fields.",
       });
     }
+if (!isAdult(dateOfBirth)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "You must be at least 18 years old to register an account. If you are a minor with a concern to report, please ask a parent or guardian to file it using their own resident account.",
+      });
+    }
+
     if (!EMAIL_PATTERN.test(email)) {
       return res.status(400).json({
         success: false,

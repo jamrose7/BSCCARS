@@ -8,6 +8,38 @@ document.addEventListener("DOMContentLoaded", () => {
   const middleNameError = form.querySelector("#middleNameError");
   const validId = form.querySelector("#validId");
 
+  const dateOfBirth = form.querySelector("#dateOfBirth");
+
+  const dobError = document.createElement("p");
+  dobError.className = "field-error";
+  dobError.setAttribute("aria-live", "polite");
+  if (dateOfBirth) {
+    dateOfBirth.insertAdjacentElement("afterend", dobError);
+  }
+
+  function validateDateOfBirth() {
+    const value = dateOfBirth.value;
+    if (!value) {
+      dateOfBirth.setCustomValidity("");
+      dobError.textContent = "";
+      return true;
+    }
+    if (!Validators.adultAge(value)) {
+      dateOfBirth.setCustomValidity("Must be 18 or older");
+      dobError.textContent =
+        "You must be at least 18 years old to register. If you are a minor, please have a parent or guardian file the complaint using their own account.";
+      return false;
+    }
+    dateOfBirth.setCustomValidity("");
+    dobError.textContent = "";
+    return true;
+  }
+
+  if (dateOfBirth) {
+    dateOfBirth.addEventListener("change", validateDateOfBirth);
+    dateOfBirth.addEventListener("blur", validateDateOfBirth);
+  }
+
   const eyeToggles = document.querySelectorAll(".eye");
   const successModal = document.getElementById("successModal");
   const backToSigninBtn = document.getElementById("backToSignin");
@@ -121,6 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!validateMiddleName()) {
       middleName.focus();
+      return;
+    }
+
+    if (!validateDateOfBirth()) {
+      dateOfBirth.focus();
       return;
     }
 
