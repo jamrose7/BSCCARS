@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -30,8 +31,6 @@ app.use(cors());
 app.use(express.json({ limit: "7mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
-
 app.use("/api/auth", authRoutes);
 app.use("/api/notifications", authenticateToken, notificationRoutes);
 app.use("/api/profile", authenticateToken, profileRoutes);
@@ -57,7 +56,35 @@ app.use(express.static(path.join(publicRoot, "html")));
 app.use("/js", express.static(path.join(publicRoot, "js")));
 app.use("/css", express.static(path.join(publicRoot, "css")));
 app.use("/images", express.static(path.join(publicRoot, "images")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get("/api/uploads/complaints/:filename", authenticateToken, (req, res) => {
+  const uploadRoot = path.resolve(__dirname, "uploads", "complaints");
+  const requestedPath = path.resolve(uploadRoot, req.params.filename);
+  const relativeTarget = path.relative(uploadRoot, requestedPath);
+
+  if (relativeTarget.startsWith("..") || path.isAbsolute(relativeTarget)) {
+    return res.status(404).json({ success: false, message: "Attachment not found." });
+  }
+
+  if (!fs.existsSync(requestedPath) || !fs.statSync(requestedPath).isFile()) {
+    return res.status(404).json({ success: false, message: "Attachment not found." });
+  }
+
+  const ext = path.extname(requestedPath).toLowerCase();
+  const contentTypeMap = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".mp4": "video/mp4",
+    ".mov": "video/quicktime",
+    ".avi": "video/x-msvideo",
+  };
+
+  res.setHeader("Content-Type", contentTypeMap[ext] || "application/octet-stream");
+  res.sendFile(requestedPath);
+});
 
 // Root Route
 app.get("/", (req, res) => {
