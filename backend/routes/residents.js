@@ -9,7 +9,6 @@ const {
   addUserNotification,
   addAdminNotification,
   removeResidentRegistrationNotifications,
-  removeUserById,
 } = require("../data/mockData");
 
 function findResident(id) {
@@ -31,7 +30,7 @@ function residentName(resident) {
   );
 }
 
-// Both staff roles process resident applications; destructive and restriction
+// Both staff roles process resident applications; restriction
 // actions below remain reserved for the Super Admin.
 router.use(requireRoles("assistant_admin", "super_admin"));
 
@@ -110,6 +109,10 @@ router.post("/:id/reject", (req, res) => {
 });
 
 // PATCH /api/residents/:id/archive
+// Archive is the system's soft-delete: it hides the resident from active
+// views while preserving the record (and any complaints tied to it) intact.
+// There is no permanent-delete route — archived residents can only be
+// restored via this same endpoint with is_archived: false.
 router.patch("/:id/archive", requireRoles("super_admin"), (req, res) => {
   const resident = findResident(req.params.id);
   if (!resident) {
@@ -143,63 +146,6 @@ router.patch("/:id/archive", requireRoles("super_admin"), (req, res) => {
     `Your resident account application was ${resident.archived ? "moved to the archive" : "restored for processing"}.`,
   );
   res.json({ success: true, data: resident });
-});
-
-// DELETE /api/residents/:id
-// Active records are soft-deleted into the archive. Only archived records are
-// permanently removed.
-router.delete("/:id", requireRoles("super_admin"), (req, res) => {
-  const index = residentApplications.findIndex(
-    (resident) => resident.id === req.params.id,
-  );
-  if (index === -1) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Resident not found." });
-  }
-
-  const resident = residentApplications[index];
-  const archived = Boolean(resident.archived || resident.is_archived);
-  if (!archived) {
-    resident.archived = true;
-    resident.is_archived = true;
-    resident.archivedAt = new Date().toISOString();
-    addUserActivity(req.user.id, "Archived resident through delete action", {
-      targetType: "resident",
-      targetId: resident.id,
-      resident_id: resident.id,
-      details: residentName(resident),
-    });
-    addAdminNotification({
-      title: "Resident moved to archive",
-      message: `${residentName(resident)} was not permanently deleted. The record can be restored from the archive.`,
-    });
-    addUserNotification(
-      resident.id,
-      "Account application archived",
-      "Your resident account application was moved to the archive for record keeping.",
-    );
-    return res.json({
-      success: true,
-      message: "Resident moved to archive.",
-      data: resident,
-    });
-  }
-
-  const [deleted] = residentApplications.splice(index, 1);
-  removeResidentRegistrationNotifications(deleted.id);
-  removeUserById(deleted.id);
-  addUserActivity(req.user.id, "Permanently deleted archived resident", {
-    targetType: "resident",
-    targetId: deleted.id,
-    resident_id: deleted.id,
-    details: residentName(deleted),
-  });
-  addAdminNotification({
-    title: "Archived resident permanently deleted",
-    message: `${residentName(deleted)} was permanently deleted from archived resident records.`,
-  });
-  res.json({ success: true, data: deleted });
 });
 
 module.exports = router;

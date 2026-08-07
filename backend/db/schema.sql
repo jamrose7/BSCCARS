@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   CONSTRAINT chk_users_id_format CHECK (id REGEXP '^(RES|ADM)-2026-[0-9]{3}$')
 );
 
-CREATE INDEX idx_users_status ON users (status);
+CREATE INDEX idx_users_status ON users (account_status);
 
 CREATE TABLE IF NOT EXISTS complaints (
   id VARCHAR(32) PRIMARY KEY,
@@ -80,6 +80,18 @@ CREATE TABLE IF NOT EXISTS complaint_comments (
 CREATE INDEX idx_complaint_comments_complaint ON complaint_comments (complaint_id);
 CREATE INDEX idx_complaint_comments_internal ON complaint_comments (is_internal);
 
+CREATE TABLE IF NOT EXISTS complaint_follow_ups (
+  id VARCHAR(64) PRIMARY KEY,
+  complaint_id VARCHAR(32) NOT NULL,
+  created_by VARCHAR(20) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_complaint_follow_ups_complaint ON complaint_follow_ups (complaint_id);
+
 CREATE TABLE IF NOT EXISTS complaint_status_history (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   complaint_id VARCHAR(32) NOT NULL,
@@ -130,7 +142,7 @@ CREATE TABLE IF NOT EXISTS hearing_notices (
   hearing_time TIME NULL,
   stage ENUM('first_mediation', 'second_mediation', 'conciliation', 'cfa_issued') NOT NULL DEFAULT 'first_mediation',
   outcome ENUM('pending', 'respondent_appeared', 'respondent_absent', 'settled', 'escalated') NOT NULL DEFAULT 'pending',
-  notice_served_method ENUM('printed', 'email', 'in_person') NULL,
+  notice_served_method ENUM('printed', 'in_person') NULL,
   notice_served_at DATETIME NULL,
   location VARCHAR(150) NULL,
   mediation_notes TEXT NULL,
