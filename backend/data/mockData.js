@@ -145,22 +145,173 @@ const complaints = [
   {
     id: "CMP-2026-0001",
     submitterId: "RES-2026-003",
-    title: "Loud music past midnight",
+    title: "Loud music at night",
     category: "Noise and Public Disturbance",
     purok: "Purok Sara-Sara 1",
     incidentDate: "2026-07-11",
-    incidentTime: "4:30 PM",
-    details: "Loud music played repeatedly past midnight.",
+    incidentTime: "00:30",
+    details: "Nabantayan nakon nga kusog kaayo ang music gikan sa usa ka byay sa among area sa Purok Sara-Sara 1. Nagsugod na ug saba ang music pagkagabii ug nagpadayon gihapon bisan lapas na sa tungang gabii. Lisod na kaayo makapahuway ug makatulog tungod sa kusog nga music, labi na para sa mga nagpuyo duol sa among lugar. Nabalaka pud ko kay basin magpadayon ni nga problema kung dili maistoryahan ang mga involved. Unta ma-check sa barangay ang situation ug matabangan nga mahinay-hinayan ang volume sa music labi na kung gabii na.",
     status: "in-progress",
-    priority: "High",
+    priority: "Normal",
     confidential: "Yes",
-    source: "In-person at Barangay Office",
+    source: "Digital Submission",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     archived: false,
     is_archived: false,
     attachments: [],
     comments: [],
   },
+  {
+    id: "CMP-2026-0002",
+    submitterId: "RES-2026-004",
+    title: "Garbage dumped along the roadside",
+    category: "Waste, Sanitation, and Environment",
+    purok: "Purok Bilabid 2",
+    incidentDate: "2026-07-14",
+    incidentTime: "09:15",
+    details: "Nabantayan nakon nga aray mga basura ug household waste nga gipangtambak sa kilid sang dahan diri sa among area sa Purok Bilabid 2. Pipila na ka adlaw nga ara ang mga basura and nagsugod na ang baho, labi na kung init ang panahon. Nabalaka ko kay basin makadani sang mga langaw, iro, iring, and iban pa na mga sapat. Dili na lat maayo tan-awon and dili komportable para sa mga nagpuyo sa lapit and ang mga nangagi sa lugar. Unta ma-check sa barangay ang area ug matabangan nga makolekta ug ma-dispose sang tarong ang mga basura.",
+    status: "pending",
+    priority: "Normal",
+    confidential: "Yes",
+    source: "In-person at Barangay Office",
+    createdAt: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
+    archived: false,
+    is_archived: false,
+    attachments: [],
+    comments: [],
+  },
+  {
+    id: "CMP-2026-0003",
+    submitterId: "RES-2026-005",
+    title: "Blocked drainage causing flooding",
+    category: "Road and Infrastructure",
+    purok: "Purok Aguma-a 2",
+    incidentDate: "2026-07-15",
+    incidentTime: "18:45",
+    details: "Nabantayan nakon nga dali da kaayo magpundok ang tubig sa kilid sang dahan sa Purok Aguma-a 2 kung mag-uwan. Murag barado ang drainage amo nga dili tarong ang pag-agas sang tubig ug magsugod na ug overflow paduhong sa dahan. Tungod sini, lisod na agian ang area labi na kung kusog ang uwan, ug nabalaka pud ko kay basin mosamot ang problema kung sige ni nga mahitabo. Unta ma-check sa barangay ang drainage ug malimpyohan o ma-repair kung kinahanglan aron dili na magtapok ang tubig kada mag-uwan.",
+    status: "in-progress",
+    priority: "Normal",
+    confidential: "Yes",
+    source: "Digital Submission",
+    createdAt: new Date(Date.now() - 14 * 60 * 60 * 1000).toISOString(),
+    archived: false,
+    is_archived: false,
+    attachments: [],
+    comments: [],
+  },
+  {
+    id: "CMP-2026-0004",
+    submitterId: "RES-2026-006",
+    title: "Borrowed money has not been paid back",
+    category: "Money Debt",
+    purok: "Purok Bilabid 3",
+    respondentName: "Liam Nazar",
+    respondentContactNumber: "09123456789",
+    respondentPurok: "Purok Bilabid 3",
+    incidentDate: "2026-07-16",
+    incidentTime: "13:20",
+    details:
+    "Nanghulam si Liam Nazar sa akon sang 10, 000 para gamiton sa iyang medical expenses. Sa among sabot, bayaran unta niya ang kwarta pagkahuman sa iyang kinahanglanon, pero hangtod karon wala pa gihapon niya nabayran ang tibuok kantidad. Nakig-coordinate na ko niya ug naka-follow up na pud ko pila ka beses bahin sa iyang utang, pero wala pa gihapon nahuman ang pagbayad. Nasabtan nako nga basin naa gihapon siyay personal nga problema, mao nga gusto nako nga masulbad ni pinaagi sa maayong pag-istorya ug dili pinaagi sa panaglalis. Nangayo ko og tabang sa barangay aron maistoryahan namo ang among concern ug makasabot mi sa angay nga paagi sa pag-settle sa 10, 000 nga utang.",
+    status: "in-progress",
+    priority: "Normal",
+    confidential: "Yes",
+    source: "Digital Submission",
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    archived: false,
+    is_archived: false,
+    attachments: [],
+    comments: [],
+  },
+   {
+    id: "CMP-2026-0005",
+    submitterId: "RES-2026-003",
+    title: "Aray patay nga sapat lapit sa among lugar",
+    category: "Public Health Hazard",
+    purok: "Purok Pugapo",
+    incidentDate: "2026-07-17",
+    incidentTime: "07:00",
+    details:
+      "Nabantayan nakon sara nga aga nga aray patay nga sapat nga nahimutang lapit sa among residential area sa Purok Pugapo. Ara na kini didto sukad nga akong nakita ug nagsugod na pud ug dili maayo nga baho. Nabalaka ko kay duol ra kini sa mga balay ug basin makadani ug mga langaw, iro, iring, ug uban pa nga sapat. Basin lat mahimong problema sa kalimpyo ug panglawas sa mga nagpuyo lapit sa lugar kung dugay pa kini dili makuha. Unta ma-check dayon sa barangay ang area ug matabangan nga makuha and ma-dispose sang tarong ang patay nga sapat.",
+    status: "resolved",
+    priority: "High",
+    confidential: "Yes",
+    source: "Digital Submission",
+    createdAt: new Date(
+      Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    resolvedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    archived: false,
+    is_archived: false,
+    attachments: [],
+    comments: [],
+
+    adminResponse:
+      "Na-check na sa barangay ang lugar ug nakit-an ang patay nga sapat. Na-coordinate na ang pagkuha ug proper disposal niini. Gi-check usab ang palibot aron masiguro nga limpyo ug walay nahabiling problema.",
+
+    internalNotes: [
+      {
+        role: "Barangay Tanod",
+        assignedPersonnel: "Pedro Santos",
+        fieldTask:
+          "Check the reported location and coordinate the removal of the dead animal.",
+        note:
+          "Na-check ang area sa Purok Pugapo ug gi-coordinate ang pagkuha ug proper disposal sa patay nga sapat.",
+      },
+    ],
+  },
+  {
+    id: "CMP-2026-0006",
+    submitterId: "RES-2026-004",
+    title: "Naay kahina-hinalang lihok duol sa barangay hall",
+    category: "Illegal or Criminal Activity",
+    purok: "Purok Sap-Sap 2",
+    incidentDate: "2026-07-18",
+    incidentTime: "23:10",
+    details: "Nabantayan nakon kagabii nga aray mga tawo nga naglihok-lihok duol sa barangay hall sa Purok Sap-Sap 2. Medyo kahina-hinala ilang lihok kay sige sila og balik-balik sa area ug murag nagtan-aw sa mga butang nga naa sa palibot. Nakabantay pud ko nga adunay mga gamit nga wala na sa ilang naandan nga lugar, mao nga nabalaka ko nga basin adunay nanghilabot o nangkuha niini nga walay permiso. Dili ko sigurado kung kinsa ang involved o unsa gyud ilang tuyo, mao nga dili ko gusto nga maghimo ug sayop nga akusasyon. Nangayo ko og tabang sa barangay aron ma-check ang area ug mahibal-an kung adunay nahitabo nga paglapas o pagpanghilabot sa property.",
+    status: "pending",
+    priority: "Normal",
+    confidential: "Yes",
+    source: "Digital Submission",
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    archived: false,
+    is_archived: false,
+    attachments: [],
+    comments: [],
+  },
+  {
+  id: "CMP-2026-0007",
+  submitterId: "RES-2026-005",
+  title: "Gihadlok ko sa akong silingan",
+  category: "Physical Harm, Violence, or Threats",
+  purok: "Purok Tulingan",
+  incidentDate: "2026-07-19",
+  incidentTime: "20:30",
+  details:
+    "Gusto nakon i-report ang nahitabo sa akon ug sa akong silingan sa Purok Tulingan. Kagabii, gihadlok ko niya samtang naglalis mi ug nahadlok ko nga basin mas grabe pa ang among problema. Sukad ato, dili na ko komportable nga mag-inusara duol sa among lugar kay nahadlok ko para sa akong safety. Dili nako gusto nga mosamot pa ni nga problema, mao nga niadto ko sa barangay office para mangayo ug tabang. Unta matabangan ko sa barangay nga masulbad ni nga problema ug dili na mausab ang nahitabo.",
+  status: "resolved",
+  priority: "High",
+  confidential: "Yes",
+  source: "In-person at Barangay Office",
+  createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+  resolvedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+  archived: false,
+  is_archived: false,
+  attachments: [],
+  comments: [],
+
+  adminResponse:
+    "Na-receive ug na-assess na sa barangay ang report. Na-coordinate na ang concern ngadto sa angay nga barangay personnel aron ma-monitor ang sitwasyon ug matabangan ang mga involved nga masulbad ang concern sa hapsay ug luwas nga paagi.",
+
+  internalNotes: [
+    {
+      role: "Barangay Tanod",
+      assignedPersonnel: "Ramon Dela Cruz",
+      fieldTask:
+        "Coordinate with the concerned parties and monitor the reported area.",
+      note:
+        "Na-coordinate ang concern sa barangay personnel ug na-monitor ang reported area. Gi-remind ang mga involved nga sulbaron ang concern pinaagi sa hapsay nga pag-istorya ug barangay assistance.",
+    },
+  ],
+},
 ];
 
 const FALLBACK_SEED_PASSWORD_HASH = bcrypt.hashSync(
@@ -294,9 +445,8 @@ function generateNextAdminId() {
   return `ADM-2026-${String(seq.length ? Math.max(...seq) + 1 : 1).padStart(3, "0")}`;
 }
 
-// Creates a Super Admin or Assistant Admin account (the only two admin
-// roles in the system). New accounts start Inactive by design — Step 2
-// of the turnover workflow requires an explicit activation.
+// Creates a Super Admin or Assistant Admin account.
+// New accounts start Inactive and require explicit activation.
 function createAdministratorAccount({ firstName, lastName, email, password, role }) {
   const normalizedEmail = normalizeEmail(email);
   const id = generateNextAdminId();
@@ -569,17 +719,6 @@ function hasDuplicateRegistrationNotification(residentId) {
   return false;
 }
 
-/**
- * cleanOrphanResidentNotifications
- *
- * Scans all administrator notification lists and removes any notification
- * whose type is "resident_registration" or whose title matches
- * "New resident registration" / "New resident application" but whose
- * residentId no longer exists in residentApplications.
- *
- * This ensures orphan notifications from testing or edge cases are
- * cleaned up automatically every time notifications are loaded.
- */
 function cleanOrphanResidentNotifications() {
   const validResidentIds = new Set(residentApplications.map((r) => r.id));
   for (const userId of Object.keys(notificationsByUserId)) {
