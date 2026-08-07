@@ -1,35 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
   const stored = sessionStorage.getItem("selectedComplaintForNotice");
-  const dateEl = document.getElementById("printDate");
-  const filePathEl = document.getElementById("filePath");
-  if (dateEl) {
-    const now = new Date();
-    const formatted = now.toLocaleDateString();
-    dateEl.textContent = formatted;
-  }
-  if (filePathEl) {
-    try {
-      filePathEl.textContent = window.location.href;
-    } catch (e) {
-      filePathEl.textContent = "";
-    }
-  }
+
   if (stored) {
     try {
       const complaint = JSON.parse(stored);
       window._noticeComplaintData = complaint;
-      if (complaint.stage) {
-        applyNoticeStage(complaint.stage);
-      }
-      if (complaint.noticeId) {
-        window._noticeRecordId = complaint.noticeId;
-      }
+      if (complaint.noticeId) window._noticeRecordId = complaint.noticeId;
     } catch (error) {
       console.error("Unable to load notice data:", error);
     }
   }
 
-  // No automatic field prefill: super admin and assistant admin will input all blanks manually.
+  const stageSelect = document.getElementById("noticeStageSelect");
+
+  if (stageSelect) {
+    stageSelect.value = window._noticeComplaintData?.stage || "first_mediation";
+    stageSelect.addEventListener("change", () => {
+      applyNoticeStage(stageSelect.value);
+    });
+  }
+
+  prefillPartyNames();
 
   if (!window.__bsccarsNoticeAfterPrintBound) {
     window.addEventListener("afterprint", () => {
@@ -41,100 +32,139 @@ document.addEventListener("DOMContentLoaded", () => {
     window.__bsccarsNoticeAfterPrintBound = true;
   }
 
-  const stageSelect = document.getElementById("noticeStageSelect");
-  if (stageSelect) {
-    if (!stageSelect.value) {
-      stageSelect.value =
-        window._noticeComplaintData?.stage || "first_mediation";
-    }
-    stageSelect.addEventListener("change", () =>
-      applyNoticeStage(stageSelect.value),
-    );
-  }
-
   const signoutBtn = document.querySelector(".signout");
+
   if (signoutBtn) {
     signoutBtn.addEventListener("click", () => {
-      const confirmed = window.confirm("Are you sure you want to sign out?");
-      if (confirmed) {
+      if (window.confirm("Are you sure you want to sign out?")) {
         window.location.href = "index.html";
       }
     });
   }
 
   applyNoticeStage(getNoticeStage());
-  const emailButton = document.getElementById("sendEmailCopyButton");
-  const emailHint = document.getElementById("sendEmailCopyHint");
-  const respondentEmail = window._noticeComplaintData?.respondentEmail || "";
-  if (emailButton) {
-    emailButton.style.display = respondentEmail ? "inline-flex" : "none";
-    if (emailHint) {
-      emailHint.style.display = respondentEmail ? "block" : "none";
-      emailHint.textContent = respondentEmail
-        ? "Best-effort email only. No read receipt tracking."
-        : "";
-    }
-  }
 });
 
+const STAGE_CONFIG = {
+  first_mediation: {
+    templateId: "mediationNoticeTemplate",
+    kpForm: "KP FORM NO. 8",
+    complainantId: "fmComplainantName",
+    respondentId: "fmRespondentName",
+    hearing: {
+      day: "fmHearingDay",
+      month: "fmHearingMonth",
+      year: "fmHearingYear",
+      time: "fmHearingTime",
+    },
+  },
+
+  second_mediation: {
+    templateId: "secondMediationNoticeTemplate",
+    kpForm: "KP FORM NO. 18",
+    complainantId: "smComplainantName",
+    respondentId: "smRespondentName",
+    captionComplainantId: "smComplainantCaption",
+    captionRespondentId: "smRespondentCaption",
+    hearing: {
+      day: "smHearingDay",
+      month: "smHearingMonth",
+      year: "smHearingYear",
+      time: "smHearingTime",
+    },
+  },
+
+  conciliation: {
+    templateId: "conciliationNoticeTemplate",
+    kpForm: "KP FORM NO. 12",
+    complainantId: "ccComplainantName",
+    respondentId: "ccRespondentName",
+    hearing: {
+      day: "ccHearingDay",
+      month: "ccHearingMonth",
+      year: "ccHearingYear",
+      time: "ccHearingTime",
+    },
+  },
+
+  cfa_issued: {
+    templateId: "cfaNoticeTemplate",
+    kpForm: "KP FORM NO. 20",
+    captionComplainantId: "cfaComplainantCaption",
+    captionRespondentId: "cfaRespondentCaption",
+    hearing: null,
+  },
+};
+
 function applyNoticeStage(stage) {
+  const selectedStage = STAGE_CONFIG[stage] ? stage : "first_mediation";
+  const config = STAGE_CONFIG[selectedStage];
+
   const stageSelect = document.getElementById("noticeStageSelect");
-  const stageLabel = document.getElementById("noticeStageLabel");
-  const mediationTemplate = document.getElementById("mediationNoticeTemplate");
-  const cfaTemplate = document.getElementById("cfaNoticeTemplate");
-  const selectedStage = String(stage || "first_mediation").trim();
-  const formHeader = document.querySelector(".kp");
+  const formHeader = document.getElementById("kpFormNumber");
 
-  if (stageSelect) {
-    stageSelect.value = selectedStage;
-  }
+  if (stageSelect) stageSelect.value = selectedStage;
+  if (formHeader) formHeader.textContent = config.kpForm;
 
-  if (stageLabel) {
-    stageLabel.textContent = describeStage(selectedStage);
-  }
+  Object.values(STAGE_CONFIG).forEach(({ templateId }) => {
+    const template = document.getElementById(templateId);
 
-  if (formHeader) {
-    formHeader.textContent =
-      selectedStage === "conciliation"
-        ? "KP FORM NO. 12"
-        : selectedStage === "cfa_issued"
-          ? "KP FORM NO. 20"
-          : "KP FORM NO. 8";
-  }
+    if (template) {
+      template.classList.toggle(
+        "is-hidden",
+        templateId !== config.templateId
+      );
+    }
+  });
 
-  const conciliationTemplate = document.getElementById(
-    "conciliationNoticeTemplate",
-  );
-
-  if (mediationTemplate) {
-    mediationTemplate.style.display =
-      selectedStage === "cfa_issued" || selectedStage === "conciliation"
-        ? "none"
-        : "block";
-  }
-  if (conciliationTemplate) {
-    conciliationTemplate.style.display =
-      selectedStage === "conciliation" ? "block" : "none";
-  }
-  if (cfaTemplate) {
-    cfaTemplate.style.display =
-      selectedStage === "cfa_issued" ? "block" : "none";
-  }
+  prefillPartyNames();
 }
 
 function getNoticeStage() {
-  return (
-    document.getElementById("noticeStageSelect")?.value || "first_mediation"
-  );
+  const value = document.getElementById("noticeStageSelect")?.value;
+  return STAGE_CONFIG[value] ? value : "first_mediation";
 }
 
-function getNoticeInputValue(primaryId, fallbackId) {
-  const primary = document.getElementById(primaryId)?.value || "";
-  if (primary && primary.trim() !== "") {
-    return primary;
+function prefillPartyNames() {
+  const data = window._noticeComplaintData || {};
+  const complainantName = String(
+    data.name || data.complainant_name || data.complainantName || ""
+  ).trim();
+
+  const respondentName = String(
+    data.respondent_name || data.respondentName || ""
+  ).trim();
+
+  Object.values(STAGE_CONFIG).forEach((config) => {
+    setFieldValue(config.complainantId, complainantName);
+    setFieldValue(config.respondentId, respondentName);
+    setFieldText(config.captionComplainantId, complainantName);
+    setFieldText(config.captionRespondentId, respondentName);
+  });
+}
+
+function setFieldValue(id, value) {
+  if (!id || !value) return;
+
+  const element = document.getElementById(id);
+
+  if (element && "value" in element && !element.value.trim()) {
+    element.value = value;
   }
-  const fallback = document.getElementById(fallbackId)?.value || "";
-  return fallback;
+}
+
+function setFieldText(id, value) {
+  if (!id || !value) return;
+
+  const element = document.getElementById(id);
+
+  if (!element) return;
+
+  if ("value" in element) {
+    if (!element.value.trim()) element.value = value;
+  } else if (!element.textContent.trim()) {
+    element.textContent = value;
+  }
 }
 
 function getNoticeServiceMethodValue() {
@@ -144,35 +174,122 @@ function getNoticeServiceMethodValue() {
 }
 
 function getNoticeServiceAtValue() {
-  return (document.getElementById("noticeServedAtInput")?.value || "").trim();
+  return (
+    document.getElementById("noticeServedAtInput")?.value || ""
+  ).trim();
+}
+
+function buildHearingDateTime(config) {
+  if (!config.hearing) {
+    return {
+      hearingDate: null,
+      hearingTime: null,
+    };
+  }
+
+  const day = getFieldValue(config.hearing.day);
+  const month = getFieldValue(config.hearing.month);
+  const year = getFieldValue(config.hearing.year);
+  const time = getFieldValue(config.hearing.time);
+
+  const monthNumber = normalizeMonth(month);
+
+  const hearingDate =
+    day && monthNumber && year
+      ? `${year.length === 2 ? "20" + year : year}-${monthNumber}-${String(
+          day
+        ).padStart(2, "0")}`
+      : null;
+
+  return {
+    hearingDate,
+    hearingTime: time || null,
+  };
+}
+
+function getFieldValue(id) {
+  return (document.getElementById(id)?.value || "").trim();
+}
+
+function normalizeMonth(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) return "";
+
+  const numeric = Number(raw);
+
+  if (Number.isInteger(numeric) && numeric >= 1 && numeric <= 12) {
+    return String(numeric).padStart(2, "0");
+  }
+
+  const months = [
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+  ];
+
+  const index = months.findIndex((month) =>
+    month.startsWith(raw.toLowerCase())
+  );
+
+  return index >= 0 ? String(index + 1).padStart(2, "0") : "";
+}
+
+function getPartyName(config, type) {
+  const fieldId =
+    type === "complainant"
+      ? config.complainantId
+      : config.respondentId;
+
+  const captionId =
+    type === "complainant"
+      ? config.captionComplainantId
+      : config.captionRespondentId;
+
+  if (fieldId) {
+    return getFieldValue(fieldId);
+  }
+
+  if (captionId) {
+    const element = document.getElementById(captionId);
+
+    if (!element) return "";
+
+    return (
+      ("value" in element ? element.value : element.textContent) || ""
+    ).trim();
+  }
+
+  return "";
 }
 
 function buildNoticePayloadFromForm(overrides = {}) {
   const stage = getNoticeStage();
-  const complaintId = formatComplaintNumber(
-    getNoticeInputValue(
-      stage === "cfa_issued"
-        ? "cfaComplaintNumber"
-        : stage === "conciliation"
-          ? "conciliationComplaintNumber"
-          : "complaintNumber",
-      "complaintNumber",
-    ),
-  );
-  const complainant = getNoticeInputValue(
-    stage === "cfa_issued"
-      ? "cfaComplainantName"
-      : stage === "conciliation"
-        ? "conciliantName"
-        : "complainantName",
-    "complainantName",
-  ).trim();
+  const config = STAGE_CONFIG[stage];
+
+  const complaintId = window._noticeComplaintData?.id || "";
+
+  const complainant = getPartyName(config, "complainant");
 
   const outcome =
     document.getElementById("noticeOutcomeSelect")?.value || "pending";
+
   const noticeServedMethod =
     overrides.noticeServedMethod ?? getNoticeServiceMethodValue();
-  const noticeServedAt = overrides.noticeServedAt ?? getNoticeServiceAtValue();
+
+  const noticeServedAt =
+    overrides.noticeServedAt ?? getNoticeServiceAtValue();
+
+  const { hearingDate, hearingTime } = buildHearingDateTime(config);
 
   return {
     complaintId,
@@ -183,90 +300,70 @@ function buildNoticePayloadFromForm(overrides = {}) {
     details: window._noticeComplaintData?.details || "",
     stage,
     outcome,
+    hearing_date: hearingDate,
+    hearing_time: hearingTime,
     notice_served_method: noticeServedMethod,
     notice_served_at: noticeServedAt,
-    hearingDay: document.getElementById("hearingDay")?.value || "",
-    hearingMonth: document.getElementById("hearingMonth")?.value || "",
-    hearingYear: document.getElementById("hearingYear")?.value || "",
-    hearingTime: document.getElementById("hearingTime")?.value || "",
-    hearingPeriod: document.getElementById("hearingPeriod")?.value || "",
-    noticeDay: document.getElementById("noticeDay")?.value || "",
-    noticeMonth: document.getElementById("noticeMonth")?.value || "",
-    noticeYear: document.getElementById("noticeYear")?.value || "",
-    noticeAMPM: document.getElementById("noticeAMPM")?.value || "",
-    notificationDay: document.getElementById("notificationDay")?.value || "",
-    notificationMonth:
-      document.getElementById("notificationMonth")?.value || "",
-    notificationYear: document.getElementById("notificationYear")?.value || "",
-    notificationAMPM: document.getElementById("notificationAMPM")?.value || "",
-    punongBarangay: document.getElementById("punongBarangay")?.value || "",
   };
 }
 
 async function persistNoticeRecord(options = {}) {
   const payload = buildNoticePayloadFromForm(options);
   const { complaintId, complainant } = payload;
+
   if (!complaintId || !complainant) {
-    alert(
-      "Please make sure the complaint reference and complainant name are available before saving.",
-    );
+    alert("Please make sure the complainant name is filled in before saving.");
     return null;
   }
 
-  const noticeData = payload;
-  localStorage.setItem("lastHearingNotice", JSON.stringify(noticeData));
+  localStorage.setItem("lastHearingNotice", JSON.stringify(payload));
 
   if (typeof api !== "undefined" && api.post && api.patch) {
     try {
+      const outcomeBody = {
+        stage: payload.stage,
+        outcome: payload.outcome,
+        hearing_date: payload.hearing_date,
+        hearing_time: payload.hearing_time,
+        notice_served_method: payload.notice_served_method,
+        notice_served_at: payload.notice_served_at,
+      };
+
       let noticeRecord;
+
       if (window._noticeRecordId) {
         noticeRecord = await api.patch(
           `/hearing-notices/${window._noticeRecordId}/outcome`,
-          {
-            stage: noticeData.stage,
-            outcome: noticeData.outcome,
-            notice_served_method: noticeData.notice_served_method,
-            notice_served_at: noticeData.notice_served_at,
-          },
+          outcomeBody
         );
       } else {
         noticeRecord = await api.post("/hearing-notices", {
           complaint_id: complaintId,
-          stage: noticeData.stage,
-          outcome: noticeData.outcome,
-          notice_served_method: noticeData.notice_served_method,
-          notice_served_at: noticeData.notice_served_at,
+          ...outcomeBody,
         });
+
         if (noticeRecord?.data?.id) {
           window._noticeRecordId = noticeRecord.data.id;
-          const storedNotice =
-            JSON.parse(
-              sessionStorage.getItem("selectedComplaintForNotice") || "{}",
-            ) || {};
+
+          const storedNotice = JSON.parse(
+            sessionStorage.getItem("selectedComplaintForNotice") || "{}"
+          );
+
           storedNotice.noticeId = noticeRecord.data.id;
-          storedNotice.stage = noticeData.stage;
+          storedNotice.stage = payload.stage;
+
           sessionStorage.setItem(
             "selectedComplaintForNotice",
-            JSON.stringify(storedNotice),
-          );
-        }
-        if (window._noticeRecordId) {
-          noticeRecord = await api.patch(
-            `/hearing-notices/${window._noticeRecordId}/outcome`,
-            {
-              stage: noticeData.stage,
-              outcome: noticeData.outcome,
-              notice_served_method: noticeData.notice_served_method,
-              notice_served_at: noticeData.notice_served_at,
-            },
+            JSON.stringify(storedNotice)
           );
         }
       }
+
       return noticeRecord?.data || noticeRecord;
     } catch (error) {
       console.warn(
         "Unable to sync notice to backend. Saved locally instead.",
-        error,
+        error
       );
     }
   }
@@ -276,42 +373,51 @@ async function persistNoticeRecord(options = {}) {
 
 async function saveNotice() {
   const savedNotice = await persistNoticeRecord();
+
   if (savedNotice) {
-    alert(
-      "Hearing notice has been saved and synced to the proceedings record.",
-    );
+    alert("Hearing notice has been saved and synced to the proceedings record.");
     return;
   }
 
   alert(
-    "Hearing notice has been saved locally. You can now print it or return to the complaints list.",
+    "Hearing notice has been saved locally. You can now print it or return to the complaints list."
   );
 }
 
 function formatServiceDateTime(value) {
   const source = value ? new Date(value) : new Date();
-  if (Number.isNaN(source.getTime())) {
-    return "";
-  }
+
+  if (Number.isNaN(source.getTime())) return "";
+
   const pad = (part) => String(part).padStart(2, "0");
-  return `${source.getFullYear()}-${pad(source.getMonth() + 1)}-${pad(source.getDate())}T${pad(source.getHours())}:${pad(source.getMinutes())}`;
+
+  return `${source.getFullYear()}-${pad(
+    source.getMonth() + 1
+  )}-${pad(source.getDate())}T${pad(source.getHours())}:${pad(
+    source.getMinutes()
+  )}`;
 }
 
 function promptForServiceDetails() {
-  const currentMethod = getNoticeServiceMethodValue() || "printed";
+  const currentMethod =
+    getNoticeServiceMethodValue() || "printed";
+
   const currentAt =
-    getNoticeServiceAtValue() || formatServiceDateTime(new Date());
+    getNoticeServiceAtValue() ||
+    formatServiceDateTime(new Date());
+
   const method = window.prompt(
-    "Service method for this notice (printed, email, or in_person)",
-    currentMethod,
+    "Service method for this notice (printed or in_person)",
+    currentMethod
   );
-  if (!method) {
-    return null;
-  }
+
+  if (!method) return null;
+
   const servedAt = window.prompt(
     "Service date and time (YYYY-MM-DDTHH:mm)",
-    currentAt,
+    currentAt
   );
+
   return {
     noticeServedMethod: method.trim().toLowerCase(),
     noticeServedAt: servedAt ? servedAt.trim() : currentAt,
@@ -320,20 +426,33 @@ function promptForServiceDetails() {
 
 async function handlePrintServiceRecording() {
   const details = promptForServiceDetails();
-  if (!details) {
-    return;
-  }
+
+  if (!details) return;
+
   const savedNotice = await persistNoticeRecord({
     noticeServedMethod: details.noticeServedMethod,
     noticeServedAt: details.noticeServedAt,
   });
-  if (savedNotice) {
-    const methodLabel = details.noticeServedMethod || "printed";
-    const promptedTime = details.noticeServedAt || new Date().toISOString();
-    document.getElementById("noticeServedMethodSelect").value = methodLabel;
-    document.getElementById("noticeServedAtInput").value = promptedTime
+
+  const methodInput = document.getElementById(
+    "noticeServedMethodSelect"
+  );
+
+  const servedAtInput = document.getElementById(
+    "noticeServedAtInput"
+  );
+
+  if (methodInput) {
+    methodInput.value = details.noticeServedMethod || "printed";
+  }
+
+  if (servedAtInput) {
+    servedAtInput.value = details.noticeServedAt
       .replace(" ", "T")
       .slice(0, 16);
+  }
+
+  if (savedNotice) {
     alert("Notice service details were recorded for this hearing notice.");
   }
 }
@@ -341,30 +460,6 @@ async function handlePrintServiceRecording() {
 function printNotice() {
   window._noticePrintPending = true;
   window.print();
-}
-
-async function sendEmailCopy() {
-  if (!window._noticeRecordId) {
-    const savedNotice = await persistNoticeRecord();
-    if (!window._noticeRecordId && !savedNotice) {
-      alert("Please save the notice before sending an email copy.");
-      return;
-    }
-  }
-
-  if (typeof api !== "undefined" && api.sendHearingNoticeEmailCopy) {
-    try {
-      await api.sendHearingNoticeEmailCopy(window._noticeRecordId);
-      alert(
-        "Best-effort email copy requested. No read receipt tracking is available.",
-      );
-    } catch (error) {
-      alert(error.message || "Email delivery is not configured yet.");
-    }
-    return;
-  }
-
-  alert("Email delivery is not configured yet.");
 }
 
 function backToComplaints() {
@@ -379,25 +474,7 @@ function describeStage(stage) {
       second_mediation: "Second Mediation",
       conciliation: "Conciliation",
       cfa_issued: "CFA Issued",
-    }[String(stage || "first_mediation").trim()] || "First Mediation"
+    }[String(stage || "first_mediation").trim()] ||
+    "First Mediation"
   );
-}
-
-function formatComplaintNumber(value) {
-  const raw = String(value || "").trim();
-  if (/^CMP-\d{4}-\d{4}$/.test(raw)) {
-    return raw;
-  }
-
-  const yearSequence = raw.match(/(?:#C-)?(?:CMP-)?(\d{4})[-\s]?(\d+)/);
-  if (yearSequence) {
-    return `CMP-${yearSequence[1]}-${yearSequence[2].padStart(4, "0").slice(-4)}`;
-  }
-
-  const sequenceOnly = raw.match(/^(\d+)$/);
-  if (sequenceOnly) {
-    return `CMP-2026-${sequenceOnly[1].padStart(4, "0").slice(-4)}`;
-  }
-
-  return raw;
 }

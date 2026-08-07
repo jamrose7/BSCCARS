@@ -1,124 +1,713 @@
 @page {
-  size: A4 portrait;
-  margin: 20mm 18mm;
+  size: 8.5in 11in;
+  margin: 0;
 }
+
 html,
 body {
   min-height: 100%;
 }
+
 body {
-  font-family: "Times New Roman", Times, serif;
   margin: 0;
-  padding: 0;
+  padding: 24px 0;
   color: #000;
+  background: #2f3338;
+  font-family: "Bookman Old Style", Bookman, Georgia, serif;
   font-size: 12pt;
-  background: #ffffff;
 }
+
 .container {
-  padding: 22mm 16mm 16mm 16mm;
-  box-sizing: border-box;
-  background: #ffffff;
+  width: min(100%, 9.1in);
   margin: 0 auto;
-  max-width: 210mm;
 }
+
+.paper-sheet {
+  position: relative;
+  width: 8.5in;
+  height: 11in;
+  margin: 0 auto;
+  padding: 1in 1in 1in 1.5in;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  font-family: "Bookman Old Style", Bookman, Georgia, serif;
+  font-size: 12pt;
+}
+
+.notice-admin-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 0 auto 18px;
+  padding: 14px;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.notice-field {
+  display: grid;
+  gap: 5px;
+}
+
+.notice-admin-controls label {
+  color: #1f2937;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notice-admin-controls select,
+.notice-admin-controls input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid #bfc7d2;
+  border-radius: 6px;
+  background: #fff;
+  color: #111827;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+
+.notice-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.notice-actions button {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #1f4f68;
+  color: #fff;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+}
+
 .kp {
   position: absolute;
-  left: 18mm;
-  top: 10mm;
+  top: 1in;
+  left: 1.5in;
+  font-size: 12pt;
   font-weight: 700;
-  font-size: 11px;
+  line-height: 1;
 }
-.header {
+
+.notice-template {
+  display: block;
+}
+
+.notice-template.is-hidden {
+  display: none;
+}
+
+.kp-header {
+  margin: 0 auto;
   text-align: center;
-  margin-top: 6mm;
-  margin-bottom: 8mm;
+  line-height: 1.05;
 }
-.header .small {
-  font-size: 11pt;
+
+.notice-template > .kp-header {
+  margin-top: 0.3in;
 }
-.header .title {
-  font-weight: 700;
-  font-size: 14pt;
-  margin-top: 6px;
+
+.kp-header p,
+.office-title,
+.party-label,
+.signature p,
+.body-text p,
+.notice-receipt,
+.attested {
+  margin: 0;
 }
-.header .subtitle {
-  font-weight: 700;
+
+.office-title {
+  margin-top: 0.22in;
+  text-align: center;
   font-size: 12pt;
-  margin-top: 6px;
-}
-.notice-title {
   font-weight: 700;
-  font-size: 14pt;
-  margin-top: 10px;
   text-transform: uppercase;
 }
-.notice-sub {
-  font-weight: 700;
+
+h1,
+h2 {
+  margin: 0;
+  text-align: center;
   font-size: 12pt;
+  font-weight: 700;
+  line-height: 1.2;
   text-transform: uppercase;
 }
-.to-line {
-  margin-top: 16px;
+
+h1 {
+  margin-top: 0.2in;
 }
-.to-line .label {
-  display: inline-block;
-  width: 40px;
+
+h2 {
+  margin-top: 0.04in;
 }
-.complaint-number-line {
+
+.form-12 h1 {
+  margin-top: 0.4in;
+}
+
+.form-12 h2 {
+  margin-top: 0.5in;
+}
+
+.form-12 .office-title {
+  margin-top: 0.15in;
+}
+
+.form-12 .body-text {
+  margin-top: 0.2in;
+  line-height: 1.22;
+}
+
+.form-12 .to-two-col {
+  display: grid;
+  grid-template-columns: 0.38in 2.35in 2.35in;
+  gap: 0.22in;
+  align-items: start;
+  margin-top: 0.32in;
+}
+
+.form-12 .to-two-col > div {
+  text-align: center;
+}
+
+.form-12 .to-two-col .line-lg {
+  width: 100%;
+  text-align: center;
+}
+
+.form-12 .to-two-col > span {
+  padding-top: 0.04in;
+}
+
+.form-12 .to-two-col .party-label {
+  margin-top: 0.1in;
+  text-align: center;
+}
+
+.form-12 .signature {
+  width: 1.85in;
+  margin-top: 0.28in;
+  text-align: center;
+}
+
+.form-12 .signature .sign-line {
+  display: none;
+}
+
+.form-12 .notice-receipt {
+  margin-top: 0.22in;
+  line-height: 1.3;
+}
+
+.form-12 .receipt-signatures {
+  display: grid;
+  grid-template-columns: 2.35in 2.35in;
+  gap: 0.22in;
+  margin-top: 0.4in;
+}
+
+.form-12 .receipt-signatures .party-label {
+  margin-bottom: 0.2in;
+  text-align: center;
+}
+
+.form-12 .receipt-signatures div div {
+  margin-top: 0.24in;
+}
+
+.form-12 .logo-row {
+  display: grid;
+  margin-top: 0.24in;
+  margin-left: 0.14in;
+  margin-right: 0.84in;
+}
+
+.form-12 .logo-row img {
+  width: 1in;
+  height: 1in;
+  object-fit: contain;
+}
+
+.form-12 .kp-header.with-logo {
+  margin-left: 0.34in;
+  margin-right: 0.84in;
+  text-align: center;
+  justify-content: center;
+}
+
+.to-block {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 4px;
+  margin-top: 0.22in;
 }
-.complaint-number-line .label {
-  width: auto;
+
+.to-block.compact {
+  margin-top: 0.16in;
+}
+
+.to-block span,
+.to-two-col > span {
+  font-weight: 400;
+}
+
+.underline-input {
+  height: 18px;
+  box-sizing: border-box;
+  border: 0;
+  border-bottom: 1px solid #000;
+  border-radius: 0;
+  background: transparent;
+  color: #000;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  appearance: none;
+  line-height: 1in;
+  padding: 0 3px 1px;
+  vertical-align: baseline;
+}
+
+.underline-input:focus {
+  outline: 1px dotted #444;
+  outline-offset: 1px;
+}
+
+.line-xxs {
+  width: 28px;
+}
+
+.line-xs {
+  width: 48px;
+}
+
+.line-sm {
+  width: 78px;
+}
+
+.line-md {
+  width: 145px;
+}
+
+.line-lg {
+  width: 250px;
+}
+
+.to-extra-line,
+.case-meta-extra-line {
+  border-top: 1px solid #000;
+  margin-top: 1.87in;
+}
+
+.party-name-line {
+  display: block;
+  width: 245px;
+  margin: 0.1in 0 0 0.28in;
+}
+
+.party-label {
+  font-size: 12pt;
+  line-height: 1.1;
+}
+
+.party-label.indented {
+  margin-left: 0.58in;
+}
+
+.party-label.centered {
+  text-align: center;
+}
+
+.body-text {
+  margin-top: 0.22in;
+  text-align: justify;
+  line-height: 1.2;
+}
+
+.body-text p + p {
+  margin-top: 0.11in;
+}
+
+.signature {
+  width: 1.85in;
+  margin-top: 0.2in;
+  text-align: center;
+}
+
+.signature-right {
+  margin-left: auto;
+}
+
+.signature-left {
+  margin-left: 0;
+}
+
+.sign-line {
+  border-top: 1px solid #000;
+  margin-top: 0.46in;
+}
+
+.signature p {
+  margin-top: 0.1in;
+  margin-bottom: 0.4in;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.signature .official-name {
+  margin-top: 0.32in;
+  margin-bottom: auto;
+  text-decoration: underline;
+}
+
+.notice-receipt {
+  margin-top: 0.2in;
+  line-height: 1.35;
+}
+
+.stacked-lines {
+  width: 2.55in;
+  margin: 0.28in 0 0;
+}
+
+.centered-lines {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stacked-lines.narrow {
+  width: 2.4in;
+  margin-top: 0.2in;
+}
+
+.stacked-lines div,
+.receipt-signatures div div {
+  height: 0;
+  margin-top: 0.16in;
+  border-top: 1px solid #000;
+}
+
+.case-caption {
+  display: grid;
+  grid-template-columns: 2.45in 2.55in;
+  gap: 0.34in;
+  align-items: end;
+  margin-top: 0.18in;
+}
+
+.caption-line {
+  min-height: 0.18in;
+  border-bottom: 1px solid #000;
+  text-align: left;
+}
+
+.case-meta {
+  line-height: 1.4;
+  text-align: right;
+}
+
+.case-meta p + p {
+  margin-top: 0.03in;
+}
+
+.against-label {
+  width: 2.45in;
+  text-align: left;
+  font-size: 12pt;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.respondent-caption {
+  width: 2.45in;
+}
+
+.kp-header.with-logo {
+  grid-column: 2;
+}
+
+.receipt-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.28in;
+  margin-top: 0.12in;
+}
+
+.attested {
+  margin-top: 0.2in;
+}
+
+.form-8 .to-block {
+  margin-top: 0.28in;
+}
+
+.form-8-to {
+  gap: 5px;
+}
+
+.form-8-to .line-lg,
+.form-8-complainant {
+  width: 2.55in;
+}
+
+.form-8-complainant {
+  margin-top: 0.16in;
+  margin-left: 0.37in;
+}
+
+.form-8-party-label {
+  margin-top: 0.08in;
+  margin-left: 0.37in;
+}
+
+.form-8 .body-text {
+  width: 100%;
+  margin-top: 0.18in;
+  line-height: 1.26;
+}
+
+.form-8-signature {
+  width: 2.2in;
+  margin-top: 0.2in;
+  margin-left: 0;
+}
+
+.form-8 .notice-receipt {
+  margin-top: 0.24in;
+}
+
+.complainant-receipt-label {
+  margin-top: 0.22in;
+  margin-left: 0.72in;
+}
+
+.form-8-receipt-lines {
+  width: 3.4in;
+  margin-top: 0.2in;
+  margin-left: 0;
+}
+
+.form-8-receipt-lines div {
+  margin-top: 0.22in;
+}
+
+.form-18 .office-title {
+  margin-top: 0.18in;
+}
+
+.form-18,
+.form-20 {
+  width: 100%;
+  margin: 0;
+}
+
+.form-18 .kp-header {
+  line-height: 1.05;
+}
+
+.form-18 .office-title,
+.form-18 h1,
+.form-18 h2,
+.form-18 .party-label {
+  font-size: 12pt;
+}
+
+.form-18-caption,
+.form-20 .case-caption {
+  grid-template-columns: 2.15in 2.35in;
+  gap: 0.65in;
+  align-items: start;
+  margin-top: 0.22in;
+}
+
+.form-18-caption .case-meta,
+.form-20 .case-meta {
+  text-align: left;
+  line-height: 1.25;
+}
+
+.form-18-caption .case-meta p,
+.form-20 .case-meta p {
   white-space: nowrap;
 }
-.underline {
-  display: inline-block;
-  border-bottom: 1px solid #000;
-  vertical-align: bottom;
+
+.form-18-caption .case-meta p + p,
+.form-20 .case-meta p + p {
+  margin-top: 0.08in;
 }
-.body-text {
-  margin-top: 16px;
-  line-height: 1.65;
+
+.form-18-case-line,
+.form-20 .case-meta .line-md {
+  width: 1.15in;
 }
-.signature {
-  margin-top: 22px;
-  text-align: center;
+
+.form-18-caption .case-meta-extra-line,
+.form-20 .case-meta-extra-line {
+  width: 2.25in;
+  margin-top: 0.1in;
 }
-.signature .line {
-  border-top: 1px solid #000;
-  width: 50%;
-  margin: 0 auto;
-  padding-top: 8px;
+
+.form-18-caption .case-meta p:nth-child(2) .underline-input,
+.form-20 .case-meta p:nth-child(2) .underline-input {
+  width: 2.25in;
 }
-.notified {
-  margin-top: 20px;
+
+.form-18 .against-label,
+.form-20 .against-label {
+  width: 2.15in;
+  text-align: left;
+  font-weight: 400;
 }
-.complainant-label {
-  text-align: center;
-  margin-top: 24px;
+
+.form-18 .respondent-caption,
+.form-20 .respondent-caption {
+  width: 2.15in;
+  text-align: left;
 }
-.signatures-block {
-  margin-top: 24px;
+
+.form-18 .against-label {
+  margin-top: 0.22in;
 }
-.sign-lines {
-  width: 65%;
-  margin: 22px auto 0 auto;
+
+.form-18 .respondent-caption {
+  margin-top: 0.12in;
 }
-.sign-lines .line {
-  border-top: 1px solid #000;
-  height: 0;
-  margin: 20px 0;
+
+.form-18 h1 {
+  margin-top: 0.16in;
 }
-.no-print {
-  margin-top: 18px;
+
+.form-18-to {
+  margin-top: 0.18in;
 }
+
+.form-18-to .underline-input,
+.form-18-complainant {
+  width: 2.55in;
+}
+
+.form-18-complainant {
+  margin-top: 0.08in;
+  margin-left: 0.33in;
+}
+
+.form-18-party-label {
+  margin-top: 0.04in;
+  margin-left: 0.33in;
+}
+
+.form-18 .body-text {
+  width: 100%;
+  margin-top: 0.14in;
+  line-height: 1.12;
+  text-align: justify;
+}
+
+.form-18-signature {
+  width: 2.5in;
+  margin: 0.14in auto 0;
+}
+
+.form-18 .notice-receipt {
+  margin-top: 0.18in;
+  line-height: 1.12;
+}
+
+.form-18-notified-complainant {
+  display: none;
+}
+
+.form-18-receipt-block {
+  margin-top: 0.02in;
+}
+
+.form-18-complainant-receipt-label,
+.form-18-respondent-label {
+  margin-top: 0;
+}
+
+.form-18-respondent-label {
+  margin-top: 0.2in;
+}
+
+.form-18-complainant-lines,
+.form-18-respondent-lines {
+  width: 3.05in;
+  margin-top: 0.06in;
+  margin-left: 1.45in;
+}
+
+.form-18-complainant-lines div,
+.form-18-respondent-lines div {
+  margin-top: 0.12in;
+}
+
+.form-20 h1 {
+  margin-top: 0.2in;
+}
+
+.form-20 .body-text {
+  width: 100%;
+  margin-top: 0.16in;
+  line-height: 1.22;
+}
+
+.form-20 .signature-right {
+  margin-right: 0.25in;
+}
+
+.form-20 .against-label {
+  margin-top: 0.16in;
+}
+
+.form-20 .respondent-caption {
+  margin-top: 0.1in;
+}
+
+@media (max-width: 920px) {
+  body {
+    padding: 12px;
+  }
+
+  .container,
+  .paper-sheet {
+    width: 100%;
+  }
+
+  .paper-sheet {
+    min-height: auto;
+    padding: 1in 1in 1in 1.5in;
+    overflow-x: auto;
+  }
+
+  .notice-admin-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media print {
   html,
   body {
-    width: 210mm;
-    min-height: 297mm;
+    width: 8.5in;
+    height: 11in;
+    min-height: 11in;
+    margin: 0;
+    padding: 0;
     background: #fff;
   }
 
@@ -126,141 +715,29 @@ body {
     visibility: hidden;
   }
 
-  .kp,
-  .container,
-  .container * {
+  .paper-sheet,
+  .paper-sheet * {
     visibility: visible;
   }
 
-  .kp {
-    position: absolute;
-    left: 18mm;
-    top: 10mm;
-  }
-
-  .container {
+  .paper-sheet {
     position: absolute;
     inset: 0;
-    width: 100%;
+    width: 8.5in;
+    height: 11in;
     margin: 0;
+    padding: 1in 1in 1in 1.5in;
     box-shadow: none;
   }
 
-  nav,
-  aside,
-  header,
-  footer,
-  button,
-  .topbar,
-  .sidebar,
   .no-print,
-  .icon-badge,
-  .signout {
+  .notice-admin-controls,
+  .notice-actions {
     display: none !important;
   }
 
   .underline-input {
-    color: #000;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-}
-.underline-input {
-  border: none;
-  border-bottom: 1px solid #000;
-  background: transparent;
-  padding: 0 4px;
-  font-family: inherit;
-  font-size: inherit;
-}
-.blank-short {
-  width: 40px;
-  display: inline-block;
-}
-.blank-medium {
-  width: 170px;
-  display: inline-block;
-}
-.blank-large {
-  width: 320px;
-  display: inline-block;
-}
-.blank-complaint {
-  width: 170px;
-  display: inline-block;
-}
-.blank-time {
-  width: 80px;
-  display: inline-block;
-}
-.underline-input:focus {
-  outline: none;
-}
-.punong-input {
-  border: none;
-  background: transparent;
-  font-weight: 700;
-  text-align: center;
-}
-.print-header {
-  position: fixed;
-  top: 6mm;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 18mm;
-  font-size: 10pt;
-}
-.print-title {
-  text-align: center;
-  font-weight: 600;
-}
-.print-date {
-  text-align: left;
-}
-.print-footer {
-  position: fixed;
-  bottom: 6mm;
-  left: 18mm;
-  right: 18mm;
-  font-size: 9pt;
-  display: flex;
-  justify-content: space-between;
-  color: #333;
-}
-.notice-admin-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin: 0 0 16px 0;
-  padding: 12px 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.04);
-}
-.notice-admin-controls label {
-  font-weight: 700;
-}
-.notice-admin-controls select,
-.notice-admin-controls input {
-  padding: 6px 8px;
-  border: 1px solid #c7c7c7;
-  border-radius: 8px;
-  min-width: 140px;
-}
-.notice-stage-label {
-  color: #2b6f77;
-  font-weight: 700;
-}
-.notice-template {
-  display: block;
-}
-.cfa-form-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 8px;
 }

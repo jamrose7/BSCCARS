@@ -3,413 +3,363 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Complaint Hearing Notice - BSCCARS</title>
+    <title>KP Forms - BSCCARS</title>
     <meta
       name="description"
-      content="Generate a formal Barangay Sillon hearing notice for complaint mediation proceedings."/>
+      content="Generate Barangay Sillon KP forms for mediation, conciliation, and certificate to file action."
+    />
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="../css/adminComplaintNotice.css" />
   </head>
   <body>
-    <div class="kp">KP FORM NO. 8</div>
-
     <main class="container" role="document">
       <div class="no-print notice-admin-controls">
-        <label for="noticeStageSelect">Stage</label>
-        <select id="noticeStageSelect">
-          <option value="first_mediation">First Mediation</option>
-          <option value="second_mediation">Second Mediation</option>
-          <option value="conciliation">Conciliation</option>
-          <option value="cfa_issued">CFA Issued</option>
-        </select>
-        <span id="noticeStageLabel" class="notice-stage-label"
-          >First Mediation</span>
+        <div class="notice-field">
+          <label for="noticeStageSelect">Stage</label>
+          <select id="noticeStageSelect">
+            <option value="first_mediation">First Mediation (KP Form 8)</option>
+            <option value="second_mediation">Second Mediation (KP Form 18)</option>
+            <option value="conciliation">Conciliation (KP Form 12)</option>
+            <option value="cfa_issued">CFA Issued (KP Form 20)</option>
+          </select>
+        </div>
 
-        <label for="noticeOutcomeSelect">Outcome</label>
-        <select id="noticeOutcomeSelect">
-          <option value="pending">Pending</option>
-          <option value="respondent_appeared">Respondent Appeared</option>
-          <option value="respondent_absent">Respondent Absent</option>
-          <option value="settled">Settled</option>
-          <option value="escalated">Escalated</option>
-        </select>
+        <div class="notice-field">
+          <label for="noticeOutcomeSelect">Outcome</label>
+          <select id="noticeOutcomeSelect">
+            <option value="pending">Pending</option>
+            <option value="respondent_appeared">Respondent Appeared</option>
+            <option value="respondent_absent">Respondent Absent</option>
+            <option value="settled">Settled</option>
+            <option value="escalated">Escalated</option>
+          </select>
+        </div>
 
-        <label for="noticeServedMethodSelect">Served via</label>
-        <select id="noticeServedMethodSelect">
-          <option value="">—</option>
-          <option value="printed">Printed</option>
-          <option value="email">Email</option>
-          <option value="in_person">In Person</option>
-        </select>
+        <div class="notice-field">
+          <label for="noticeServedMethodSelect">Served via</label>
+          <select id="noticeServedMethodSelect">
+            <option value="">-</option>
+            <option value="printed">Printed</option>
+            <option value="in_person">In Person</option>
+          </select>
+        </div>
 
-        <label for="noticeServedAtInput">Served at</label>
-        <input id="noticeServedAtInput" type="datetime-local" />
+        <div class="notice-field">
+          <label for="noticeServedAtInput">Served at</label>
+          <input id="noticeServedAtInput" type="datetime-local" />
+        </div>
       </div>
 
-      <section id="mediationNoticeTemplate" class="notice-template">
-        <div class="header">
-          <p class="small">Republic of the Philippines</p>
-          <p class="small">Province of Cebu</p>
-          <p class="small">MUNICIPALITY OF BANTAYAN</p>
-          <p class="small">Barangay Sillon</p>
+      <article class="paper-sheet">
+        <div class="kp" id="kpFormNumber">KP FORM NO. 8</div>
 
-          <p class="subtitle notice-sub">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
-          <p class="notice-title">NOTICE OF HEARING</p>
-          <p class="notice-sub">(MEDIATION PROCEEDINGS)</p>
-        </div>
+        <section id="mediationNoticeTemplate" class="notice-template form-8">
+          <header class="kp-header">
+            <p>Republic of the Philippines</p>
+            <p>Province of Cebu</p>
+            <p>MUNICIPALITY OF BANTAYAN</p>
+            <p>Barangay Sillon</p>
+          </header>
 
-        <div class="to-line">
-          <label class="label">TO:</label>
-          <input
-            type="text"
-            id="complainantName"
-            class="underline-input blank-large"/>
-        </div>
+          <p class="office-title">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
+          <h1>NOTICE OF HEARING</h1>
+          <h2>(MEDIATION PROCEEDINGS)</h2>
 
-        <div class="to-line complaint-number-line">
-          <label class="label">Complaint #:</label>
-          <input
-            type="text"
-            id="complaintNumber"
-            class="underline-input blank-complaint"/>
-        </div>
-
-        <div style="height: 8px"></div>
-        <input type="text" class="underline-input blank-large" />
-        <div style="height: 6px"></div>
-        <div>Complainant/s</div>
-
-        <div class="body-text">
-          <p>
-            You are hereby required to appear before me on the
-            <input
-              type="text"
-              id="hearingDay"
-              class="underline-input blank-short"/>
-            day of
-            <input
-              type="text"
-              id="hearingMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="hearingYear"
-              class="underline-input blank-short"/>
-            at
-            <input
-              type="text"
-              id="hearingTime"
-              class="underline-input blank-time"/>
-            o'clock in the
-            <input
-              type="text"
-              id="hearingPeriod"
-              class="underline-input blank-medium"/>
-            for the hearing of your complaint.
-          </p>
-
-          <p class="notified">
-            This
-            <input
-              type="text"
-              id="noticeDay"
-              class="underline-input blank-short"/>
-            day of
-            <input
-              type="text"
-              id="noticeMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="noticeYear"
-              class="underline-input blank-short"/>
-            at
-            <input
-              type="text"
-              id="noticeAMPM"
-              class="underline-input blank-short"/>
-          </p>
-        </div>
-
-        <div class="signature">
-          <div
-            class="sign-line"
-            style="
-              width: 40%;
-              margin: 0 auto;
-              border-top: 1px solid #000;
-              height: 0;
-            "></div>
-          <div style="text-align: center; margin-top: 6px; font-weight: 700">
-            Punong Barangay
+          <div class="to-block form-8-to">
+            <span>TO:</span>
+            <input type="text" id="fmRespondentName" class="underline-input line-lg" />
           </div>
-        </div>
+          <input type="text" id="fmComplainantName" class="underline-input party-name-line form-8-complainant" />
+          <p class="party-label form-8-party-label">Complainant/s</p>
 
-        <div class="body-text">
-          <p style="text-align: left; margin-top: 12px">
+          <div class="body-text">
+            <p>
+              You are hereby required to appear before me on the
+              <input type="text" id="fmHearingDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="fmHearingMonth" class="underline-input line-md" />
+              20<input type="text" id="fmHearingYear" class="underline-input line-xxs" />,
+              at
+              <input type="text" id="fmHearingTime" class="underline-input line-md" />
+              o'clock in the
+              morning/afternoon for the hearing of your complaint.
+            </p>
+            <p>
+              This
+              <input type="text" id="fmNoticeDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="fmNoticeMonth" class="underline-input line-md" />
+              20<input type="text" id="fmNoticeYear" class="underline-input line-xxs" />,
+              at
+              <input type="text" id="fmNoticeAMPM" class="underline-input line-xs" />AM/PM.
+            </p>
+          </div>
+
+          <div class="signature signature-left form-8-signature">
+            <div class="sign-line"></div>
+            <p>Punong Barangay</p>
+          </div>
+
+          <p class="notice-receipt">
             Notified this
-            <input
-              type="text"
-              id="notificationDay"
-              class="underline-input blank-short"/>
+            <input type="text" id="fmNotificationDay" class="underline-input line-xs" />
             day of
-            <input
-              type="text"
-              id="notificationMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="notificationYear"
-              class="underline-input blank-short"/>
+            <input type="text" id="fmNotificationMonth" class="underline-input line-md" />
+            20<input type="text" id="fmNotificationYear" class="underline-input line-xxs" />
             at
-            <input
-              type="text"
-              id="notificationAMPM"
-              class="underline-input blank-short"/>
-            .
+            <input type="text" id="fmNotificationAMPM" class="underline-input line-xs" />
+            AM/PM.
           </p>
-        </div>
 
-        <div class="complainant-label">Complainant/s</div>
-
-        <div class="sign-lines">
-          <div class="line" id="sign1"></div>
-          <div class="line" id="sign2"></div>
-          <div class="line" id="sign3"></div>
-        </div>
-      </section>
-
-      <section
-        id="conciliationNoticeTemplate"
-        class="notice-template"
-        style="display: none">
-        <div class="header">
-          <p class="small">Republic of the Philippines</p>
-          <p class="small">Province of Cebu</p>
-          <p class="small">MUNICIPALITY OF BANTAYAN</p>
-          <p class="small">Barangay Sillon</p>
-
-          <p class="subtitle notice-sub">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
-          <p class="notice-title">NOTICE OF CONCILIATION</p>
-          <p class="notice-sub">(CONCILIATION PROCEEDINGS)</p>
-        </div>
-
-        <div class="to-line">
-          <label class="label">TO:</label>
-          <input
-            type="text"
-            id="conciliantName"
-            class="underline-input blank-large"/>
-        </div>
-
-        <div class="to-line complaint-number-line">
-          <label class="label">Complaint #:</label>
-          <input
-            type="text"
-            id="conciliationComplaintNumber"
-            class="underline-input blank-complaint"/>
-        </div>
-
-        <div class="body-text">
-          <p>
-            You are hereby required to appear for conciliation proceedings on
-            the
-            <input
-              type="text"
-              id="conciliationHearingDay"
-              class="underline-input blank-short"/>
-            day of
-            <input
-              type="text"
-              id="conciliationHearingMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="conciliationHearingYear"
-              class="underline-input blank-short"/>
-            at
-            <input
-              type="text"
-              id="conciliationHearingTime"
-              class="underline-input blank-time"/>
-            o'clock in the
-            <input
-              type="text"
-              id="conciliationHearingPeriod"
-             class="underline-input blank-medium"/>
-            for the conciliation of your complaint.
-          </p>
-          <p class="notified">
-            This
-            <input
-              type="text"
-              id="conciliationNoticeDay"
-              class="underline-input blank-short"/>
-            day of
-            <input
-              type="text"
-              id="conciliationNoticeMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="conciliationNoticeYear"
-              class="underline-input blank-short"/>
-            at
-            <input
-              type="text"
-              id="conciliationNoticeAMPM"
-              class="underline-input blank-short"/>
-          </p>
-        </div>
-
-        <div class="signature">
-          <div
-            class="sign-line"
-            style="
-              width: 40%;
-              margin: 0 auto;
-              border-top: 1px solid #000;
-              height: 0;
-            "></div>
-          <div style="text-align: center; margin-top: 6px; font-weight: 700">
-            Punong Barangay
+          <p class="party-label complainant-receipt-label">Complainant/s</p>
+          <div class="stacked-lines form-8-receipt-lines">
+            <div></div>
+            <div></div>
+            <div></div>
           </div>
-        </div>
+        </section>
 
-        <div class="body-text">
-          <p style="text-align: left; margin-top: 12px">
+        <section id="secondMediationNoticeTemplate" class="notice-template form-18 is-hidden">
+          <header class="kp-header">
+            <p>Republic of the Philippines</p>
+            <p>Province of Cebu</p>
+            <p>MUNICIPALITY OF BANTAYAN</p>
+            <p>Barangay Sillon</p>
+          </header>
+
+          <p class="office-title">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
+          <div class="case-caption form-18-caption">
+            <div class="caption-party">
+              <div class="caption-line" id="smComplainantCaption"></div>
+              <p class="party-label centered">Complainant/s</p>
+            </div>
+            <div class="case-meta">
+              <p>Barangay Case No. <input type="text" id="smCaseNo" class="underline-input form-18-case-line" /></p>
+              <p>For: <input type="text" id="smFor" class="underline-input form-18-case-line" /></p>
+              <div class="case-meta-extra-line"></div>
+            </div>
+          </div>
+          <p class="against-label">-Against-</p>
+          <div class="caption-line respondent-caption form-18-respondent-caption" id="smRespondentCaption"></div>
+          <p class="party-label">Respondent/s</p>
+
+          <h1>NOTICE OF HEARING</h1>
+          <h2>(RE: FAILURE TO APPEAR)</h2>
+
+          <div class="to-block compact form-18-to">
+            <span>TO:</span>
+            <input type="text" id="smRespondentName" class="underline-input line-lg" />
+          </div>
+          <input type="text" id="smComplainantName" class="underline-input party-name-line form-18-complainant" />
+          <p class="party-label form-18-party-label">Complainant/s</p>
+
+          <div class="body-text">
+            <p>
+              You are hereby required to appear before me/the Pangkat on the
+              <input type="text" id="smHearingDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="smHearingMonth" class="underline-input line-md" />
+              20<input type="text" id="smHearingYear" class="underline-input line-xxs" />,
+              at
+              <input type="text" id="smHearingTime" class="underline-input line-sm" />
+              o'clock in the morning/afternoon to explain why you failed to appear for mediation/conciliation
+              scheduled on
+              <input type="text" id="smMissedDate" class="underline-input line-md" />
+              20<input type="text" id="smMissedYear" class="underline-input line-xxs" />
+              and
+              <strong>why your complaint should not be dismissed, a certificate to bar the filing of your action in
+              court/government office should not be issued, and contempt proceedings should not be initiated in court
+              for willful failure or refusal to appear</strong> before the Punong Barangay/Pangkat ng Tagapagkasundo.
+            </p>
+            <p>
+              This
+              <input type="text" id="smNoticeDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="smNoticeMonth" class="underline-input line-md" />
+              20<input type="text" id="smNoticeYear" class="underline-input line-xxs" />,
+              at
+              <input type="text" id="smNoticeAMPM" class="underline-input line-sm" />
+              AM/PM.
+            </p>
+          </div>
+
+          <div class="signature form-18-signature">
+            <p class="official-name">PETER N. YSULAN</p>
+            <p>Punong Barangay</p>
+          </div>
+
+          <p class="notice-receipt">
             Notified this
-            <input
-              type="text"
-              id="conciliationNotificationDay"
-              class="underline-input blank-short"/>
+            <input type="text" id="smNotificationDay" class="underline-input line-xs" />
             day of
-            <input
-              type="text"
-              id="conciliationNotificationMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="conciliationNotificationYear"
-              class="underline-input blank-short"/>
+            <input type="text" id="smNotificationMonth" class="underline-input line-md" />
+            20<input type="text" id="smNotificationYear" class="underline-input line-xxs" />
             at
-            <input
-              type="text"
-              id="conciliationNotificationAMPM"
-              class="underline-input blank-short"/>
-            .
+            <input type="text" id="smNotificationAMPM" class="underline-input line-sm" />
+            AM/PM.
+            <br />
+            <span class="form-18-notified-complainant">Complainant/s</span>
           </p>
-        </div>
 
-        <div class="complainant-label">Complainant/s</div>
-
-        <div class="sign-lines">
-          <div class="line" id="conciliationSign1"></div>
-          <div class="line" id="conciliationSign2"></div>
-          <div class="line" id="conciliationSign3"></div>
-        </div>
-      </section>
-
-      <section
-        id="cfaNoticeTemplate"
-        class="notice-template"
-        style="display: none">
-        <div class="header">
-          <p class="small">Republic of the Philippines</p>
-          <p class="small">Province of Cebu</p>
-          <p class="small">MUNICIPALITY OF BANTAYAN</p>
-          <p class="small">Barangay Sillon</p>
-          <p class="subtitle notice-sub">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
-          <p class="notice-title">CFA NOTICE</p>
-          <p class="notice-sub">(CONCILIATION / FOLLOW-UP)</p>
-        </div>
-
-        <div class="to-line">
-          <label class="label">TO:</label>
-          <input
-            type="text"
-            id="cfaComplainantName"
-            class="underline-input blank-large"/>
-        </div>
-
-        <div class="to-line complaint-number-line">
-          <label class="label">Complaint #:</label>
-          <input
-            type="text"
-            id="cfaComplaintNumber"
-            class="underline-input blank-complaint"/>
-        </div>
-
-        <div class="body-text">
-          <p>
-            This notice is issued to inform the parties that the matter has been
-            referred for a formal
-            <input
-              type="text"
-              id="cfaReference"
-              class="underline-input blank-large"/>
-            proceeding following the prior mediation outcome.
-          </p>
-          <p class="notified">
-            Please appear on
-            <input
-              type="text"
-              id="cfaHearingDay"
-              class="underline-input blank-short"/>
-            <input
-              type="text"
-              id="cfaHearingMonth"
-              class="underline-input blank-medium"/>
-            20
-            <input
-              type="text"
-              id="cfaHearingYear"
-              class="underline-input blank-short"/>
-            at
-            <input
-              type="text"
-              id="cfaHearingTime"
-              class="underline-input blank-time"/>
-            for the scheduled conference.
-          </p>
-        </div>
-
-        <div class="signature">
-          <div
-            class="sign-line"
-            style="
-              width: 40%;
-              margin: 0 auto;
-              border-top: 1px solid #000;
-              height: 0;
-            "></div>
-          <div style="text-align: center; margin-top: 6px; font-weight: 700">
-            Punong Barangay
+          <div class="form-18-receipt-block">
+            <p class="party-label form-18-complainant-receipt-label">Complainant/s</p>
+            <div class="stacked-lines narrow form-18-complainant-lines">
+              <div></div>
+              <div></div>
+            </div>
+            <p class="party-label form-18-respondent-label">Respondent/s</p>
+            <div class="stacked-lines narrow form-18-respondent-lines">
+              <div></div>
+              <div></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div class="no-print">
+        <section id="conciliationNoticeTemplate" class="notice-template form-12 is-hidden">
+          <div class="logo-row">
+            <img src="../images/logo.png" alt="" />
+            <header class="kp-header with-logo">
+              <p>Republic of the Philippines</p>
+              <p>Province of Cebu</p>
+              <p>MUNICIPALITY OF BANTAYAN</p>
+              <p>Barangay Sillon</p>
+            </header>
+          </div>
+
+          <p class="office-title">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
+
+          <div class="to-two-col">
+            <span>TO:</span>
+            <div>
+              <input type="text" id="ccComplainantName" class="underline-input line-lg" />
+              <p class="party-label centered">Complainant/s</p>
+            </div>
+            <div>
+              <input type="text" id="ccRespondentName" class="underline-input line-lg" />
+              <p class="party-label centered">Respondent/s</p>
+            </div>
+          </div>
+
+          <h1>NOTICE OF HEARING</h1>
+          <h2>(CONCILIATION PROCEEDINGS)</h2>
+
+          <div class="body-text">
+            <p>
+              You are hereby required to appear before the Pangkat on the
+              <input type="text" id="ccHearingDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="ccHearingMonth" class="underline-input line-md" />
+              20<input type="text" id="ccHearingYear" class="underline-input line-xxs" />,
+              at
+              <input type="text" id="ccHearingTime" class="underline-input line-sm" />
+              o'clock for hearing of the above-entitled case.
+            </p>
+            <p>
+              This
+              <input type="text" id="ccNoticeDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="ccNoticeMonth" class="underline-input line-md" />
+              20<input type="text" id="ccNoticeYear" class="underline-input line-xxs" />.
+            </p>
+          </div>
+
+          <div class="signature signature-right">
+            <div class="sign-line"></div>
+            <p class="official-name">PETER N. YSULAN</p>
+            <p>Pangkat Chairman</p>
+          </div>
+
+          <p class="notice-receipt">
+            Notified this
+            <input type="text" id="ccNotificationDay" class="underline-input line-xs" />
+            day of
+            <input type="text" id="ccNotificationMonth" class="underline-input line-md" />
+            20<input type="text" id="ccNotificationYear" class="underline-input line-xxs" />.
+          </p>
+
+          <div class="receipt-signatures">
+            <div>
+              <p class="party-label centered">Complainant/s</p>
+              <div></div>
+              <div></div>
+            </div>
+            <div>
+              <p class="party-label centered">Respondent/s</p>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="cfaNoticeTemplate" class="notice-template form-20 is-hidden">
+          <header class="kp-header">
+            <p>Republic of the Philippines</p>
+            <p>Province of Cebu</p>
+            <p>MUNICIPALITY OF BANTAYAN</p>
+            <p>Barangay Sillon</p>
+          </header>
+
+          <p class="office-title">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
+          <div class="case-caption">
+            <div>
+              <div class="caption-line" id="cfaComplainantCaption"></div>
+              <p class="party-label">Complainant/s</p>
+            </div>
+            <div class="case-meta">
+              <p>Barangay Case No. <input type="text" id="cfaCaseNo" class="underline-input line-md" /></p>
+              <p>For: <input type="text" id="cfaFor" class="underline-input line-md" /></p>
+              <div class="case-meta-extra-line"></div>
+            </div>
+          </div>
+          <p class="against-label">-Against-</p>
+          <div class="caption-line respondent-caption" id="cfaRespondentCaption"></div>
+          <p class="party-label">Respondent/s</p>
+
+          <h1>CERTIFICATE TO FILE ACTION</h1>
+
+          <div class="body-text">
+            <p>This is to certify that:</p>
+            <p>There was a case filed on <input type="text" id="cfaFiledDate" class="underline-input line-md" />.</p>
+            <p>
+              There has been a personal confrontation between the parties before the Punong Barangay/Pangkat ng
+              Tagapagkasundo;
+            </p>
+            <p>A settlement was reached;</p>
+            <p>
+              The settlement has been repudiated in a statement sworn to before the Punong Barangay by
+              <input type="text" id="cfaRepudiatedBy" class="underline-input line-md" />
+              on the ground of
+              <input type="text" id="cfaGround" class="underline-input line-lg" />; and
+            </p>
+            <p>
+              Therefore, the corresponding complaint for the dispute may now be filed in court/government office.
+            </p>
+            <p>
+              This
+              <input type="text" id="cfaIssueDay" class="underline-input line-xs" />
+              day of
+              <input type="text" id="cfaIssueMonth" class="underline-input line-md" />
+              20<input type="text" id="cfaIssueYear" class="underline-input line-xxs" />.
+            </p>
+          </div>
+
+          <div class="signature signature-right">
+            <div class="sign-line"></div>
+            <p>Lupon Secretary</p>
+          </div>
+
+          <p class="attested">Attested:</p>
+          <div class="signature signature-left">
+            <div class="sign-line"></div>
+            <p>Lupon Chairperson</p>
+          </div>
+        </section>
+      </article>
+
+      <div class="no-print notice-actions">
         <button onclick="saveNotice()">Save Notice</button>
         <button onclick="printNotice()">Print Notice</button>
-        <button
-          id="sendEmailCopyButton"
-          onclick="sendEmailCopy()"
-          style="display: none">
-          Send Copy by Email
-        </button>
         <button onclick="backToComplaints()">Back to Complaints</button>
-        <div
-          id="sendEmailCopyHint"
-          style="display: none; margin-top: 8px; font-size: 0.9rem; color: #666">
-          Best-effort email only. No read receipt tracking.
-        </div>
       </div>
     </main>
 

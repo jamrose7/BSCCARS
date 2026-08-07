@@ -161,7 +161,7 @@
             <label for="adminCategoryFilter">Filter by category</label>
             <select id="adminCategoryFilter">
               <option value="">All categories</option>
-              <optgroup label="Urgent Categories (Auto High Priority)">
+              <optgroup label="Auto High Priority Categories">
                 <option value="Physical Harm, Violence, or Threats">
                   Physical Harm, Violence, or Threats
                 </option>
@@ -195,6 +195,9 @@
               <option value="in-progress">In Progress</option>
               <option value="resolved">Resolved</option>
             </select>
+            <button type="button" id="resetAdminFiltersBtn" class="reset-filters-btn">
+              Reset Filters
+            </button>
           </div>
 
           <table
@@ -228,7 +231,7 @@
                   >
                 </td>
                 <td>In-person at Barangay Office</td>
-                <td><span class="priority-high">High</span></td>
+                <td><span class="priority-normal">Normal</span></td>
                 <td>Yes</td>
                 <td><span class="status-progress">In Progress</span></td>
                 <td>
@@ -243,7 +246,7 @@
                     data-date="2026-07-11"
                     data-time="4:30 PM"
                     data-source="In-person at Barangay Office"
-                    data-priority="High"
+                    data-priority="Normal"
                     data-status="in-progress"
                     data-title="Loud music past midnight"
                     data-details="Loud music played repeatedly past midnight."
@@ -493,6 +496,15 @@
           </section>
 
           <section
+            class="detail-section follow-up-section"
+            aria-labelledby="residentFollowUpsHeading">
+            <h3 id="residentFollowUpsHeading">Resident Follow-ups</h3>
+            <div id="residentFollowUpsList" class="resident-follow-ups-list">
+              <p class="timeline-empty">No resident follow-ups yet.</p>
+            </div>
+          </section>
+
+          <section
             class="detail-section response-section"
             aria-labelledby="responseHeading">
             <h3 id="responseHeading">Admin Response</h3>
@@ -545,8 +557,8 @@
             </div>
           </section>
 
-          <section
-            class="detail-section timeline-section" id="timelineSection"
+<section
+            class="detail-section timeline-section" id="proceedingsTimelineSection"
             aria-labelledby="timelineHeading">
             <h3 id="timelineHeading">Proceedings Timeline</h3>
             <div id="timelineSummary" class="timeline-summary">
@@ -585,39 +597,71 @@
             <div id="internalNotesList"></div>
 
             <div
-              style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap">
+              style="margin-top: 12px; display: grid; gap: 8px">
+              <label
+                for="assignmentRoleSelect"
+                style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.7)">
+                Assign barangay tanod / trusted personnel for field verification, site survey, or KP Form delivery
+              </label>
+              <div style="display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
+                <select
+                  id="assignmentRoleSelect"
+                  style="padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #f0f0f0; font-family: inherit; font-size: 0.875rem;">
+                  <option value="">Select role</option>
+                  <option value="Barangay Tanod">Barangay Tanod</option>
+                  <option value="Barangay Personnel">Barangay Personnel</option>
+                  <option value="Trusted Barangay Personnel">Trusted Barangay Personnel</option>
+                </select>
+                <input
+                  type="text"
+                  id="assignmentNameInput"
+                  placeholder="Name of assigned personnel"
+                  maxlength="120"
+                  aria-label="Assigned personnel name"
+                  style="padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #f0f0f0; font-family: inherit; font-size: 0.875rem;"/>
+              </div>
               <input
                 type="text"
-                id="newNoteInput"
-                placeholder="Add a new internal note…"
+                id="assignmentTaskInput"
+                placeholder="Field task (e.g. survey location, verify complaint, bring KP Form, or coordinate with respondent/resident)"
                 maxlength="200"
-                aria-label="Add internal note"
-                style="
-                  flex: 1;
-                  min-width: 0;
-                  padding: 10px 14px;
-                  border-radius: 10px;
-                  border: 1px solid rgba(255, 255, 255, 0.15);
-                  background: rgba(255, 255, 255, 0.08);
-                  color: #f0f0f0;
-                  font-family: inherit;
-                  font-size: 0.875rem;
-                "/>
-              <button
-                type="button"
-                class="btn-evidence"
-                onclick="addInternalNote()"
-                style="flex-shrink: 0; min-width: 90px"
-                aria-label="Add internal note">
-                Add Note
-              </button>
+                aria-label="KP Form task"
+                style="padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #f0f0f0; font-family: inherit; font-size: 0.875rem;"/>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <input
+                  type="text"
+                  id="newNoteInput"
+                  placeholder="Add internal note or assignment details…"
+                  maxlength="200"
+                  aria-label="Add internal note"
+                  style="
+                    flex: 1;
+                    min-width: 0;
+                    padding: 10px 14px;
+                    border-radius: 10px;
+                    border: 1px solid rgba(255, 255, 255, 0.15);
+                    background: rgba(255, 255, 255, 0.08);
+                    color: #f0f0f0;
+                    font-family: inherit;
+                    font-size: 0.875rem;
+                  "/>
+                <button
+                  type="button"
+                  class="btn-evidence"
+                  onclick="addInternalNote()"
+                  style="flex-shrink: 0; min-width: 90px"
+                  aria-label="Add internal note">
+                  Save Note
+                </button>
+              </div>
             </div>
           </section>
         </div>
         <div
           class="modal-footer"
           style="display: flex; gap: 12px; flex-wrap: wrap">
-          <button
+<button
+            id="createHearingNoticeBtn"
             class="btn-save-action"
             onclick="openHearingNotice()"
             type="button"
