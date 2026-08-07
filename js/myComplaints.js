@@ -5,7 +5,7 @@ const sampleComplaints = [
     id: "CMP-2026-0001",
     title: "Loud music past midnight",
     category: "Noise and Public Disturbance",
-    priority: "High",
+    priority: "Normal",
     status: "In Progress",
     date: "2026-07-11",
     time: "4:30 PM",
@@ -39,6 +39,7 @@ const sampleComplaints = [
 
 let _lastFocusedViewBtn = null;
 let complaints = [];
+let activeComplaintId = "";
 
 function getStoredComplaints() {
   try {
@@ -46,6 +47,15 @@ function getStoredComplaints() {
   } catch (error) {
     return [];
   }
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function formatComplaintNumber(value) {
@@ -71,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadComplaints();
   initModalClose();
   initEscapeKey();
+  initFollowUpForm();
 });
 
 function currentUserId() {
@@ -115,6 +126,7 @@ function normalizeApiComplaint(complaint) {
         return {
           label: item.label || "Status updated",
           status: normalizeStatus(item.newStatus || item.status),
+          notes: item.notes || "",
           date: itemDate.toISOString().slice(0, 10),
           time: itemDate.toLocaleTimeString([], {
             hour: "numeric",
@@ -138,12 +150,15 @@ function normalizeApiComplaint(complaint) {
     details: complaint.details || "",
     confidential: complaint.confidential || "No",
     attachments,
-    responses: complaint.adminNotes
+    followUps: Array.isArray(complaint.followUps)
+      ? complaint.followUps.map(normalizeFollowUp)
+      : [],
+    responses: complaint.adminResponse
       ? [
           {
             date: new Date().toISOString().slice(0, 10),
             time: "",
-            text: complaint.adminNotes,
+            text: complaint.adminResponse,
           },
         ]
       : [],
@@ -186,6 +201,9 @@ async function loadComplaints() {
       status: normalizeStatus(complaint.status),
       id: formatComplaintNumber(complaint.id || complaint.referenceId),
       referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
+      followUps: Array.isArray(complaint.followUps)
+        ? complaint.followUps.map(normalizeFollowUp)
+        : [],
     }));
   } catch (error) {
     complaints = [...localComplaints, ...sampleComplaints].map((complaint) => ({
@@ -193,6 +211,9 @@ async function loadComplaints() {
       status: normalizeStatus(complaint.status),
       id: formatComplaintNumber(complaint.id || complaint.referenceId),
       referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
+      followUps: Array.isArray(complaint.followUps)
+        ? complaint.followUps.map(normalizeFollowUp)
+        : [],
     }));
   }
 
@@ -277,7 +298,9 @@ function openDetailModal(complaint, triggerBtn) {
 
   buildAttachments(complaint.attachments);
   buildResponses(complaint.responses);
+  buildFollowUps(complaint.followUps);
   buildTimeline(complaint.history);
+  configureFollowUpForm(complaint);
 
   modal.classList.add("show");
   document.body.style.overflow = "hidden";
@@ -287,6 +310,40 @@ function openDetailModal(complaint, triggerBtn) {
     titleEl.setAttribute("tabindex", "-1");
     titleEl.focus();
   }
+}
+
+function normalizeFollowUp(item) {
+  const created = new Date(item.createdAt || Date.now());
+  return {
+    id: item.id || `follow-up-${created.getTime()}`,
+    text: item.message || item.update || item.text || "",
+    date: created.toISOString().slice(0, 10),
+    time: created.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+  };
+}
+
+function isActiveComplaint(complaint) {
+  return ["Pending", "In Progress"].includes(normalizeStatus(complaint.status));
+}
+
+function configureFollowUpForm(complaint) {
+  const form = document.getElementById("followUpForm");
+  const textarea = document.getElementById("followUpText");
+  const help = document.getElementById("followUpHelp");
+  const submit = document.getElementById("followUpSubmit");
+  if (!form || !textarea || !help || !submit) return;
+
+  activeComplaintId = complaint.id;
+  form.dataset.complaintId = complaint.id;
+  textarea.value = "";
+  help.textContent = isActiveComplaint(complaint)
+    ? "0 / 1500"
+    : "Only active complaints can receive follow-ups.";
+  textarea.disabled = !isActiveComplaint(complaint);
+  submit.disabled = !isActiveComplaint(complaint);
 }
 
 function closeDetailModal() {
@@ -439,6 +496,141 @@ function buildResponses(responses) {
   });
 }
 
+function buildFollowUps(followUps) {
+  const container = document.getElementById("detailFollowUps");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!followUps || followUps.length === 0) {
+    const msg = document.createElement("p");
+    msg.className = "detail-empty-msg";
+    msg.textContent = "No follow-ups yet.";
+    container.appendChild(msg);
+    return;
+  }
+
+  followUps.forEach((item) => {
+    const entry = document.createElement("div");
+    entry.className = "follow-up-entry";
+
+    const meta = document.createElement("div");
+    meta.className = "follow-up-meta";
+    meta.textContent = `Resident update - ${item.date} ${item.time}`;
+
+    const text = document.createElement("div");
+    text.className = "follow-up-text";
+    text.textContent = item.text;
+
+    entry.appendChild(meta);
+    entry.appendChild(text);
+    container.appendChild(entry);
+  });
+}
+
+function initFollowUpForm() {
+  const form = document.getElementById("followUpForm");
+  const textarea = document.getElementById("followUpText");
+  const help = document.getElementById("followUpHelp");
+  const submit = document.getElementById("followUpSubmit");
+  if (!form || !textarea || !help || !submit) return;
+
+  textarea.addEventListener("input", () => {
+    help.textContent = `${textarea.value.length} / 1500`;
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const complaintId = form.dataset.complaintId || activeComplaintId;
+    const update = textarea.value.trim();
+    if (!complaintId || !update) {
+      showNotification("Please enter a follow-up update.", "error");
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = "Adding...";
+    try {
+      const response = await api.addComplaintFollowUp(complaintId, update);
+      if (!response?.success) {
+        throw new Error(response?.message || "Unable to add follow-up.");
+      }
+      showNotification("Follow-up added.", "success");
+      await loadComplaints();
+      const refreshed = complaints.find((item) => item.id === complaintId);
+      if (refreshed) {
+        openDetailModal(refreshed, _lastFocusedViewBtn);
+      }
+    } catch (error) {
+      const complaint = complaints.find((item) => item.id === complaintId);
+      if (!complaint) {
+        showNotification(error.message || "Unable to add follow-up.", "error");
+        return;
+      }
+      if (!isStoredLocalComplaint(complaintId)) {
+        showNotification(error.message || "Unable to add follow-up.", "error");
+        return;
+      }
+      addLocalFollowUp(complaint, update);
+      showNotification(
+        "Server unavailable. Follow-up saved locally for now.",
+        "warning",
+      );
+      renderTable();
+      openDetailModal(complaint, _lastFocusedViewBtn);
+    } finally {
+      submit.disabled = false;
+      submit.textContent = "Add Follow-up";
+    }
+  });
+}
+
+function addLocalFollowUp(complaint, update) {
+  const now = new Date();
+  const followUp = {
+    id: `local-follow-up-${now.getTime()}`,
+    text: update,
+    date: now.toISOString().slice(0, 10),
+    time: now.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+  };
+  complaint.followUps = complaint.followUps || [];
+  complaint.followUps.push(followUp);
+  complaint.history = complaint.history || [];
+  complaint.history.push({
+    label: "Resident follow-up",
+    status: complaint.status,
+    date: followUp.date,
+    time: followUp.time,
+    notes: update,
+  });
+  persistLocalComplaintUpdate(complaint);
+}
+
+function persistLocalComplaintUpdate(complaint) {
+  const stored = getStoredComplaints();
+  const index = stored.findIndex(
+    (item) =>
+      formatComplaintNumber(item.id || item.referenceId) ===
+      formatComplaintNumber(complaint.id || complaint.referenceId),
+  );
+  if (index >= 0) {
+    stored[index] = { ...stored[index], ...complaint, pendingSync: true };
+  }
+  localStorage.setItem("bsccarsComplaints", JSON.stringify(stored));
+}
+
+function isStoredLocalComplaint(complaintId) {
+  const stored = getStoredComplaints();
+  return stored.some(
+    (item) =>
+      formatComplaintNumber(item.id || item.referenceId) ===
+      formatComplaintNumber(complaintId),
+  );
+}
+
 function buildTimeline(history) {
   const container = document.getElementById("detailTimeline");
   if (!container) return;
@@ -454,7 +646,7 @@ function buildTimeline(history) {
   }
 
   history.forEach((item) => {
-    const statusKey = item.status.toLowerCase().replace(/\s+/g, "-");
+    const statusKey = normalizeStatus(item.status).toLowerCase().replace(/\s+/g, "-");
 
     const dotClass =
       {
@@ -493,7 +685,7 @@ function buildTimeline(history) {
 
     const statusSpan = document.createElement("span");
     statusSpan.className = `timeline-status ${statusClass}`;
-    statusSpan.textContent = item.status;
+    statusSpan.textContent = normalizeStatus(item.status);
 
     labelRow.appendChild(labelSpan);
     labelRow.appendChild(arrowSpan);
@@ -505,6 +697,12 @@ function buildTimeline(history) {
 
     info.appendChild(labelRow);
     info.appendChild(dateRow);
+    if (item.notes) {
+      const notes = document.createElement("div");
+      notes.className = "timeline-notes";
+      notes.textContent = item.notes;
+      info.appendChild(notes);
+    }
     timelineItem.appendChild(dot);
     timelineItem.appendChild(info);
     container.appendChild(timelineItem);
@@ -516,3 +714,110 @@ function setText(id, value) {
   if (!el) return;
   el.textContent = value && String(value).trim() !== "" ? value : "—";
 }
+
+function stageLabel(stage) {
+  return {
+    first_mediation: "First Mediation",
+    second_mediation: "Second Mediation",
+    conciliation: "Conciliation",
+    cfa_issued: "CFA Issued",
+  }[String(stage || "first_mediation").trim()] || "First Mediation";
+}
+
+function outcomeLabel(outcome) {
+  return {
+    pending: "Pending",
+    respondent_appeared: "Respondent Appeared",
+    respondent_absent: "Respondent Absent",
+    settled: "Settled",
+    escalated: "Escalated",
+    unresolved: "Unresolved",
+  }[String(outcome || "pending").trim().toLowerCase()] || "Pending";
+}
+
+function stageOutcomeBadgeClass(outcome) {
+  return {
+    pending: "status-pending",
+    respondent_appeared: "status-progress",
+    respondent_absent: "status-pending",
+    settled: "status-resolved",
+    escalated: "status-pending",
+    unresolved: "status-pending",
+  }[String(outcome || "pending").trim().toLowerCase()] || "status-pending";
+}
+
+function formatHearingDate(hearingDate, hearingTime) {
+  if (!hearingDate) return "Date not set";
+  let formatted = hearingDate;
+  if (hearingTime) {
+    formatted += " at " + String(hearingTime).slice(0, 5);
+  }
+  return formatted;
+}
+
+async function loadHearingProceedings(complaintId, category) {
+  const card = document.getElementById("hearingProceedingsCard");
+  const container = document.getElementById("detailHearingProceedings");
+  if (!card || !container) return;
+
+  // Only show for Money Debt complaints
+  const isMoneyDebt = String(category || "").trim() === "Money Debt" ||
+    String(category || "").toLowerCase().startsWith("money debt");
+  if (!isMoneyDebt) {
+    card.style.display = "none";
+    return;
+  }
+
+  card.style.display = "block";
+  container.innerHTML = '<p class="detail-empty-msg">Loading hearing proceedings...</p>';
+
+  try {
+    const response = await api.get(`/complaints/${complaintId}/hearing-notices`);
+    const notices = Array.isArray(response?.data) ? response.data : [];
+
+    if (!notices.length) {
+      container.innerHTML = '<p class="detail-empty-msg">No hearing notices recorded yet.</p>';
+      return;
+    }
+
+    container.innerHTML = "";
+    notices.forEach((notice, index) => {
+      const item = document.createElement("div");
+      item.className = "hearing-proceeding-item";
+      item.style.cssText = "padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08);";
+
+      const stageText = stageLabel(notice.stage || "first_mediation");
+      const outcomeText = outcomeLabel(notice.outcome || "pending");
+      const dateText = formatHearingDate(notice.hearing_date, notice.hearing_time);
+      const servedText = notice.notice_served_method
+        ? "Served via " + String(notice.notice_served_method).replace(/_/g, " ")
+        : "Service pending";
+      const badgeClass = stageOutcomeBadgeClass(notice.outcome || "pending");
+
+      item.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <strong style="color:#e0e0e0;">${escapeHtml(stageText)}</strong>
+            <span style="color:rgba(255,255,255,0.5);margin-left:8px;">${escapeHtml(dateText)}</span>
+          </div>
+          <span class="${badgeClass}" style="padding:3px 10px;border-radius:12px;font-size:0.8rem;">${escapeHtml(outcomeText)}</span>
+        </div>
+        <div style="margin-top:4px;color:rgba(255,255,255,0.45);font-size:0.85rem;">
+          ${escapeHtml(servedText)}
+          ${notice.notice_served_at ? ' &middot; ' + new Date(notice.notice_served_at).toLocaleDateString('en-PH', {year: 'numeric', month: 'short', day: 'numeric'}) : ''}
+        </div>
+      `;
+      container.appendChild(item);
+    });
+  } catch (error) {
+    console.warn("Unable to load hearing proceedings.", error);
+    container.innerHTML = '<p class="detail-empty-msg">Unable to load hearing proceedings.</p>';
+  }
+}
+
+// Extend openDetailModal to load hearing proceedings
+const _origOpenDetailModal = openDetailModal;
+openDetailModal = function(complaint, triggerBtn) {
+  _origOpenDetailModal(complaint, triggerBtn);
+  loadHearingProceedings(complaint.id, complaint.category);
+};

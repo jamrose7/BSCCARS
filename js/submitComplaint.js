@@ -545,7 +545,7 @@ document.addEventListener("DOMContentLoaded", () => {
       details,
       respondent_name: respondentName,
       respondent_contact_number: respondentContactNumber,
-      respondent_address: respondentAddress,
+      respondent_purok: respondentPurok,
       confidential: anonymous ? "Yes (Public-hidden)" : "No",
       anonymous,
       attachments: [image?.name, video?.name].filter(Boolean),
@@ -561,12 +561,21 @@ document.addEventListener("DOMContentLoaded", () => {
       submittedAt: submittedAt.toISOString(),
     };
 
+    let submissionSucceeded = false;
+
     try {
       const response = await api.createComplaint(formData);
       if (!response.success) {
         throw new Error(response.message || "Complaint submission failed.");
       }
 
+      submissionSucceeded = true;
+      const confirmedId = response?.data?.id;
+      if (confirmedId) {
+        refId.textContent = confirmedId;
+        complaint.id = confirmedId;
+        complaint.referenceId = confirmedId;
+      }
       showNotification(
         "Your complaint has been submitted successfully.",
         "success",
@@ -575,34 +584,36 @@ document.addEventListener("DOMContentLoaded", () => {
       setOtherCategoryControls(false);
     } catch (error) {
       console.error(error);
+      saveComplaint(complaint);
       showNotification(
-        "Server unavailable. Saving complaint locally for now.",
+        "The server was unavailable, so your complaint was saved locally and will be available once the service is reachable again.",
         "warning",
       );
-      saveComplaint(complaint);
     }
 
-    summaryBlock.replaceChildren();
-    [
-      ["Category", displayCategory],
-      ["Purok/Sitio", purok],
-      ["Priority", priority === "high" ? "High Priority" : "Normal"],
+    if (submissionSucceeded) {
+      summaryBlock.replaceChildren();
       [
-        "Incident",
-        date ? `${date}${time ? " at " + time : ""}` : "Not specified",
-      ],
-      ["Hidden identity", anonymous ? "Yes" : "No"],
-    ].forEach(([label, value]) => {
-      const paragraph = document.createElement("p");
-      const strong = document.createElement("strong");
-      strong.textContent = `${label}: `;
-      paragraph.appendChild(strong);
-      paragraph.append(document.createTextNode(value));
-      summaryBlock.appendChild(paragraph);
-    });
-    summaryBlock.hidden = false;
+        ["Category", displayCategory],
+        ["Purok", purok],
+        ["Priority", priority === "high" ? "High Priority" : "Normal"],
+        [
+          "Incident",
+          date ? `${date}${time ? " at " + formatDisplayTime(time) : ""}` : "Not specified",
+        ],
+        ["Hidden identity", anonymous ? "Yes" : "No"],
+      ].forEach(([label, value]) => {
+        const paragraph = document.createElement("p");
+        const strong = document.createElement("strong");
+        strong.textContent = `${label}: `;
+        paragraph.appendChild(strong);
+        paragraph.append(document.createTextNode(value));
+        summaryBlock.appendChild(paragraph);
+      });
+      summaryBlock.hidden = false;
 
-    modal.style.display = "flex";
+      modal.style.display = "flex";
+    }
   });
 
   viewBtn.addEventListener("click", () => {

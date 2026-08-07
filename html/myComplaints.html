@@ -209,10 +209,59 @@
                 <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>
                 </svg>
               </span>
-              <h3>Admin Responses</h3>
+              <h3>Admin Response</h3>
             </div>
             <div id="detailResponses">
               <p class="detail-empty-msg">No responses yet.</p>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-message-square-plus-icon lucide-message-square-plus">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <path d="M12 7v6"/><path d="M9 10h6"/></svg>
+              </span>
+              <h3>Resident Follow-ups</h3>
+            </div>
+            <div id="detailFollowUps">
+              <p class="detail-empty-msg">No follow-ups yet.</p>
+            </div>
+            <form id="followUpForm" class="follow-up-form">
+              <label for="followUpText">Add Update</label>
+              <textarea
+                id="followUpText"
+                maxlength="1500"
+                rows="4"
+                placeholder="Add new details about this active complaint"></textarea>
+              <div class="follow-up-actions">
+                <span id="followUpHelp" class="follow-up-help">0 / 1500</span>
+                <button id="followUpSubmit" type="submit">Add Follow-up</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="detail-card" id="hearingProceedingsCard" style="display: none;">
+            <div class="detail-card-header">
+              <span class="detail-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gavel-icon lucide-gavel">
+                <path d="M14.5 1.5L8 8l-2-2L2 10l4 4 2-2 6.5-6.5"/><path d="M18 18l-2-2 4-4 2 2"/><path d="m2 18 4 4 2-2"/>
+                </svg>
+              </span>
+              <h3>Hearing Proceedings</h3>
+            </div>
+            <div class="detail-hearing-proceedings" id="detailHearingProceedings">
+              <p class="detail-empty-msg">No hearing notices recorded yet.</p>
             </div>
           </div>
 

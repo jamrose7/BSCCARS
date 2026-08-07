@@ -3,8 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const categoryFilter = document.getElementById("categoryFilter");
   const statusFilter = document.getElementById("statusFilter");
-  const detailModal = document.getElementById("detailModal");
-  const detailCloseBtn = document.getElementById("detailCloseBtn");
+  const resetFiltersBtn = document.getElementById("resetFiltersBtn");
   let complaints = [];
 
   const sampleComplaints = [
@@ -16,8 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
       date: "2026-07-11",
       time: "4:30 PM",
       status: "In Progress",
-      details:
-        "A resident reported a loud music disturbance after midnight. The sound carried to nearby houses and disrupted sleep. The complaint is under investigation.",
+      submittedBy: "Anonymous",
     },
   ];
 
@@ -39,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         date: complaint.date,
         time: complaint.time || complaint.incidentTime || "",
         status: complaint.status,
-        details: complaint.details,
         submittedBy: "Anonymous",
       })),
       ...sampleComplaints.map((complaint) => ({
@@ -65,34 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     render(complaints);
-  }
-
-  function setDetailText(id, value) {
-    const element = document.getElementById(id);
-    if (element) {
-      element.textContent = value || "-";
-    }
-  }
-
-  function openDetailModal(complaint) {
-    setDetailText("detailId", complaint.id);
-    setDetailText("detailTitle", complaint.title);
-    setDetailText("detailCategory", complaint.category);
-    setDetailText("detailPurok", complaint.purok);
-    setDetailText("detailDate", complaint.date);
-    setDetailText("detailTime", complaint.time);
-    setDetailText("detailStatus", complaint.status);
-    setDetailText("detailDetails", complaint.details);
-
-    if (detailModal) {
-      detailModal.classList.add("show");
-    }
-  }
-
-  function closeDetailModal() {
-    if (detailModal) {
-      detailModal.classList.remove("show");
-    }
   }
 
   function addDetailLine(card, label, value) {
@@ -137,14 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       addDetailLine(card, "Incident Date", complaint.date);
       addDetailLine(card, "Incident Time", complaint.time);
       addDetailLine(card, "Status", complaint.status);
-      addDetailLine(card, "Submitted by", complaint.submittedBy || "Anonymous");
-
-      const button = document.createElement("button");
-      button.className = "view-btn";
-      button.type = "button";
-      button.textContent = "View Details";
-      button.addEventListener("click", () => openDetailModal(complaint));
-      card.appendChild(button);
+      addDetailLine(card, "Submitted by", "Anonymous");
 
       container.appendChild(card);
     });
@@ -166,27 +128,17 @@ document.addEventListener("DOMContentLoaded", () => {
     render(filtered);
   }
 
+  function resetFilters() {
+    searchInput.value = "";
+    categoryFilter.value = "";
+    statusFilter.value = "";
+    filterData();
+  }
+
   searchInput.addEventListener("input", filterData);
   categoryFilter.addEventListener("change", filterData);
   statusFilter.addEventListener("change", filterData);
-
-  if (detailCloseBtn) {
-    detailCloseBtn.addEventListener("click", closeDetailModal);
-  }
-
-  if (detailModal) {
-    detailModal.addEventListener("click", (event) => {
-      if (event.target === detailModal) {
-        closeDetailModal();
-      }
-    });
-  }
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeDetailModal();
-    }
-  });
+  resetFiltersBtn?.addEventListener("click", resetFilters);
 
   loadComplaints();
 });

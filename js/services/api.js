@@ -90,8 +90,9 @@ class ApiService {
     if (!response.ok) {
       if (response.status === 401 && endpoint !== "/auth/sign-in") {
         this.clearToken();
+
         if (!this.signingOut) {
-      window.location.href = "sign_in.html";
+          window.location.href = "sign_in.html";
         }
       }
       throw new Error(data.message || "API request failed");
@@ -183,15 +184,15 @@ class ApiService {
     return this.post(`/complaints/${id}/comment`, { comment, isInternal });
   }
 
+  addComplaintFollowUp(id, update) {
+    return this.post(`/complaints/${id}/follow-up`, { update });
+  }
+
   updateComplaintRespondent(id, respondentData) {
     return this.patch(`/complaints/${id}/respondent`, respondentData);
   }
 
-  sendHearingNoticeEmailCopy(id) {
-    return this.post(`/hearing-notices/${id}/email-copy`, {});
-  }
-
-  getComplaintComments(id) {
+getComplaintComments(id) {
     return this.get(`/complaints/${id}/comments`);
   }
 
@@ -217,10 +218,6 @@ class ApiService {
 
   restoreResident(id) {
     return this.patch(`/residents/${id}/archive`, { is_archived: false });
-  }
-
-  deleteResident(id) {
-    return this.delete(`/residents/${id}`);
   }
 
   getNotifications() {

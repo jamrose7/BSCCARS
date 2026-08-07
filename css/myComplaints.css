@@ -529,6 +529,104 @@
   line-height: 1.6;
 }
 
+.follow-up-entry {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.follow-up-entry:last-child {
+  border-bottom: none;
+}
+
+.follow-up-meta {
+  font-size: 0.78rem;
+  color: rgba(168, 216, 212, 0.65);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.follow-up-text {
+  color: #e0f0f0;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.follow-up-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.follow-up-form label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(168, 216, 212, 0.8);
+}
+
+.follow-up-form textarea {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+  border: 1px solid rgba(168, 216, 212, 0.22);
+  border-radius: 12px;
+  background: rgba(4, 31, 35, 0.5);
+  color: #eef7f7;
+  padding: 12px 14px;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.follow-up-form textarea:focus {
+  outline: 2px solid rgba(168, 216, 212, 0.45);
+  outline-offset: 2px;
+}
+
+.follow-up-form textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.follow-up-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.follow-up-help {
+  color: rgba(238, 247, 247, 0.55);
+  font-size: 0.82rem;
+}
+
+.follow-up-actions button {
+  border: none;
+  border-radius: 10px;
+  background: #4ec3c7;
+  color: #062c32;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 10px 16px;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.follow-up-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.follow-up-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .detail-timeline {
   display: flex;
   flex-direction: column;
@@ -610,6 +708,14 @@
   font-size: 0.75rem;
   color: rgba(168, 216, 212, 0.5);
   margin-top: 3px;
+}
+
+.timeline-notes {
+  margin-top: 6px;
+  color: rgba(232, 244, 244, 0.78);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .detail-empty-msg {

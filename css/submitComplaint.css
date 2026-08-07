@@ -209,6 +209,21 @@ textarea {
     transform 0.2s ease;
 }
 
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+  cursor: pointer;
+  opacity: 1;
+}
+
 select option {
   background: #0e5e67;
   color: #eef7f7;

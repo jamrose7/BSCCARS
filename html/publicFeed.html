@@ -92,8 +92,8 @@
           </div>
 
           <select name="categoryFilter" id="categoryFilter">
-            <option value="" disabled selected>Select a category</option>
-            <optgroup label="── Urgent Categories (Auto High Priority) ──">
+            <option value="" selected>All categories</option>
+            <optgroup label="── Auto High Priority Categories ──">
               <option value="Physical Harm, Violence, or Threats">
                 Physical Harm, Violence, or Threats
               </option>
@@ -120,66 +120,18 @@
           </select>
 
           <select name="statusFilter" id="statusFilter">
-            <option value="" disabled selected>Select a status</option>
+            <option value="" selected>All statuses</option>
             <option value="Pending">Pending</option>
             <option value="In Progress">In Progress</option>
             <option value="Resolved">Resolved</option>
           </select>
-        </div>
+          <button type="button" id="resetFiltersBtn" class="reset-filters-btn">
+            Reset Filters
+          </button>        </div>
 
         <div id="feedContainer"></div>
       </main>
     </div>
-
-    <div id="detailModal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">Complaint Details</h2>
-          <button
-            id="detailCloseBtn"
-            class="close-btn"
-            aria-label="Close details modal"
-          >
-            ×
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="detail-row">
-            <span class="detail-label">Complaint #:</span>
-            <span id="detailId" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Complaint Title:</span>
-            <span id="detailTitle" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Category:</span>
-            <span id="detailCategory" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Purok:</span>
-            <span id="detailPurok" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Incident Date:</span>
-            <span id="detailDate" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Incident Time:</span>
-            <span id="detailTime" class="detail-value">—</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span id="detailStatus" class="detail-value">—</span>
-          </div>
-          <div class="detail-row detail-row-full">
-            <span class="detail-label">Details:</span>
-            <p id="detailDetails" class="detail-value detail-paragraph">—</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
     <script src="../js/services/notificationManager.js"></script>
