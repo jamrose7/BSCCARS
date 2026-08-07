@@ -22,8 +22,11 @@
     </header>
 
     <main class="policy-content">
+      <p id="backToRegistrationLink" style="display: none">
+        <a href="register.html" class="btn back-btn">Back to Registration</a>
+      </p>
       <h1>Privacy Policy</h1>
-      <p>Last updated: June 19, 2026</p>
+      <p>Last updated: August 1, 2026</p>
 
       <h2>Our Commitment</h2>
       <p>
@@ -40,7 +43,7 @@
         When you register and use BSCCARS, we collect the following information:
       </p>
       <ul>
-        <li>Full name, date of birth, and address</li>
+        <li>Full name and date of birth</li>
         <li>Purok within Barangay Sillon</li>
         <li>Contact number and email address</li>
         <li>Verification documents, including a valid government-issued ID</li>
@@ -50,6 +53,10 @@
         </li>
         <li>
           Account activity logs, such as submitted complaints and system actions
+        </li>
+        <li>
+          Notification records, hearing notice details, and administrative
+          actions related to complaint processing
         </li>
       </ul>
 
@@ -66,14 +73,30 @@
         <li>Communicating complaint updates and notification alerts</li>
         <li>Providing support for account or complaint issues</li>
         <li>Improving system security and maintaining audit records</li>
+        <li>
+          Managing resident application approval, rejection, archiving, or
+          restoration when needed for official barangay records
+        </li>
       </ul>
 
       <h2>Data Sharing and Disclosure</h2>
       <p>
         We do not sell or trade your personal data. Information is shared only
         with authorized Barangay Sillon officials and staff who need it to
-        handle complaints. Disclosure may also occur when required by law, court
-        order, or public safety needs.
+        handle complaints, verify registrations, send notices, maintain records,
+        or administer the system. Disclosure may also occur when required by
+        law, court order, or public safety needs.
+      </p>
+
+      <h2>Public Complaint Information</h2>
+      <p>
+        Non-confidential complaint information may appear in public listings or
+        feeds so residents can follow community concerns. Public listings are
+        limited to summary information such as complaint number, title,
+        category, purok, incident date and time, status, and submitter display
+        name when the complaint is not confidential. Full complaint details,
+        attachments, respondent information, and administrative notes are not
+        intended for the public feed.
       </p>
 
       <h2>Confidential Complaints</h2>
@@ -107,31 +130,31 @@
       </p>
       <ul>
         <li>
-          <strong>Right to be informed</strong> — to know how your data is
+          <strong>Right to be informed</strong> &mdash; to know how your data is
           collected and used
         </li>
         <li>
-          <strong>Right to access</strong> — to request a copy of your personal
+          <strong>Right to access</strong> &mdash; to request a copy of your personal
           data held by BSCCARS
         </li>
         <li>
-          <strong>Right to correction</strong> — to correct inaccurate or
+          <strong>Right to correction</strong> &mdash; to correct inaccurate or
           incomplete information
         </li>
         <li>
-          <strong>Right to erasure</strong> — to request deletion of your data,
+          <strong>Right to erasure</strong> &mdash; to request deletion of your data,
           subject to legal requirements
         </li>
         <li>
-          <strong>Right to object</strong> — to object to processing of your
+          <strong>Right to object</strong> &mdash; to object to processing of your
           personal data
         </li>
         <li>
-          <strong>Right to data portability</strong> — to obtain a structured
+          <strong>Right to data portability</strong> &mdash; to obtain a structured
           copy of your data
         </li>
         <li>
-          <strong>Right to lodge a complaint</strong> — to file a complaint with
+          <strong>Right to lodge a complaint</strong> &mdash; to file a complaint with
           the National Privacy Commission (NPC)
         </li>
       </ul>
@@ -191,5 +214,15 @@
     </footer>
 
     <script src="../js/landing.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const backLink = document.getElementById("backToRegistrationLink");
+        if (backLink) {
+          const shouldShow = params.get("from") === "register";
+          backLink.style.display = shouldShow ? "block" : "none";
+        }
+      });
+    </script>
   </body>
 </html>

@@ -24,8 +24,11 @@
     </header>
 
     <main class="policy-content">
+      <p id="backToRegistrationLink" style="display: none">
+        <a href="register.html" class="btn back-btn">Back to Registration</a>
+      </p>
       <h1>Terms of Service</h1>
-      <p>Last updated: June 19, 2026</p>
+      <p>Last updated: August 1, 2026</p>
 
       <h2>Introduction</h2>
       <p>
@@ -52,8 +55,8 @@
         </li>
         <li>
           <strong>Proper Use.</strong> Use the system honestly. Filing false or
-          abusive complaints may result in account restrictions or review by the
-          Barangay Captain.
+          abusive complaints may be reviewed by authorized barangay personnel
+          and may be handled through appropriate barangay procedures.
         </li>
         <li>
           <strong>Language.</strong> You may describe complaints in English,
@@ -82,15 +85,22 @@
       <h2>Registration and Approval</h2>
       <p>
         New registrations are subject to verification by barangay staff.
-        Approval is required before your account becomes active. Registration
-        does not guarantee instant access.
+        Approval is required before your account becomes active, so submitting
+        a registration form does not provide immediate access to BSCCARS.
+        Residents must be at least 18 years old to register their own account.
+        If a minor has a concern or complaint, a parent or legal guardian should
+        submit the complaint using the parent or guardian's own account.
       </p>
 
-      <h2>System Access and Suspension</h2>
+      <h2>System Access</h2>
       <p>
-        The Barangay Admin may suspend or deactivate accounts that violate these
-        terms, misuse the system, or file repeated false or malicious
-        complaints.
+        BSCCARS access is provided for verified residents and authorized
+        barangay personnel. The system no longer uses resident account
+        restrictions or suspensions as a complaint-management penalty. However,
+        registrations may still require approval, duplicate or invalid
+        applications may be rejected, and administrative accounts may be
+        activated, deactivated, archived, or restored as needed for official
+        staffing and security purposes.
       </p>
 
       <h2>Disclaimer</h2>
@@ -143,5 +153,15 @@
     </footer>
 
     <script src="../js/landing.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const backLink = document.getElementById("backToRegistrationLink");
+        if (backLink) {
+          const shouldShow = params.get("from") === "register";
+          backLink.style.display = shouldShow ? "block" : "none";
+        }
+      });
+    </script>
   </body>
 </html>
