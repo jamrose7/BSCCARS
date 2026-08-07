@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const db = require("../db");
 const { requireRoles } = require("../middleware/auth");
+const { formatIncidentTime } = require("../utils/formatters");
 const {
   getUserById,
   addUserActivity,
@@ -15,6 +16,7 @@ const {
 } = require("../data/mockData");
 
 const ADMIN_RESPONSE_MAX_LENGTH = 1500;
+const RESIDENT_FOLLOW_UP_MAX_LENGTH = 1500;
 const RESPONDENT_MAX = {
   name: 255,
   contactNumber: 20,
@@ -104,7 +106,16 @@ function formatComplaintNumber(sequence) {
 function validateAdminResponse(response) {
   return (
     typeof response === "string" &&
+    response.trim().length > 0 &&
     response.trim().length <= ADMIN_RESPONSE_MAX_LENGTH
+  );
+}
+
+function validateResidentFollowUp(updateText) {
+  return (
+    typeof updateText === "string" &&
+    updateText.trim().length > 0 &&
+    updateText.trim().length <= RESIDENT_FOLLOW_UP_MAX_LENGTH
   );
 }
 
@@ -112,6 +123,105 @@ function shouldUseDatabase() {
   return Boolean(
     process.env.DB_HOST || process.env.DB_USER || process.env.DB_NAME,
   );
+}
+
+function dbComplaintToApi(row, attachments = [], followUps = [], statusHistory = []) {
+  return {
+    id: row.id,
+    submitterId: row.submitter_id,
+    title: row.title,
+    category: row.category,
+    categoryBase: row.category_base,
+    categorySpecify: row.category_specify,
+    details: row.details,
+    respondent_name: row.respondent_name || "",
+    respondent_contact_number: row.respondent_contact_number || "",
+    respondent_email: row.respondent_email || "",
+    respondent_purok: row.respondent_purok || "",
+    purok: row.purok,
+    incidentDate: row.incident_date ? String(row.incident_date).slice(0, 10) : "",
+    incidentTime: row.incident_time
+  ? formatIncidentTime(String(row.incident_time).slice(0, 5))
+  : "",
+    priority: row.priority,
+    confidential: row.confidentiality === "Confidential" ? "Yes" : "No",
+    status: normalizeStatusValue(row.status),
+    source: row.source,
+    sourceBase: row.source_base,
+    sourceSpecify: row.source_specify,
+    adminResponse: row.admin_notes || "", 
+    archived: Boolean(row.is_archived),
+    is_archived: Boolean(row.is_archived),
+    createdAt: row.created_at,
+    resolvedAt: row.resolved_at,
+    archivedAt: row.archived_at,
+    attachments,
+    followUps,
+    statusHistory,
+    complainant: {
+      id: row.submitter_id,
+      firstName: row.first_name || "",
+      middleName: row.middle_name || "",
+      lastName: row.last_name || "",
+      fullName: [row.first_name, row.middle_name, row.last_name]
+        .filter(Boolean)
+        .join(" "),
+    },
+  };
+}
+
+async function getDbComplaint(id) {
+  const [rows] = await db.query(
+    `
+      SELECT c.*, u.first_name, u.middle_name, u.last_name
+      FROM complaints c
+      LEFT JOIN users u ON u.id = c.submitter_id
+      WHERE c.id = ?
+      LIMIT 1
+    `,
+    [id],
+  );
+  if (!rows.length) return null;
+
+  const [attachments] = await db.query(
+    `
+      SELECT file_type AS type, original_name AS originalName, storage_path AS path
+      FROM complaint_attachments
+      WHERE complaint_id = ?
+      ORDER BY created_at ASC
+    `,
+    [id],
+  );
+  const [followUps] = await db.query(
+    `
+      SELECT id, message, created_by AS createdBy, created_at AS createdAt
+      FROM complaint_follow_ups
+      WHERE complaint_id = ?
+      ORDER BY created_at ASC
+    `,
+    [id],
+  );
+  const [statusHistory] = await db.query(
+    `
+      SELECT id, previous_status AS previousStatus, new_status AS newStatus,
+             changed_by AS changedBy, notes, created_at AS createdAt
+      FROM complaint_status_history
+      WHERE complaint_id = ?
+      ORDER BY created_at ASC
+    `,
+    [id],
+  );
+
+  return dbComplaintToApi(rows[0], attachments, followUps, statusHistory);
+}
+
+async function getNextDbComplaintId() {
+  const [rows] = await db.query(
+    "SELECT id FROM complaints WHERE id LIKE 'CMP-2026-%' ORDER BY id DESC LIMIT 1",
+  );
+  const last = rows[0]?.id || "CMP-2026-0000";
+  const next = Number(String(last).slice(-4)) + 1;
+  return formatComplaintNumber(next);
 }
 
 function cleanText(value) {
@@ -183,22 +293,13 @@ function statusLabel(status) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatIncidentTime(value) {
-  const time = String(value || "").trim();
-  const match = time.match(/^(\d{1,2}):(\d{2})$/);
-  if (!match) return time;
-
-  const hour = Number(match[1]);
-  const minutes = match[2];
-  if (hour > 23 || Number(minutes) > 59) return time;
-  return `${hour % 12 || 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
-}
-
 function enrichComplaint(complaint) {
   const resident = getUserById(complaint.submitterId);
   return {
     ...complaint,
     status: normalizeStatusValue(complaint.status),
+    incidentTime: formatIncidentTime(complaint.incidentTime),
+    adminResponse: complaint.adminResponse,
     complainant: resident
       ? {
           id: resident.id,
@@ -269,6 +370,52 @@ function computeEligibility(user) {
 
 // GET all complaints
 router.get("/", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const conditions = [];
+    const params = [];
+    const requestedStatus = req.query.status
+      ? normalizeStatusValue(req.query.status)
+      : "";
+    const requestedPriority = String(req.query.priority || "")
+      .trim()
+      .toLowerCase();
+    const requestedSubmitter =
+      req.user.role === "resident"
+        ? req.user.id
+        : String(req.query.submitterId || "").trim();
+
+    conditions.push(
+      req.query.archived === "true" ? "c.is_archived = TRUE" : "c.is_archived = FALSE",
+    );
+    if (requestedStatus) {
+      conditions.push("c.status = ?");
+      params.push(requestedStatus);
+    }
+    if (requestedPriority) {
+      conditions.push("LOWER(c.priority) = ?");
+      params.push(requestedPriority);
+    }
+    if (requestedSubmitter) {
+      conditions.push("c.submitter_id = ?");
+      params.push(requestedSubmitter);
+    }
+
+    const [rows] = await db.query(
+      `
+        SELECT c.*, u.first_name, u.middle_name, u.last_name
+        FROM complaints c
+        LEFT JOIN users u ON u.id = c.submitter_id
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY c.created_at DESC
+      `,
+      params,
+    );
+    return res.json({
+      success: true,
+      data: rows.map((row) => dbComplaintToApi(row)),
+    });
+  }
+
   const requestedStatus = req.query.status
     ? normalizeStatusValue(req.query.status)
     : "";
@@ -300,6 +447,32 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/check-eligibility", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const [rows] = await db.query(
+      `
+        SELECT COUNT(*) AS open
+        FROM complaints
+        WHERE submitter_id = ?
+          AND is_archived = FALSE
+          AND status IN ('pending', 'in-progress')
+      `,
+      [req.user.id],
+    );
+    const open = Number(rows[0]?.open || 0);
+    return res.json({
+      success: true,
+      data:
+        open >= 5
+          ? {
+              eligible: false,
+              reason:
+                "You already have 5 active complaints. Please wait for one to be resolved before submitting a new one.",
+              open,
+            }
+          : { eligible: true, open },
+    });
+  }
+
   const user = getUserById(req.user.id);
   if (!user) {
     return res.status(401).json({ success: false, message: "User not found." });
@@ -314,6 +487,33 @@ router.get("/check-eligibility", async (req, res) => {
 });
 
 router.get("/public-feed", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const [rows] = await db.query(
+      `
+        SELECT c.id, c.title, c.category, c.purok, c.incident_date,
+               c.incident_time, c.status, c.confidentiality,
+               u.first_name, u.middle_name, u.last_name
+        FROM complaints c
+        LEFT JOIN users u ON u.id = c.submitter_id
+        WHERE c.is_archived = FALSE
+        ORDER BY c.created_at DESC
+      `,
+    );
+    return res.json({
+      success: true,
+      data: rows.map((row) => ({
+        id: row.id,
+        title: row.title || "Untitled complaint",
+        category: row.category || "Uncategorized",
+        purok: row.purok || "",
+        date: row.incident_date ? String(row.incident_date).slice(0, 10) : "",
+        time: formatIncidentTime(row.incident_time),
+        status: statusLabel(row.status),
+        submittedBy: "Anonymous",
+      })),
+    });
+  }
+
   const data = complaints
     .filter((complaint) => !isArchived(complaint))
     .map((complaint) => {
@@ -338,8 +538,7 @@ router.get("/public-feed", async (req, res) => {
         ),
         time: formatIncidentTime(complaint.incidentTime),
         status: statusLabel(complaint.status),
-        details: complaint.details || "",
-        submittedBy: isConfidential ? "Anonymous" : fullName(resident),
+        submittedBy: "Anonymous",
       };
     });
 
@@ -423,6 +622,22 @@ router.get("/:id/hearing-notices", async (req, res) => {
 
 // GET complaint by ID
 router.get("/:id", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const complaint = await getDbComplaint(req.params.id);
+    if (!complaint) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found." });
+    }
+    if (!canAccessComplaint(req.user, { submitterId: complaint.submitterId })) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to view this complaint.",
+      });
+    }
+    return res.json({ success: true, data: complaint });
+  }
+
   const complaint = findComplaint(req.params.id);
   if (!complaint) {
     return res
@@ -598,7 +813,7 @@ router.post(
       attachments.push({
         type: "image",
         originalName: imageFile.originalname,
-        path: `/uploads/complaints/${imageFile.filename}`,
+        path: `/api/uploads/complaints/${imageFile.filename}`,
       });
     }
 
@@ -606,7 +821,7 @@ router.post(
       attachments.push({
         type: "video",
         originalName: videoFile.originalname,
-        path: `/uploads/complaints/${videoFile.filename}`,
+        path: `/api/uploads/complaints/${videoFile.filename}`,
       });
     }
 
@@ -624,6 +839,81 @@ router.post(
         category,
         requested_priority: "High",
         applied_priority: "Normal",
+      });
+    }
+
+    if (shouldUseDatabase()) {
+      const complaintId = await getNextDbComplaintId();
+      const confidentiality =
+        complaintData.anonymous === "true" || complaintData.anonymous === true
+          ? "Confidential"
+          : "Public";
+
+      await db.query(
+        `
+          INSERT INTO complaints (
+            id, submitter_id, title, category, category_base, category_specify,
+            details, respondent_name, respondent_contact_number, respondent_email,
+            respondent_purok, purok, incident_date, incident_time, priority,
+            confidentiality, status, source
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'Digital Submission')
+        `,
+        [
+          complaintId,
+          user.id,
+          title,
+          displayCategory,
+          category,
+          category === "Other" ? categorySpecify : "",
+          details,
+          respondentFields.respondent_name,
+          respondentFields.respondent_contact_number,
+          respondentFields.respondent_email,
+          respondentFields.respondent_purok,
+          purok,
+          complaintData.incidentDate || null,
+          complaintData.incidentTime || null,
+          finalPriority,
+          confidentiality,
+        ],
+      );
+
+      for (const attachment of attachments) {
+        await db.query(
+          `
+            INSERT INTO complaint_attachments (
+              complaint_id, file_type, original_name, storage_path, mime_type, file_size
+            ) VALUES (?, ?, ?, ?, ?, ?)
+          `,
+          [
+            complaintId,
+            attachment.type,
+            attachment.originalName,
+            attachment.path,
+            attachment.type === "video" ? "video/mp4" : "image",
+            0,
+          ],
+        );
+      }
+
+      await db.query(
+        `
+          INSERT INTO complaint_status_history (
+            complaint_id, changed_by, previous_status, new_status, notes
+          ) VALUES (?, ?, NULL, 'pending', '')
+        `,
+        [complaintId, user.id],
+      );
+
+      addAdminNotification({
+        title: "New complaint submitted",
+        message: `${fullName(user)} submitted ${complaintId}: ${title}.`,
+      });
+
+      const savedComplaint = await getDbComplaint(complaintId);
+      return res.status(201).json({
+        success: true,
+        data: savedComplaint,
       });
     }
 
@@ -713,7 +1003,19 @@ router.patch(
       });
     }
 
-    if (notes && !validateAdminResponse(notes)) {
+    const normalizedNotes = typeof notes === "string" ? notes.trim() : "";
+
+    if (
+      ["in-progress", "resolved"].includes(normalizedStatus) &&
+      !validateAdminResponse(normalizedNotes)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "An official admin response is required before moving a complaint to In Progress or Resolved.",
+      });
+    }
+
+    if (normalizedNotes && !validateAdminResponse(normalizedNotes)) {
       return res.status(400).json({
         success: false,
         message: `Admin response must not exceed ${ADMIN_RESPONSE_MAX_LENGTH} characters.`,
@@ -753,6 +1055,56 @@ router.patch(
       };
     }
 
+    if (shouldUseDatabase()) {
+      const complaint = await getDbComplaint(id);
+      if (!complaint) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Complaint not found." });
+      }
+      const previousStatus = normalizeStatusValue(complaint.status);
+      await db.query(
+        `
+          UPDATE complaints
+          SET status = ?, admin_notes = COALESCE(?, admin_notes),
+              source = COALESCE(?, source),
+              source_base = COALESCE(?, source_base),
+              source_specify = COALESCE(?, source_specify),
+              resolved_at = CASE WHEN ? = 'resolved' AND resolved_at IS NULL THEN CURRENT_TIMESTAMP ELSE resolved_at END
+          WHERE id = ?
+        `,
+        [
+          normalizedStatus,
+          normalizedNotes || null,
+          sourceUpdate?.source || null,
+          sourceUpdate?.sourceBase || null,
+          sourceUpdate?.sourceSpecify || null,
+          normalizedStatus,
+          id,
+        ],
+      );
+      await db.query(
+        `
+          INSERT INTO complaint_status_history (
+            complaint_id, changed_by, previous_status, new_status, notes
+          ) VALUES (?, ?, ?, ?, ?)
+        `,
+        [id, req.user.id, previousStatus, normalizedStatus, normalizedNotes || ""],
+      );
+      if (complaint.submitterId) {
+        addUserNotification(
+          complaint.submitterId,
+          `Complaint ${complaint.id} status updated`,
+          `Your complaint is now ${statusLabel(normalizedStatus)}.`,
+        );
+      }
+      return res.json({
+        success: true,
+        message: "Status updated",
+        data: await getDbComplaint(id),
+      });
+    }
+
     const complaint = findComplaint(id);
     if (!complaint) {
       return res
@@ -762,7 +1114,7 @@ router.patch(
 
     const previousStatus = normalizeStatusValue(complaint.status);
     complaint.status = normalizedStatus;
-    complaint.adminNotes = notes || complaint.adminNotes || null;
+    complaint.adminResponse = normalizedNotes || complaint.adminResponse || null;
     if (sourceUpdate) {
       complaint.source = sourceUpdate.source;
       complaint.sourceBase = sourceUpdate.sourceBase;
@@ -817,11 +1169,34 @@ router.post(
   async (req, res) => {
     const { id } = req.params;
     const { comment, isInternal = false } = req.body;
+    const normalizedComment = typeof comment === "string" ? comment.trim() : "";
 
-    if (!validateAdminResponse(comment)) {
+    if (!validateAdminResponse(normalizedComment)) {
       return res.status(400).json({
         success: false,
         message: `Admin response must not exceed ${ADMIN_RESPONSE_MAX_LENGTH} characters.`,
+      });
+    }
+
+    if (shouldUseDatabase()) {
+      const commentId = `comment-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      await db.query(
+        `
+          INSERT INTO complaint_comments (id, complaint_id, author_id, comment, is_internal)
+          VALUES (?, ?, ?, ?, ?)
+        `,
+        [commentId, id, req.user.id, normalizedComment, Boolean(isInternal) ? 1 : 0],
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Comment added",
+        data: {
+          id: commentId,
+          comment: normalizedComment,
+          isInternal: Boolean(isInternal),
+          createdAt: new Date().toISOString(),
+        },
       });
     }
 
@@ -834,7 +1209,7 @@ router.post(
 
     const newComment = {
       id: `comment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      comment: comment.trim(),
+      comment: normalizedComment,
       isInternal: Boolean(isInternal),
       createdAt: new Date().toISOString(),
     };
@@ -850,10 +1225,202 @@ router.post(
   },
 );
 
+router.post("/:id/follow-up", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const complaint = await getDbComplaint(req.params.id);
+    if (!complaint) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found." });
+    }
+    if (req.user.role !== "resident" || complaint.submitterId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only add follow-ups to complaints you submitted.",
+      });
+    }
+    if (complaint.is_archived) {
+      return res.status(400).json({
+        success: false,
+        message: "Archived complaints cannot receive follow-ups.",
+      });
+    }
+    const currentStatus = normalizeStatusValue(complaint.status);
+    if (!["pending", "in-progress"].includes(currentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Only active complaints can receive follow-ups.",
+      });
+    }
+    const updateText = String(req.body.update || req.body.message || "").trim();
+    if (!validateResidentFollowUp(updateText)) {
+      return res.status(400).json({
+        success: false,
+        message: `Follow-up update is required and must not exceed ${RESIDENT_FOLLOW_UP_MAX_LENGTH} characters.`,
+      });
+    }
+    const followUpId = `follow-up-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    await db.query(
+      `
+        INSERT INTO complaint_follow_ups (id, complaint_id, created_by, message)
+        VALUES (?, ?, ?, ?)
+      `,
+      [followUpId, complaint.id, req.user.id, updateText],
+    );
+    await db.query(
+      `
+        INSERT INTO complaint_status_history (
+          complaint_id, changed_by, previous_status, new_status, notes
+        ) VALUES (?, ?, ?, ?, ?)
+      `,
+      [complaint.id, req.user.id, currentStatus, currentStatus, updateText],
+    );
+    addAdminNotification({
+      title: "Complaint follow-up added",
+      message: `${fullName(req.user)} added a follow-up to ${complaint.id}: ${complaint.title}.`,
+      complaint_id: complaint.id,
+    });
+    return res.status(201).json({
+      success: true,
+      message: "Follow-up added.",
+      data: await getDbComplaint(complaint.id),
+    });
+  }
+
+  const complaint = findComplaint(req.params.id);
+  if (!complaint) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Complaint not found." });
+  }
+
+  if (req.user.role !== "resident" || complaint.submitterId !== req.user.id) {
+    return res.status(403).json({
+      success: false,
+      message: "You can only add follow-ups to complaints you submitted.",
+    });
+  }
+
+  if (isArchived(complaint)) {
+    return res.status(400).json({
+      success: false,
+      message: "Archived complaints cannot receive follow-ups.",
+    });
+  }
+
+  const currentStatus = normalizeStatusValue(complaint.status);
+  if (!["pending", "in-progress"].includes(currentStatus)) {
+    return res.status(400).json({
+      success: false,
+      message: "Only active complaints can receive follow-ups.",
+    });
+  }
+
+  const updateText = String(req.body.update || req.body.message || "").trim();
+  if (!validateResidentFollowUp(updateText)) {
+    return res.status(400).json({
+      success: false,
+      message: `Follow-up update is required and must not exceed ${RESIDENT_FOLLOW_UP_MAX_LENGTH} characters.`,
+    });
+  }
+
+  const createdAt = new Date().toISOString();
+  const followUp = {
+    id: `follow-up-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    message: updateText,
+    createdBy: req.user.id,
+    createdAt,
+  };
+
+  complaint.followUps = complaint.followUps || [];
+  complaint.followUps.push(followUp);
+  addComplaintTimelineEntry(complaint, {
+    label: "Resident follow-up",
+    previousStatus: currentStatus,
+    newStatus: currentStatus,
+    changedBy: req.user.id,
+    notes: updateText,
+  });
+
+  addUserActivity(req.user.id, "Added complaint follow-up", {
+    targetType: "complaint",
+    targetId: complaint.id,
+    complaint_id: complaint.id,
+    details: complaint.title || "",
+  });
+  addAdminNotification({
+    title: "Complaint follow-up added",
+    message: `${fullName(req.user)} added a follow-up to ${complaint.id}: ${complaint.title}.`,
+    complaint_id: complaint.id,
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: "Follow-up added.",
+    data: enrichComplaint(complaint),
+  });
+});
+
 router.patch(
   "/:id/respondent",
   requireRoles("assistant_admin", "super_admin"),
   async (req, res) => {
+    if (shouldUseDatabase()) {
+      const complaint = await getDbComplaint(req.params.id);
+      if (!complaint) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Complaint not found." });
+      }
+
+      const isMoneyDebtComplaint =
+        String(complaint.category || complaint.categoryBase || "") === "Money Debt";
+      const respondentFields = normalizeRespondentFields(req.body || {});
+
+      if (!isMoneyDebtComplaint) {
+        respondentFields.respondent_name = "";
+        respondentFields.respondent_contact_number = "";
+        respondentFields.respondent_email = "";
+        respondentFields.respondent_purok = "";
+      }
+
+      const respondentError = validateRespondentFields(respondentFields);
+      if (isMoneyDebtComplaint && respondentError) {
+        return res.status(400).json({
+          success: false,
+          message: respondentError,
+        });
+      }
+
+      await db.query(
+        `
+          UPDATE complaints
+          SET respondent_name = ?, respondent_contact_number = ?, respondent_email = ?, respondent_purok = ?
+          WHERE id = ?
+        `,
+        [
+          respondentFields.respondent_name,
+          respondentFields.respondent_contact_number,
+          respondentFields.respondent_email,
+          respondentFields.respondent_purok,
+          req.params.id,
+        ],
+      );
+
+      addUserActivity(req.user.id, "Updated complaint respondent details", {
+        targetType: "complaint",
+        targetId: req.params.id,
+        complaint_id: req.params.id,
+        details: respondentFields.respondent_name || "Respondent details updated",
+      });
+
+      return res.json({
+        success: true,
+        message: "Respondent details updated.",
+        data: await getDbComplaint(req.params.id),
+      });
+    }
+
     const complaint = findComplaint(req.params.id);
     if (!complaint) {
       return res
@@ -861,9 +1428,18 @@ router.patch(
         .json({ success: false, message: "Complaint not found." });
     }
 
+    const isMoneyDebtComplaint = String(complaint.category || "") === "Money Debt";
     const respondentFields = normalizeRespondentFields(req.body || {});
+
+    if (!isMoneyDebtComplaint) {
+      respondentFields.respondent_name = "";
+      respondentFields.respondent_contact_number = "";
+      respondentFields.respondent_email = "";
+      respondentFields.respondent_purok = "";
+    }
+
     const respondentError = validateRespondentFields(respondentFields);
-    if (respondentError) {
+    if (isMoneyDebtComplaint && respondentError) {
       return res.status(400).json({
         success: false,
         message: respondentError,
@@ -939,6 +1515,39 @@ router.patch(
 );
 
 router.get("/:id/comments", async (req, res) => {
+  if (shouldUseDatabase()) {
+    const complaint = await getDbComplaint(req.params.id);
+    if (!complaint) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Complaint not found." });
+    }
+
+    const [rows] = await db.query(
+      `
+        SELECT id, comment, is_internal AS isInternal, created_at AS createdAt, author_id AS authorId
+        FROM complaint_comments
+        WHERE complaint_id = ?
+        ORDER BY created_at ASC
+      `,
+      [req.params.id],
+    );
+
+    const comments = rows.map((row) => ({
+      id: row.id,
+      comment: row.comment,
+      isInternal: Boolean(row.isInternal),
+      createdAt: row.createdAt,
+      authorId: row.authorId,
+    }));
+
+    const visibleComments = isAdminUser(req.user)
+      ? comments
+      : comments.filter((comment) => !comment.isInternal);
+
+    return res.json({ success: true, data: visibleComments });
+  }
+
   const complaint = findComplaint(req.params.id);
   if (!complaint) {
     return res
