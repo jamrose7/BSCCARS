@@ -6,6 +6,7 @@ const {
   isEmailTaken,
   addUserActivity,
   verifyUserPassword,
+  updateUserPassword,
 } = require("../data/mockData");
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,6 +45,41 @@ router.get("/", async (req, res) => {
 // editable through this endpoint. Email changes additionally require the
 // user's current password to confirm the account holder authorized the
 // change.
+router.get("/activity-log", (req, res) => {
+  const user = getUserById(req.user.id);
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found." });
+  }
+
+  return res.json({ success: true, data: user.activity_logs || [] });
+});
+
+router.post("/change-password", (req, res) => {
+  const currentPassword = String(req.body?.current_password || "");
+  const newPassword = String(req.body?.new_password || "");
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: "Current and new password are required." });
+  }
+
+  if (!verifyUserPassword(req.user.id, currentPassword)) {
+    return res.status(401).json({ success: false, message: "Current password is incorrect." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ success: false, message: "New password must be at least 8 characters long." });
+  }
+
+  updateUserPassword(req.user.id, newPassword);
+  addUserActivity(req.user.id, "Changed account password", {
+    targetType: "account",
+    targetId: req.user.id,
+    details: "Password updated",
+  });
+
+  return res.json({ success: true, message: "Password updated successfully." });
+});
+
 router.patch("/", (req, res) => {
   if (
     Object.prototype.hasOwnProperty.call(req.body || {}, "first_name") ||
