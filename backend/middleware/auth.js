@@ -26,6 +26,13 @@ function authenticateToken(req, res, next) {
       });
     }
 
+    if (user.account_status === "inactive") {
+      return res.status(403).json({
+        success: false,
+        message: "This account is inactive. Contact the Barangay Office for assistance.",
+      });
+    }
+
     if (!VALID_ROLES.has(user.role)) {
       return res.status(403).json({
         success: false,
