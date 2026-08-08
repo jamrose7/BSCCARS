@@ -3,7 +3,6 @@ const localNotificationKey = "bsccarsLocalNotifications";
 
 let residents = [];
 let showArchivedResidents = false;
-let pendingDeleteResidentId = null;
 
 function isSuperAdmin() {
   try {
@@ -26,12 +25,6 @@ async function loadResidents() {
     residents = [];
   }
 }
-
-// ---------------------------------------------------------------------
-// Local-only helpers (action log + admin notification badge state)
-// These stay client-side by design — they're UI conveniences, not
-// system-of-record data, so localStorage is fine here.
-// ---------------------------------------------------------------------
 
 function updateRegistrationNotification(resident, status) {
   try {
@@ -139,14 +132,6 @@ function renderActions(resident) {
         data-action="restore"
         data-id="${resident.id}">
         Restore
-      </button>
-
-      <button
-        class="btn-delete"
-        type="button"
-        data-action="delete"
-        data-id="${resident.id}">
-        Delete
       </button>
     `;
   }
@@ -331,35 +316,6 @@ function closeIdModal() {
   modalBody.innerHTML = "";
 }
 
-function openDeleteResidentModal(resident) {
-  const modal = document.getElementById("deleteResidentModal");
-  const message = document.getElementById("deleteResidentMessage");
-
-  if (!modal || !message) {
-    return;
-  }
-
-  pendingDeleteResidentId = resident.id;
-  message.textContent = `This will permanently delete ${
-    getResidentName(resident) || "this resident"
-  } from resident records. This action cannot be undone.`;
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden", "false");
-}
-
-function closeDeleteResidentModal() {
-  const modal = document.getElementById("deleteResidentModal");
-
-  pendingDeleteResidentId = null;
-
-  if (!modal) {
-    return;
-  }
-
-  modal.classList.remove("show");
-  modal.setAttribute("aria-hidden", "true");
-}
-
 // ---------------------------------------------------------------------
 // Actions — now hit the real backend, then reload from the server
 // so the table always reflects the system of record.
@@ -427,22 +383,6 @@ async function restoreResident(resident) {
   }
 }
 
-async function deleteResident(resident) {
-  try {
-    if (!isResidentArchived(resident)) {
-      throw new Error("Only archived residents can be permanently deleted.");
-    }
-
-    await api.deleteResident(resident.id); // DELETE /api/residents/:id
-    logResidentAction("Delete Resident", resident);
-    closeDeleteResidentModal();
-    await loadResidents();
-    renderResidents();
-  } catch (error) {
-    alert(`Unable to delete ${getResidentName(resident)}: ${error.message}`);
-  }
-}
-
 // ---------------------------------------------------------------------
 // Bootstrapping
 // ---------------------------------------------------------------------
@@ -452,11 +392,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeIdModalButton = document.getElementById("closeIdModal");
   const idModal = document.getElementById("idModal");
   const showArchivedToggle = document.getElementById("showArchivedResidents");
-  const deleteResidentModal = document.getElementById("deleteResidentModal");
-  const cancelDeleteResident = document.getElementById("cancelDeleteResident");
-  const confirmDeleteResident = document.getElementById(
-    "confirmDeleteResident",
-  );
 
   await loadResidents();
   renderResidents();
@@ -521,15 +456,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      if (button.dataset.action === "delete") {
-        if (!isResidentArchived(resident)) {
-          alert("Only archived residents can be permanently deleted.");
-          return;
-        }
-        openDeleteResidentModal(resident);
-        return;
-      }
-
       const residentName = getResidentName(resident);
 
       if (
@@ -567,33 +493,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (cancelDeleteResident) {
-    cancelDeleteResident.addEventListener("click", closeDeleteResidentModal);
-  }
-
-  if (confirmDeleteResident) {
-    confirmDeleteResident.addEventListener("click", async () => {
-      const resident = residents.find(
-        (item) => item.id === pendingDeleteResidentId,
-      );
-      if (resident) {
-        await deleteResident(resident);
-      }
-    });
-  }
-
-  if (deleteResidentModal) {
-    deleteResidentModal.addEventListener("click", (event) => {
-      if (event.target === deleteResidentModal) {
-        closeDeleteResidentModal();
-      }
-    });
-  }
-
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeIdModal();
-      closeDeleteResidentModal();
     }
   });
 });

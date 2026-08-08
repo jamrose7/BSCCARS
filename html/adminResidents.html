@@ -102,63 +102,29 @@
           </div>
         </section>
 
-        <section class="residents-panel archive-panel">
-          <h3>Archived Resident Applications</h3>
-          <div class="archive-list" id="residentArchiveList"></div>
-        </section>
       </main>
     </div>
 
     <div class="id-modal" id="idModal" aria-hidden="true">
-  <div class="id-modal-dialog" role="dialog" aria-modal="true">
-    <div class="id-modal-header">
-      <div>
-        <h3 id="idModalTitle">Uploaded ID</h3>
-        <p id="idModalFileName"></p>
+      <div class="id-modal-dialog" role="dialog" aria-modal="true">
+        <div class="id-modal-header">
+          <div>
+            <h3 id="idModalTitle">Uploaded ID</h3>
+            <p id="idModalFileName"></p>
+          </div>
+
+          <button
+            class="id-modal-close"
+            id="closeIdModal"
+            type="button">
+            Close
+          </button>
+        </div>
+
+        <div class="id-modal-body" id="idModalBody"></div>
       </div>
-
-      <button
-        class="id-modal-close"
-        id="closeIdModal"
-        type="button">
-        Close
-      </button>
     </div>
 
-    <div class="id-modal-body" id="idModalBody"></div>
-  </div>
-</div>
-
-    <div class="id-modal" id="deleteResidentModal" aria-hidden="true">
-  <div
-    class="confirm-modal-dialog"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="deleteResidentTitle"
-  >
-    <div class="confirm-modal-header">
-      <h3 id="deleteResidentTitle">Delete Resident?</h3>
-      <p id="deleteResidentMessage"></p>
-    </div>
-
-    <div class="confirm-modal-actions">
-      <button
-        class="confirm-secondary"
-        id="cancelDeleteResident"
-        type="button">
-        Cancel
-      </button>
-
-      <button
-        class="confirm-danger"
-        id="confirmDeleteResident"
-        type="button">
-        Delete Resident
-      </button>
-    </div>
-  </div>
-</div>
-    
     <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
     <script src="../js/services/notificationManager.js"></script>
