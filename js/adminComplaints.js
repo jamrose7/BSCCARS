@@ -1005,6 +1005,55 @@ function buildEvidence(image, video) {
   });
 }
 
+/**
+ * Opens an attachment served from a protected (authenticateToken-guarded)
+ * backend route in a new tab. A plain window.open()/anchor navigation to
+ * a protected URL cannot carry the Authorization header, so the server
+ * would correctly reject it with 401. Instead we fetch the file with the
+ * bearer token attached, turn the response into a blob, and open that
+ * blob URL — mirroring the same pattern already used by loadProtectedMedia
+ * in ui.js for the resident-facing attachment viewer.
+ */
+async function openProtectedAttachment(url, triggerButton) {
+  const originalText = triggerButton ? triggerButton.textContent : "";
+
+  if (triggerButton) {
+    triggerButton.disabled = true;
+    triggerButton.textContent = "Loading…";
+  }
+
+  try {
+    const token = typeof api !== "undefined" && api.getToken ? api.getToken() : null;
+
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        response.status === 401
+          ? "Your session may have expired. Please sign in again."
+          : "Unable to load this attachment."
+      );
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    window.open(objectUrl, "_blank", "noopener");
+
+    // Release the blob URL once the new tab has had a chance to load it.
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+  } catch (error) {
+    alert(error.message || "Unable to open this attachment. Please try again.");
+  } finally {
+    if (triggerButton) {
+      triggerButton.disabled = false;
+      triggerButton.textContent = originalText;
+    }
+  }
+}
+
 function createEvidenceCard(filename, type) {
   const image = type === "image";
   const card = document.createElement("div");
@@ -1023,7 +1072,7 @@ function createEvidenceCard(filename, type) {
   view.className = "btn-evidence";
   view.textContent = image ? "View Image" : "Play Video";
   view.addEventListener("click", () =>
-    window.open(filename, "_blank", "noopener")
+    openProtectedAttachment(filename, view)
   );
 
   const remove = document.createElement("button");

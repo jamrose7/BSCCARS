@@ -206,6 +206,26 @@ function getPriorityBadgeClass(priority) {
   );
 }
 
+async function loadProtectedMedia(url, element) {
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${api.getToken()}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Attachment request failed (${response.status})`);
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    element.src = objectUrl;
+    return objectUrl;
+  } catch (error) {
+    element.dispatchEvent(new Event("error"));
+    return null;
+  }
+}
+
 // UTILITIES
 
 async function copyToClipboard(text) {

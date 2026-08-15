@@ -408,25 +408,34 @@ function buildAttachments(attachments) {
     if (url && (isImage || isVideo)) {
       if (isImage) {
         const link = document.createElement("a");
-        link.href = url;
+        link.href = "#";
         link.target = "_blank";
         link.rel = "noopener";
         link.setAttribute("aria-label", `Open image: ${filename}`);
         const image = document.createElement("img");
-        image.src = url;
         image.alt = filename;
         image.addEventListener("error", () => {
           link.replaceWith(createAttachmentUnavailableMessage());
         });
         link.appendChild(image);
         preview.appendChild(link);
+
+        loadProtectedMedia(url, image).then((objectUrl) => {
+          if (objectUrl) {
+            link.href = objectUrl;
+            _activeAttachmentUrls.push(objectUrl);
+          }
+        });
       } else {
         const video = document.createElement("video");
-        video.src = url;
         video.controls = true;
         video.preload = "metadata";
         video.setAttribute("aria-label", filename);
         preview.appendChild(video);
+
+        loadProtectedMedia(url, video).then((objectUrl) => {
+          if (objectUrl) _activeAttachmentUrls.push(objectUrl);
+        });
       }
     }
     const tag = document.createElement("div");
