@@ -232,14 +232,6 @@ getComplaintComments(id) {
     return this.patch(`/notifications/${id}/read`, {});
   }
 
-  getNotificationPreferences() {
-    return this.get("/notification-preferences");
-  }
-
-  updateNotificationPreferences(preferences) {
-    return this.patch("/notification-preferences", preferences);
-  }
-
   getProfile() {
     return this.get("/profile");
   }
@@ -250,8 +242,8 @@ getComplaintComments(id) {
 
   changePassword(currentPassword, newPassword) {
     return this.post("/profile/change-password", {
-      currentPassword,
-      newPassword,
+      current_password: currentPassword,
+      new_password: newPassword,
     });
   }
 
@@ -259,8 +251,14 @@ getComplaintComments(id) {
     return this.get("/profile/activity-log");
   }
 
-  getSystemActivityLogs() {
-    return this.get("/activity");
+  getSystemActivityLogs(filters = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && String(value) !== "") {
+        params.set(key, value);
+      }
+    });
+    return this.get(`/activity?${params.toString()}`);
   }
 
   getReportOverview() {
@@ -287,8 +285,8 @@ getComplaintComments(id) {
     return this.get("/reports/priority");
   }
 
-  exportReport(format = "pdf", reportType = "all") {
-    return this.get(`/reports/export?format=${format}&type=${reportType}`);
+  logReportExport(type, format) {
+    return this.post("/reports/export-log", { type, format });
   }
 
   getAdminUsers() {
@@ -302,6 +300,9 @@ getComplaintComments(id) {
   deactivateAdminUser(id) {
     return this.post(`/admin-users/${id}/deactivate`, {});
   }
+
 }
+
+
 
 const api = new ApiService();

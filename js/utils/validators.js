@@ -24,12 +24,13 @@ const Validators = {
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-    return minLength && hasUppercase && hasLowercase && hasNumber;
+    return minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
   },
 
   passwordBasic(password) {
-    return password.length >= 8;
+    return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password);
   },
 
   required(value) {
@@ -168,10 +169,10 @@ class FormValidator {
       phone: "Please enter a valid phone number",
 
       password:
-        "Password must contain uppercase, lowercase, and numbers",
+        "Password must be at least 8 characters and contain an uppercase letter, lowercase letter, a number and a special character.",
 
       passwordBasic:
-        "Password must be at least 8 characters",
+        "Password must be at least 8 characters and contain an uppercase letter, lowercase letter, a number and a special character.",
 
       match: "Passwords do not match",
 

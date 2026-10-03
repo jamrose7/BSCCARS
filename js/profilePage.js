@@ -124,10 +124,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const submit = form.querySelector('[type="submit"]');
     setButtonLoading(submit, true);
     try {
-      const response = await api.updateProfile({ email: email.value.trim(), profile_picture_url: photoDataUrl });
+      const emailChanged = email.value.trim().toLowerCase() !== originalEmail.toLowerCase();
+      const response = await api.updateProfile({
+        email: email.value.trim(),
+        current_password: currentPassword.value,
+        profile_picture_url: photoDataUrl,
+      });
       if (!response?.success) throw new Error(response?.message || "Unable to save profile.");
       api.setUser(response.data);
-      window.location.assign(returnUrl);
+      showNotification(response.message || "Profile updated successfully.", "success");
+      if (emailChanged) {
+        originalEmail = response.data.email || originalEmail;
+        currentPassword.value = "";
+        syncPasswordFieldVisibility();
+        setButtonLoading(submit, false);
+      } else {
+        window.location.assign(returnUrl);
+      }
     } catch (error) {
       console.error("Profile update failed:", error);
       showNotification(error.message || "Unable to save profile.", "error");

@@ -1,13 +1,10 @@
 /**
  * notificationManager.js
  *
- * Attaches notification behavior to the existing PNG button already in the HTML.
- * Never removes, replaces, or recreates header buttons.
- *
- * Architecture rule:
- *   HTML  → owns the button + image markup
- *   CSS   → owns all appearance
- *   JS    → owns toggle behavior + data loading only
+ * Attaches notification behavior to the existing button in the HTML.
+ * Do not recreate or replace the button — HTML owns markup, CSS owns
+ * appearance, this file only owns toggle/data-loading behavior.
+ * (Same convention as profileManager.js.)
  */
 
 (function () {
@@ -210,12 +207,12 @@
   }
 
   function buildPanelHTML(notifications, isExpanded) {
-  const unread = notifications.filter((n) => !n.is_read).length;
-  const visible = isExpanded ? notifications : notifications.slice(0, 5);
-  const items = visible.map(buildNotificationItemHTML).join("");
-  const showViewAll = !isExpanded && notifications.length > 5;
+    const unread = notifications.filter((n) => !n.is_read).length;
+    const visible = isExpanded ? notifications : notifications.slice(0, 5);
+    const items = visible.map(buildNotificationItemHTML).join("");
+    const showViewAll = !isExpanded && notifications.length >= 5;
 
-  return `
+    return `
     <div class="notif-panel__header">
       <span class="notif-panel__title">Notifications</span>
       ${unread > 0 ? `<span class="notif-panel__badge">${unread} new</span>` : ""}
@@ -228,7 +225,7 @@
         <a href="#" class="notif-panel__view-all" id="notifViewAllLink">View all (${notifications.length})</a>
       </div>` : ""}
   `;
-}
+  }
 
   function wireMarkAsRead(scopeEl, onMarked) {
     scopeEl.querySelectorAll("[data-mark]").forEach((markBtn) => {
@@ -273,12 +270,14 @@
         const res = await api.getNotifications?.();
         if (res?.success && Array.isArray(res.data)) {
           const role = getUser()?.role || inferRole();
-          notifications = [
-            ...getLocalNotifications(role),
-            ...res.data.filter(
-              (notification) => !isObsoleteDemoApproval(notification, role),
-            ),
-          ];
+          // Real backend data only. Local/demo notifications are a
+          // fallback for when the backend is unreachable (see catch
+          // below) and must never be mixed into a successful response,
+          // or residents/admins would see permanently-stuck fake entries
+          // alongside their real notification history.
+          notifications = res.data.filter(
+            (notification) => !isObsoleteDemoApproval(notification, role),
+          );
         } else {
           throw new Error("no backend data");
         }
@@ -288,6 +287,7 @@
       }
 
       lastNotifications = notifications;
+      panel.classList.toggle("notif-panel--expanded", expanded);
       panel.innerHTML = buildPanelHTML(notifications, expanded);
 
       const unread = notifications.filter((n) => !n.is_read).length;
@@ -322,15 +322,15 @@
           });
         });
 
-    const viewAllLink = document.getElementById("notifViewAllLink");
-    if (viewAllLink) {
-      viewAllLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        expanded = true;
-        loadAndRender(); // re-renders panel content, now with expanded = true
-  });
-}
+      const viewAllLink = panel.querySelector("#notifViewAllLink");
+      if (viewAllLink) {
+        viewAllLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          expanded = true;
+          loadAndRender();
+        });
+      }
     }
 
     loadAndRender();

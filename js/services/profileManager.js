@@ -47,8 +47,8 @@
     const role = user?.role || inferRole();
     const isAdmin = role !== "resident";
     const firstName =
-      user?.first_name || user?.firstName || (isAdmin ? "Admin" : "Resident");
-    const lastName = user?.last_name || user?.lastName || "User";
+      user?.first_name || (isAdmin ? "Admin" : "Resident");
+    const lastName = user?.last_name || "User";
     const name = `${firstName} ${lastName}`.trim();
     const email = user?.email || "";
     const roleLabel = ROLE_LABELS[role] || "User";
@@ -134,17 +134,7 @@
 
   function handleSignOut() {
     if (!confirm("Are you sure you want to sign out?")) return;
-    try {
-      if (typeof api !== "undefined" && api.signOut) {
-        api.signOut();
-      } else {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-      }
-    } catch {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-    }
+    api.signOut();
     window.location.href = "index.html";
   }
 
