@@ -66,7 +66,7 @@ form {
   display: flex;
   flex-direction: column;
   text-align: left;
-  gap: 10px;
+  gap: 16px;
 }
 
 label {
@@ -75,6 +75,18 @@ label {
   font-size: 14px;
   font-weight: 700;
   color: #0f2930;
+}
+
+select {
+  background-color: #0e5e67;
+  color: #eef7f7;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(97, 210, 204, 0.5);
 }
 
 input,
@@ -94,16 +106,14 @@ select::placeholder {
 
 .file-picker,
 .terms,
-.register-text,
-.no-middle-name-option {
+.register-text {
   color: #1d363f;
 }
 
 .file-picker span,
 .terms span,
 .register-text,
-.register-text a,
-.no-middle-name-option span {
+.register-text a {
   color: #1d363f;
 }
 
@@ -133,23 +143,18 @@ input:disabled {
   box-shadow: 0 0 0 3px rgba(184, 72, 59, 0.14);
 }
 
-.no-middle-name-option {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin: -4px 0 6px auto;
-  color: #333;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
+.needs-attention {
+  border-color: #d98c11;
+  box-shadow: 0 0 0 3px rgba(217, 140, 17, 0.18);
 }
 
-.no-middle-name-option input {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: #0e5e67;
+.field-hint {
+  min-height: 18px;
+  margin: 4px 0 0;
+  color: #9a6600;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 select option {

@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const password = form.querySelector("#password");
   const confirmPassword = form.querySelector("#confirmPassword");
   const middleName = form.querySelector("#middleName");
-  const noMiddleName = form.querySelector("#noMiddleName");
   const middleNameError = form.querySelector("#middleNameError");
   const validId = form.querySelector("#validId");
 
@@ -46,18 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const submitButton = form.querySelector('button[type="submit"]');
 
-  // File processing
-  // Converts the uploaded ID image into a base64 Data URL so it can be
-  // sent as part of the JSON payload to POST /api/auth/register.
-
+  // Convert the selected ID image to a data URL for the registration request.
   function fileToDataUrl(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
       reader.onload = () => resolve(reader.result);
-      reader.onerror = () =>
-        reject(new Error("Unable to read uploaded ID file."));
-
+      reader.onerror = () => reject(new Error("Unable to read uploaded ID file."));
       reader.readAsDataURL(file);
     });
   }
@@ -75,16 +68,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function validateMiddleName() {
-    if (!middleName || !noMiddleName) {
-      return true;
-    }
-
-    if (noMiddleName.checked) {
-      setMiddleNameError("");
+    if (!middleName) {
       return true;
     }
 
     const value = middleName.value.trim();
+
+    if (!value) {
+      setMiddleNameError("");
+      return true;
+    }
 
     if (value.length === 1) {
       setMiddleNameError(
@@ -92,34 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       return false;
     }
-
-    if (value.length < 2) {
-      setMiddleNameError(
-        'Please enter your complete middle name or tick "I have no middle name".',
-      );
-      return false;
-    }
-
     setMiddleNameError("");
     return true;
-  }
-
-  function syncMiddleNameState({ validate = true } = {}) {
-    if (!middleName || !noMiddleName) {
-      return;
-    }
-
-    if (noMiddleName.checked) {
-      middleName.value = "";
-      middleName.disabled = true;
-      setMiddleNameError("");
-      return;
-    }
-
-    middleName.disabled = false;
-    if (validate) {
-      validateMiddleName();
-    }
   }
 
   if (middleName) {
@@ -127,10 +94,91 @@ document.addEventListener("DOMContentLoaded", () => {
     middleName.addEventListener("blur", validateMiddleName);
   }
 
-  if (noMiddleName) {
-    noMiddleName.addEventListener("change", syncMiddleNameState);
-    syncMiddleNameState({ validate: false });
+  // Draft autosave/restore — survives Back button, "Back to Registration",
+  // and accidental refresh. Deliberately excludes password, confirmPassword,
+  // validId (file inputs can't be restored by any browser), and the terms
+  // checkbox (consent should be re-confirmed, not silently carried over).
+  const DRAFT_KEY = "bsccarsRegisterDraft";
+  const draftFieldIds = [
+    "firstName", "lastName", "middleName",
+    "suffix", "dateOfBirth", "purokId", "contactNumber", "email",
+  ];
+
+  function saveDraft() {
+    const draft = {};
+    draftFieldIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      draft[id] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }
+
+  function flagFieldForAttention(inputEl, message) {
+    if (!inputEl) return;
+
+    inputEl.classList.add("needs-attention");
+
+    const hint = document.createElement("p");
+    hint.className = "field-hint";
+    hint.setAttribute("aria-live", "polite");
+    hint.textContent = message;
+
+    // Password inputs are wrapped in .password-field (for the eye icon);
+    // insert the hint after that wrapper so it doesn't land mid-wrapper.
+    const anchor = inputEl.closest(".password-field") || inputEl;
+    anchor.insertAdjacentElement("afterend", hint);
+
+    const clearFlag = () => {
+      inputEl.classList.remove("needs-attention");
+      hint.remove();
+      inputEl.removeEventListener("input", clearFlag);
+      inputEl.removeEventListener("change", clearFlag);
+    };
+
+    inputEl.addEventListener("input", clearFlag);
+    inputEl.addEventListener("change", clearFlag);
+  }
+
+  function restoreDraft() {
+    let draft;
+    try {
+      draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || "null");
+    } catch {
+      draft = null;
+    }
+    if (!draft) return;
+
+    draftFieldIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || !(id in draft)) return;
+      if (el.type === "checkbox") {
+        el.checked = draft[id];
+      } else {
+        el.value = draft[id];
+      }
+    });
+
+    validateMiddleName();
+
+    showNotification(
+      "We restored your previously entered details. Please choose your Valid ID file again — it can't be restored automatically.",
+      "info",
+      5000,
+    );
+    flagFieldForAttention(password, "Please re-enter your password.");
+    flagFieldForAttention(confirmPassword, "Please re-enter your password to confirm.");
+    flagFieldForAttention(validId, "Please re-select your Valid ID file.");
+  }
+
+  restoreDraft();
+
+  draftFieldIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", saveDraft);
+    el.addEventListener("change", saveDraft);
+  });
 
   eyeToggles.forEach((eye, index) => {
     eye.addEventListener("click", () => {
@@ -144,9 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Submission flow
   // Sends the registration payload to the real backend via api.register(),
-  // which calls POST /api/auth/register. The backend creates a Pending
-  // entry in residentApplications and notifies admins itself — this file
-  // must not write any local mock data or local notifications.
+  // which calls POST /api/auth/register. The backend creates the Pending
+  // resident row and notifies admins itself; this file must not write any
+  // local data or local notifications.
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -163,6 +211,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!form.checkValidity()) {
       showNotification("Please complete all required fields.", "error");
+      return;
+    }
+
+    if (!Validators.password(password.value)) {
+      showNotification("Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number and a special character.", "error");
       return;
     }
 
@@ -196,12 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const fileDataUrl = await fileToDataUrl(file);
-
       const payload = {
         firstName: form.firstName.value.trim(),
         lastName: form.lastName.value.trim(),
-        middleName: noMiddleName.checked ? "" : middleName.value.trim(),
-        noMiddleName: noMiddleName.checked,
+        middleName: middleName.value.trim(),
         suffix: form.suffix.value || "None",
         dateOfBirth: form.dateOfBirth.value,
         purok: form.purokId.value,
@@ -224,9 +275,10 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       }
 
-      form.reset();
-      syncMiddleNameState({ validate: false });
-      successModal.classList.add("show");
+        form.reset();
+        setMiddleNameError("");
+        sessionStorage.removeItem(DRAFT_KEY); // clear draft after successful submission
+        successModal.classList.add("show");
     } catch (err) {
       showNotification(
         err.message || "Registration failed. Please try again.",

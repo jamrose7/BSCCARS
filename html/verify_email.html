@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email - BSCCARS</title>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/forgot_password.css" />
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="left-section">
+        <img src="../images/logo.png" alt="Barangay Logo" class="logo" />
+        <h1>Barangay Sillon Community Complaint and Response System</h1>
+        <p class="tagline">"Verify your email address"</p>
+      </div>
+      <div class="right-section">
+        <div class="card">
+          <h2>Email Verification</h2>
+          <p class="subtext" id="verifyStatus">Verifying your email...</p>
+
+          <form id="resendVerificationForm" hidden>
+            <label for="resendEmail">Email Address</label>
+            <input type="email" name="email" id="resendEmail" autocomplete="email" required />
+            <button type="submit" class="btn" id="resendVerificationBtn">
+              Resend Verification Email
+            </button>
+          </form>
+
+          <p class="status-message" id="resendStatusMessage" aria-live="polite"></p>
+
+          <p class="register-text"><a href="sign_in.html">Back to Sign In</a></p>
+        </div>
+      </div>
+    </div>
+    <script src="../js/verify_email.js"></script>
+  </body>
+</html>

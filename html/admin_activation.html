@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activate Admin Account - BSCCARS</title>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/forgot_password.css" />
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="left-section">
+        <img src="../images/logo.png" alt="Barangay Logo" class="logo" />
+        <h1>Barangay Sillon Community Complaint and Response System</h1>
+        <p class="tagline">"Activate your administrator account"</p>
+      </div>
+      <div class="right-section">
+        <div class="card">
+          <h2>Activate Account</h2>
+          <p class="subtext" id="introText">Verifying your activation link...</p>
+          <form id="activationForm" hidden>
+            <label for="newPassword">New Password</label>
+            <div class="password-field">
+              <input type="password" id="newPassword" autocomplete="new-password" required />
+              <span class="eye closed" id="toggleNewPassword" role="button" tabindex="0" aria-label="Show password"></span>
+            </div>
+            <label for="confirmNewPassword">Confirm New Password</label>
+            <div class="password-field">
+              <input type="password" id="confirmNewPassword" autocomplete="new-password" required />
+              <span class="eye closed" id="toggleConfirmNewPassword" role="button" tabindex="0" aria-label="Show password"></span>
+            </div>
+            <button type="submit" class="btn" id="activateBtn">Activate Account</button>
+          </form>
+          <p class="register-text"><a href="sign_in.html">Back to Sign In</a></p>
+        </div>
+      </div>
+    </div>
+    <script src="../js/utils/validators.js"></script>
+    <script src="../js/utils/ui.js"></script>
+    <script src="../js/admin_activation.js"></script>
+  </body>
+</html>
