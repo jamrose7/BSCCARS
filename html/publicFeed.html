@@ -18,7 +18,7 @@
   <body>
     <header class="topbar">
       <div class="top-left">
-        <img src="../images/logo.png" class="logo" />
+        <img src="../images/logo.png" class="logo" alt="BSCCARS logo" />
         <h1>Barangay Sillon Community Complaint and Response System</h1>
       </div>
 
@@ -40,98 +40,118 @@
       </div>
     </header>
 
-       <div class="dashboard-container">
+    <div class="dashboard-container">
       <aside class="sidebar">
         <nav class="sidebar-menu">
           <a href="residentDashboard.html">
-            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon"/>
+            <img src="../images/dashboard_icon.png" alt="Dashboard" class="sidebar-icon" />
             Dashboard
           </a>
           <a href="submitComplaint.html">
-            <img src="../images/submit_complaint_icon.png" alt="Submit Complaint" class="sidebar-icon"/>
+            <img src="../images/submit_complaint_icon.png" alt="Submit Complaint" class="sidebar-icon" />
             Submit Complaint
           </a>
-          <a href="myComplaints.html" aria-current="page">
-            <img src="../images/my_complaints_icon.png" alt="My Complaints" class="sidebar-icon"/>
+          <a href="myComplaints.html">
+            <img src="../images/my_complaints_icon.png" alt="My Complaints" class="sidebar-icon" />
             My Complaints
           </a>
-          <a class="active" href="publicFeed.html">
-            <img src="../images/public_feed_icon.png" alt="Public Feed" class="sidebar-icon"/>
+          <a class="active" href="publicFeed.html" aria-current="page">
+            <img src="../images/public_feed_icon.png" alt="Public Feed" class="sidebar-icon" />
             Public Feed
           </a>
         </nav>
 
         <div class="signout">
-          <img src="../images/sign-out_icon.png" alt="Sign out" class="sidebar-icon"/>
+          <img src="../images/sign-out_icon.png" alt="Sign out" class="sidebar-icon" />
           Sign out
         </div>
       </aside>
 
       <main class="content">
-        <h2>Public Feed</h2>
+        <div class="feed-header">
+          <h2>Public Feed</h2>
+          <p>Public complaint summaries are shown newest first for community awareness.</p>
+        </div>
 
-        <div class="filters">
-          <div class="search-container">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search Complaint"/>
-            <span class="search-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2" 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              class="lucide lucide-search-icon lucide-search">
-              <path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
-            </span>
-          </div>
+        <div class="public-feed-layout">
+          <aside class="filters" aria-label="Public feed filters">
+            <h3>Filter Records</h3>
 
-          <select name="categoryFilter" id="categoryFilter">
-            <option value="" selected>All categories</option>
-            <optgroup label="── Auto High Priority Categories ──">
-              <option value="Physical Harm, Violence, or Threats">
-                Physical Harm, Violence, or Threats
-              </option>
-              <option value="Public Health Hazard">Public Health Hazard</option>
-            </optgroup>
-            <optgroup label="── General Categories ──">
-              <option value="Noise and Public Disturbance">
-                Noise and Public Disturbance
-              </option>
-              <option value="Waste, Sanitation, and Environment">
-                Waste, Sanitation, and Environment
-              </option>
-              <option value="Road and Infrastructure">
-                Road and Infrastructure
-              </option>
-              <option value="Property Damage">Property Damage</option>
-              <option value="Animal Concerns">Animal Concerns</option>
-              <option value="Money Debt">Money Debt</option>
-              <option value="Illegal or Criminal Activity">
-                Illegal or Criminal Activity
-              </option>
-              <option value="Other">Other</option>
-            </optgroup>
-          </select>
+            <label for="searchInput">Search</label>
+            <div class="search-container">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search complaint"
+              />
+              <span class="search-icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-search-icon lucide-search"
+                >
+                  <path d="m21 21-4.34-4.34" />
+                  <circle cx="11" cy="11" r="8" />
+                </svg>
+              </span>
+            </div>
 
-          <select name="statusFilter" id="statusFilter">
-            <option value="" selected>All statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-          </select>
-          <button type="button" id="resetFiltersBtn" class="reset-filters-btn">
-            Reset Filters
-          </button>        </div>
+            <label for="categoryFilter">Category</label>
+            <select name="categoryFilter" id="categoryFilter">
+              <option value="" selected>All categories</option>
+              <optgroup label="High Priority Categories">
+                <option value="Physical Harm, Violence, or Threats">
+                  Physical Harm, Violence, or Threats
+                </option>
+                <option value="Public Health Hazard">Public Health Hazard</option>
+              </optgroup>
+              <optgroup label="General Categories">
+                <option value="Noise and Public Disturbance">
+                  Noise and Public Disturbance
+                </option>
+                <option value="Waste, Sanitation, and Environment">
+                  Waste, Sanitation, and Environment
+                </option>
+                <option value="Road and Infrastructure">
+                  Road and Infrastructure
+                </option>
+                <option value="Property Damage">Property Damage</option>
+                <option value="Animal Concerns">Animal Concerns</option>
+                <option value="Money Debt">Money Debt</option>
+                <option value="Illegal or Criminal Activity">
+                  Illegal or Criminal Activity
+                </option>
+                <option value="Other">Other</option>
+              </optgroup>
+            </select>
 
-        <div id="feedContainer"></div>
+            <label for="statusFilter">Status</label>
+            <select name="statusFilter" id="statusFilter">
+              <option value="" selected>All statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+
+            <button type="button" id="resetFiltersBtn" class="reset-filters-btn">
+              Reset Filters
+            </button>
+          </aside>
+
+          <section class="feed-results" aria-label="Public complaint records">
+            <div id="feedContainer"></div>
+          </section>
+        </div>
       </main>
     </div>
+
     <script src="../js/utils/ui.js"></script>
     <script src="../js/services/api.js"></script>
     <script src="../js/services/notificationManager.js"></script>

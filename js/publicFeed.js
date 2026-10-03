@@ -5,48 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusFilter = document.getElementById("statusFilter");
   const resetFiltersBtn = document.getElementById("resetFiltersBtn");
   let complaints = [];
-
-  const sampleComplaints = [
-    {
-      id: "CMP-2026-0001",
-      title: "Loud music past midnight",
-      category: "Noise and Public Disturbance",
-      purok: "Purok Sara-Sara 1",
-      date: "2026-07-11",
-      time: "4:30 PM",
-      status: "In Progress",
-      submittedBy: "Anonymous",
-    },
-  ];
-
-  function getStoredComplaints() {
-    try {
-      return JSON.parse(localStorage.getItem("bsccarsComplaints")) || [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function getFallbackComplaints() {
-    return [
-      ...getStoredComplaints().map((complaint) => ({
-        id: complaint.id,
-        title: complaint.title,
-        category: complaint.category,
-        purok: complaint.purok,
-        date: complaint.date,
-        time: complaint.time || complaint.incidentTime || "",
-        status: complaint.status,
-        submittedBy: "Anonymous",
-      })),
-      ...sampleComplaints.map((complaint) => ({
-        ...complaint,
-        submittedBy: "Anonymous",
-      })),
-    ];
-  }
+  let feedLoadError = "";
 
   async function loadComplaints() {
+    feedLoadError = "";
+
     try {
       if (typeof api === "undefined" || !api.getPublicComplaintFeed) {
         throw new Error("Public feed API unavailable.");
@@ -54,20 +17,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const response = await api.getPublicComplaintFeed();
       complaints = Array.isArray(response?.data) ? response.data : [];
-      if (!complaints.length) {
-        complaints = getFallbackComplaints();
-      }
     } catch (error) {
-      complaints = getFallbackComplaints();
+      complaints = [];
+      feedLoadError =
+        error?.message ||
+        "Unable to load the public feed right now. Please try again.";
     }
 
     render(complaints);
   }
 
-  function addDetailLine(card, label, value) {
-    const paragraph = document.createElement("p");
-    paragraph.textContent = `${label}: ${value || "-"}`;
-    card.appendChild(paragraph);
+  function normalizeStatus(status) {
+    const key = String(status || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[_\s]+/g, "-");
+
+    if (["resolved", "closed", "completed"].includes(key)) return "Resolved";
+    if (["in-progress", "progress", "ongoing"].includes(key)) {
+      return "In Progress";
+    }
+    return key ? "Pending" : "Pending";
+  }
+
+  function statusClass(status) {
+    return {
+      Pending: "status-pending",
+      "In Progress": "status-progress",
+      Resolved: "status-resolved",
+    }[normalizeStatus(status)];
+  }
+
+  function getComplaintDateValue(complaint) {
+    const raw =
+      complaint.createdAt ||
+      complaint.created_at ||
+      complaint.submittedAt ||
+      complaint.submitted_at ||
+      complaint.date ||
+      complaint.incidentDate ||
+      "";
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+  }
+
+  function formatDate(value) {
+    if (!value) return "-";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    return date.toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function createLabel(text, className) {
+    const label = document.createElement("span");
+    label.className = `feed-label ${className}`;
+    label.textContent = text || "-";
+    return label;
+  }
+
+  function addDetailLine(container, label, value) {
+    const item = document.createElement("div");
+    item.className = "detail-item";
+
+    const labelElement = document.createElement("span");
+    labelElement.className = "feed-detail-label";
+    labelElement.textContent = label;
+
+    const valueElement = document.createElement("span");
+    valueElement.className = "feed-detail-value";
+    valueElement.textContent = value || "-";
+
+    item.append(labelElement, valueElement);
+    container.appendChild(item);
   }
 
   function categoryMatchesFilter(complaintCategory, selectedCategory) {
@@ -83,45 +111,98 @@ document.addEventListener("DOMContentLoaded", () => {
   function render(data) {
     container.innerHTML = "";
 
-    if (!data.length) {
+    if (feedLoadError) {
+      const errorMsg = document.createElement("p");
+      errorMsg.className = "empty-feed";
+      errorMsg.textContent = feedLoadError;
+      container.appendChild(errorMsg);
+      return;
+    }
+
+    const sorted = [...data].sort(
+      (a, b) => getComplaintDateValue(b) - getComplaintDateValue(a)
+    );
+
+    if (!sorted.length) {
       const empty = document.createElement("p");
       empty.className = "empty-feed";
-      empty.textContent = "No public complaints match the selected filters.";
+      empty.textContent = complaints.length
+        ? "No public complaints match the selected filters."
+        : "No public complaints have been posted yet.";
       container.appendChild(empty);
       return;
     }
 
-    data.forEach((complaint) => {
-      const card = document.createElement("div");
+    sorted.forEach((complaint) => {
+      const card = document.createElement("article");
       card.className = "card";
 
-      const title = document.createElement("h3");
-      title.textContent = complaint.id
-        ? `${complaint.id} - ${complaint.title}`
-        : `Complaint Title: ${complaint.title}`;
-      card.appendChild(title);
+      const header = document.createElement("div");
+      header.className = "card-header";
 
-      addDetailLine(card, "Category", complaint.category);
-      addDetailLine(card, "Purok", complaint.purok);
-      addDetailLine(card, "Incident Date", complaint.date);
-      addDetailLine(card, "Incident Time", complaint.time);
-      addDetailLine(card, "Status", complaint.status);
-      addDetailLine(card, "Submitted by", "Anonymous");
+      const kicker = document.createElement("span");
+      kicker.className = "card-kicker";
+      kicker.textContent = complaint.id || "Public complaint";
+
+      const titleRow = document.createElement("div");
+      titleRow.className = "card-title-row";
+
+      const title = document.createElement("h3");
+      title.textContent = complaint.title || "Untitled complaint";
+      titleRow.appendChild(title);
+
+      const labels = document.createElement("div");
+      labels.className = "label-row";
+      labels.append(
+        createLabel(complaint.category || "Uncategorized", "category-label"),
+        createLabel(
+          normalizeStatus(complaint.status),
+          `status-label ${statusClass(complaint.status)}`
+        )
+      );
+
+      header.append(kicker, titleRow, labels);
+
+      const details = document.createElement("div");
+      details.className = "card-details";
+      addDetailLine(details, "Purok", complaint.purok);
+      addDetailLine(
+        details,
+        "Incident Date",
+        formatDate(complaint.date || complaint.incidentDate)
+      );
+      addDetailLine(
+        details,
+        "Incident Time",
+        complaint.time || complaint.incidentTime
+      );
+      addDetailLine(details, "Submitted by", complaint.submittedBy || "Confidential");
+
+      card.append(header, details);
 
       container.appendChild(card);
     });
   }
 
   function filterData() {
-    const search = searchInput.value.toLowerCase();
+    const search = searchInput.value.toLowerCase().trim();
     const category = categoryFilter.value;
     const status = statusFilter.value;
 
     const filtered = complaints.filter((complaint) => {
+      const searchable = [
+        complaint.id,
+        complaint.title,
+        complaint.category,
+        complaint.purok,
+      ]
+        .join(" ")
+        .toLowerCase();
+
       return (
-        complaint.title.toLowerCase().includes(search) &&
-        categoryMatchesFilter(complaint.category, category) &&
-        (status === "" || complaint.status === status)
+        searchable.includes(search) &&
+        categoryMatchesFilter(complaint.category || "", category) &&
+        (status === "" || normalizeStatus(complaint.status) === status)
       );
     });
 

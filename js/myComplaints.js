@@ -1,53 +1,10 @@
 "use strict";
 
-const sampleComplaints = [
-  {
-    id: "CMP-2026-0001",
-    title: "Loud music past midnight",
-    category: "Noise and Public Disturbance",
-    priority: "Normal",
-    status: "In Progress",
-    date: "2026-07-11",
-    time: "4:30 PM",
-    purok: "Purok Sara-Sara 1",
-    details: "Loud music played repeatedly past midnight.",
-    confidential: "Yes (Public-hidden)",
-    attachments: [],
-    responses: [
-      {
-        date: "2026-07-11",
-        time: "4:30 PM",
-        text: "Complaint acknowledged. We have dispatched an officer to investigate.",
-      },
-    ],
-    history: [
-      {
-        label: "Submitted",
-        status: "Pending",
-        date: "2026-07-11",
-        time: "4:30 PM",
-      },
-      {
-        label: "Acknowledged",
-        status: "In Progress",
-        date: "2026-07-11",
-        time: "4:45 PM",
-      },
-    ],
-  },
-];
-
 let _lastFocusedViewBtn = null;
 let complaints = [];
 let activeComplaintId = "";
-
-function getStoredComplaints() {
-  try {
-    return JSON.parse(localStorage.getItem("bsccarsComplaints")) || [];
-  } catch (error) {
-    return [];
-  }
-}
+let complaintsLoadError = "";
+let _activeAttachmentUrls = [];
 
 function escapeHtml(value) {
   return String(value || "")
@@ -83,14 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initEscapeKey();
   initFollowUpForm();
 });
-
-function currentUserId() {
-  try {
-    return JSON.parse(localStorage.getItem("user"))?.id || "";
-  } catch (error) {
-    return "";
-  }
-}
 
 function normalizeStatus(status) {
   const key = String(status || "Pending")
@@ -186,17 +135,11 @@ function normalizeApiComplaint(complaint) {
 }
 
 async function loadComplaints() {
-  const localComplaints = getStoredComplaints();
+  complaintsLoadError = "";
   try {
-    const userId = currentUserId();
-    const response = await api.getComplaints(
-      userId ? { submitterId: userId } : {},
-    );
+    const response = await api.getComplaints();
     const apiComplaints = Array.isArray(response?.data) ? response.data : [];
-    complaints = [
-      ...apiComplaints.map(normalizeApiComplaint),
-      ...localComplaints,
-    ].map((complaint) => ({
+    complaints = apiComplaints.map(normalizeApiComplaint).map((complaint) => ({
       ...complaint,
       status: normalizeStatus(complaint.status),
       id: formatComplaintNumber(complaint.id || complaint.referenceId),
@@ -206,15 +149,10 @@ async function loadComplaints() {
         : [],
     }));
   } catch (error) {
-    complaints = [...localComplaints, ...sampleComplaints].map((complaint) => ({
-      ...complaint,
-      status: normalizeStatus(complaint.status),
-      id: formatComplaintNumber(complaint.id || complaint.referenceId),
-      referenceId: formatComplaintNumber(complaint.referenceId || complaint.id),
-      followUps: Array.isArray(complaint.followUps)
-        ? complaint.followUps.map(normalizeFollowUp)
-        : [],
-    }));
+    console.error("Unable to load complaints:", error);
+    complaints = [];
+    complaintsLoadError =
+      error?.message || "Unable to load your complaints. Please try again.";
   }
 
   renderTable();
@@ -227,8 +165,23 @@ function renderTable() {
 
   tbody.innerHTML = "";
 
+  if (complaintsLoadError) {
+    if (emptyState) emptyState.style.display = "none";
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="detail-empty-msg">${escapeHtml(complaintsLoadError)}</td>
+      </tr>
+    `;
+    return;
+  }
+
   if (complaints.length === 0) {
     if (emptyState) emptyState.style.display = "flex";
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="detail-empty-msg">No complaints found.</td>
+      </tr>
+    `;
     return;
   }
 
@@ -299,6 +252,7 @@ function openDetailModal(complaint, triggerBtn) {
   buildAttachments(complaint.attachments);
   buildResponses(complaint.responses);
   buildFollowUps(complaint.followUps);
+  updateFollowUpTimeframeGuidance(complaint);
   buildTimeline(complaint.history);
   configureFollowUpForm(complaint);
 
@@ -309,6 +263,44 @@ function openDetailModal(complaint, triggerBtn) {
   if (titleEl) {
     titleEl.setAttribute("tabindex", "-1");
     titleEl.focus();
+  }
+
+  hydrateComplaintDetail(complaint);
+}
+
+// List endpoint doesn't hydrate attachments/follow-ups/history — fetch the full record.
+async function hydrateComplaintDetail(complaint) {
+  if (typeof api === "undefined" || !api.getComplaintById) return;
+
+  try {
+    const response = await api.getComplaintById(complaint.id);
+    const full = response?.data;
+    if (!full) return;
+
+    const normalized = normalizeApiComplaint(full);
+
+    // Keep the in-memory list in sync so reopening doesn't need a refetch.
+    const index = complaints.findIndex((item) => item.id === complaint.id);
+    if (index >= 0) {
+      complaints[index] = {
+        ...complaints[index],
+        attachments: normalized.attachments,
+        followUps: normalized.followUps,
+        history: normalized.history,
+        responses: normalized.responses,
+      };
+    }
+
+    // Guard against the resident closing/switching complaints before this
+    // fetch resolved.
+    if (activeComplaintId !== complaint.id) return;
+
+    buildAttachments(normalized.attachments);
+    buildFollowUps(normalized.followUps);
+    buildTimeline(normalized.history);
+    buildResponses(normalized.responses);
+  } catch (error) {
+    console.warn("Unable to load full complaint details.", error);
   }
 }
 
@@ -353,6 +345,9 @@ function closeDetailModal() {
   modal.classList.remove("show");
   document.body.style.overflow = "";
 
+  _activeAttachmentUrls.forEach((url) => URL.revokeObjectURL(url));
+  _activeAttachmentUrls = [];
+
   if (_lastFocusedViewBtn) {
     _lastFocusedViewBtn.focus();
     _lastFocusedViewBtn = null;
@@ -383,6 +378,9 @@ function initEscapeKey() {
 function buildAttachments(attachments) {
   const container = document.getElementById("detailAttachments");
   if (!container) return;
+
+  _activeAttachmentUrls.forEach((url) => URL.revokeObjectURL(url));
+  _activeAttachmentUrls = [];
 
   container.innerHTML = "";
 
@@ -505,6 +503,17 @@ function buildResponses(responses) {
   });
 }
 
+function updateFollowUpTimeframeGuidance(complaint) {
+  const note = document.getElementById("followUpTimeframeNote");
+  if (!note) return;
+
+  const isHigh = String(complaint.priority || "").toLowerCase().includes("high");
+  note.textContent = isHigh
+    ? "High Priority complaints are flagged for urgent barangay review. If there is immediate danger, contact the barangay office or emergency responders directly. BSCCARS is not an emergency hotline."
+    : "Expected update timeframe: within 3 days from submission or the latest barangay action. Please send a follow-up only if you have new information or the timeframe has passed.";
+  note.dataset.priority = isHigh ? "high" : "normal";
+}
+
 function buildFollowUps(followUps) {
   const container = document.getElementById("detailFollowUps");
   if (!container) return;
@@ -571,73 +580,12 @@ function initFollowUpForm() {
         openDetailModal(refreshed, _lastFocusedViewBtn);
       }
     } catch (error) {
-      const complaint = complaints.find((item) => item.id === complaintId);
-      if (!complaint) {
-        showNotification(error.message || "Unable to add follow-up.", "error");
-        return;
-      }
-      if (!isStoredLocalComplaint(complaintId)) {
-        showNotification(error.message || "Unable to add follow-up.", "error");
-        return;
-      }
-      addLocalFollowUp(complaint, update);
-      showNotification(
-        "Server unavailable. Follow-up saved locally for now.",
-        "warning",
-      );
-      renderTable();
-      openDetailModal(complaint, _lastFocusedViewBtn);
+      showNotification(error.message || "Unable to add follow-up.", "error");
     } finally {
       submit.disabled = false;
       submit.textContent = "Add Follow-up";
     }
   });
-}
-
-function addLocalFollowUp(complaint, update) {
-  const now = new Date();
-  const followUp = {
-    id: `local-follow-up-${now.getTime()}`,
-    text: update,
-    date: now.toISOString().slice(0, 10),
-    time: now.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-  };
-  complaint.followUps = complaint.followUps || [];
-  complaint.followUps.push(followUp);
-  complaint.history = complaint.history || [];
-  complaint.history.push({
-    label: "Resident follow-up",
-    status: complaint.status,
-    date: followUp.date,
-    time: followUp.time,
-    notes: update,
-  });
-  persistLocalComplaintUpdate(complaint);
-}
-
-function persistLocalComplaintUpdate(complaint) {
-  const stored = getStoredComplaints();
-  const index = stored.findIndex(
-    (item) =>
-      formatComplaintNumber(item.id || item.referenceId) ===
-      formatComplaintNumber(complaint.id || complaint.referenceId),
-  );
-  if (index >= 0) {
-    stored[index] = { ...stored[index], ...complaint, pendingSync: true };
-  }
-  localStorage.setItem("bsccarsComplaints", JSON.stringify(stored));
-}
-
-function isStoredLocalComplaint(complaintId) {
-  const stored = getStoredComplaints();
-  return stored.some(
-    (item) =>
-      formatComplaintNumber(item.id || item.referenceId) ===
-      formatComplaintNumber(complaintId),
-  );
 }
 
 function buildTimeline(history) {
@@ -759,7 +707,13 @@ function formatHearingDate(hearingDate, hearingTime) {
   if (!hearingDate) return "Date not set";
   let formatted = hearingDate;
   if (hearingTime) {
-    formatted += " at " + String(hearingTime).slice(0, 5);
+    const match = String(hearingTime).match(/^(\d{2}):(\d{2})/);
+    if (match) {
+      const hour = Number(match[1]);
+      const minute = match[2];
+      const period = hour >= 12 ? "PM" : "AM";
+      formatted += ` at ${hour % 12 || 12}:${minute} ${period}`;
+    }
   }
   return formatted;
 }

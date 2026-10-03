@@ -2,9 +2,23 @@ const RESIDENT_DASHBOARD_REFRESH_MS = 5000;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadResidentDashboardStats();
+  loadEmailVerificationBanner();
   setInterval(loadResidentDashboardStats, RESIDENT_DASHBOARD_REFRESH_MS);
   window.addEventListener("focus", loadResidentDashboardStats);
 });
+
+async function loadEmailVerificationBanner() {
+  const banner = document.getElementById("emailVerificationBanner");
+  if (!banner || typeof api === "undefined" || !api.getProfile) return;
+
+  try {
+    const response = await api.getProfile();
+    const verified = Boolean(response?.data?.email_verified_at);
+    banner.style.display = verified ? "none" : "flex";
+  } catch (error) {
+    // Informational only — don't let a failed check break the dashboard.
+  }
+}
 
 function setText(id, value) {
   const element = document.getElementById(id);

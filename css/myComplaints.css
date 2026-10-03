@@ -552,6 +552,23 @@
   white-space: pre-wrap;
 }
 
+.follow-up-timeframe {
+  margin: 4px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(78, 195, 199, 0.22);
+  border-radius: 12px;
+  background: rgba(7, 45, 52, 0.45);
+  color: rgba(224, 240, 240, 0.88);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.follow-up-timeframe[data-priority="high"] {
+  border-color: rgba(255, 210, 122, 0.34);
+  background: rgba(87, 60, 15, 0.26);
+  color: #ffe6b6;
+}
+
 .follow-up-form {
   display: flex;
   flex-direction: column;

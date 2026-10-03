@@ -304,6 +304,20 @@
   background: linear-gradient(135deg, #5f9f69, #3d7e54);
 }
 
+.verify-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 28px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: rgba(217, 140, 17, 0.14);
+  border: 1px solid rgba(217, 140, 17, 0.4);
+  color: #ffe0a3;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .alert {
   margin: 16px 0 28px;
   padding: 20px 24px;

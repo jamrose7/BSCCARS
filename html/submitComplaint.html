@@ -186,7 +186,7 @@
             <section class="form-group" id="respondentInfoSection" aria-labelledby="respondentInfoHeading" style="display: none">
               <h3 id="respondentInfoHeading">Respondent Information</h3>
               <p class="input-help">
-                Respondent Full Name is required for Money Debt complaints. Contact number and Purok are optional if you don't have them.
+                Respondent full name and purok are required for Money Debt complaints. Contact number is optional.
               </p>
               <div class="form-row">
                 <div>
@@ -281,7 +281,7 @@
 
               <div>
                 <label>Incident Date:</label>
-                <input type="date" name="incidentDate" id="incidentDate" />
+                <input type="date" name="incidentDate" id="incidentDate" required />
               </div>
 
               <div>
@@ -316,42 +316,20 @@
 
             <div class="form-group">
               <label>Priority</label>
-              <div class="radio-group" id="priorityGroup">
-                <label
-                  ><input
-                    type="radio"
-                    name="priority"
-                    value="normal"
-                    checked
-                  />Normal</label
-                >
-                <label
-                  ><input type="radio" name="priority" value="high" /> High
-                  Priority</label
-                >
-              </div>
-              <div
-                id="highPriorityConfirmation"
-                style="display: none; margin-top: 12px"
-              >
-                <label class="toggle">
-                  <input type="checkbox" id="confirmHighPriority" />
-                  <span
-                    >I confirm this is a high priority concern. This is only for
-                    urgent cases that need faster review.</span
-                  >
-                </label>
+              <div class="priority-display" id="priorityDisplay">
+                <span class="priority-display__label">Priority:</span>
+                <strong id="priorityValue">Normal</strong>
               </div>
               <p id="priorityHelp" class="input-help">
-                Select Normal for routine concerns. High Priority is for
-                emergencies, threats, or urgent hazards that need faster review.
+                This category is classified as Normal Priority for standard
+                barangay review.
               </p>
             </div>
 
             <div class="form-group">
               <label>Confidentiality</label>
               <div class="toggle">
-                <input type="checkbox" name="anonymous" id="anonymous" />
+                <input type="checkbox" name="confidential" id="confidential" />
                 <span>Hide my identity from public view</span>
               </div>
               <small>Admins will still see your identity</small>
@@ -377,12 +355,22 @@
           <strong>Reference ID:</strong> <span id="refId">CMP-2026-0000</span>
         </p>
         <div id="summaryBlock" class="summary-block" hidden></div>
+        <p class="timeframe-note" id="submissionTimeframeNote">
+          Barangay Sillon aims to review and update complaints within 3 days.
+          Please send a follow-up only if you have new information or no update
+          has been posted after that timeframe.
+        </p>
 
         <h3>What happens next:</h3>
         <ul>
           <li>Admin will review your complaint.</li>
           <li>Status updates will appear in “My Complaints”.</li>
-          <li>High-priority complaints are reviewed faster.</li>
+          <li id="submissionTimeframeBullet">
+            Expected update timeframe is within 3 days for Normal Priority complaints.
+          </li>
+          <li id="submissionPriorityBullet">
+            High Priority complaints are flagged for urgent barangay review.
+          </li>
         </ul>
 
         <h3>Reminder:</h3>
