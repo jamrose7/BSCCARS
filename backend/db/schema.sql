@@ -6,14 +6,74 @@ CREATE TABLE IF NOT EXISTS users (
   first_name VARCHAR(100) NOT NULL,
   middle_name VARCHAR(100) NULL,
   last_name VARCHAR(100) NOT NULL,
-  profile_picture_url TEXT NULL,
+  suffix VARCHAR(30) NULL,
+  date_of_birth DATE NULL,
+  purok VARCHAR(100) NULL,
+  contact_number VARCHAR(20) NULL,
+  valid_id_name VARCHAR(255) NULL,
+  valid_id_type VARCHAR(100) NULL,
+  valid_id_data LONGTEXT NULL,
+  application_status ENUM('Pending', 'Approved', 'Rejected') NOT NULL DEFAULT 'Approved',
+  is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+  archived_at TIMESTAMP NULL,
+  profile_picture_url MEDIUMTEXT NULL,
   account_status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+  email_verified_at TIMESTAMP NULL,
+  pending_email VARCHAR(255) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT chk_users_id_format CHECK (id REGEXP '^(RES|ADM)-2026-[0-9]{3}$')
 );
 
 CREATE INDEX idx_users_status ON users (account_status);
+CREATE INDEX idx_users_role ON users (role);
+CREATE INDEX idx_users_application_status ON users (application_status);
+CREATE INDEX idx_users_archived ON users (is_archived);
+
+CREATE OR REPLACE VIEW residents AS
+SELECT
+  id,
+  first_name,
+  middle_name,
+  last_name,
+  suffix,
+  date_of_birth,
+  purok,
+  contact_number,
+  email,
+  valid_id_name,
+  valid_id_type,
+  valid_id_data,
+  application_status AS status,
+  is_archived,
+  archived_at,
+  created_at,
+  updated_at
+FROM users
+WHERE role = 'resident';
+
+CREATE TABLE IF NOT EXISTS auth_tokens (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  user_id VARCHAR(20) NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  token_type ENUM('email_verification', 'password_reset', 'admin_activation', 'email_change') NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+
+  UNIQUE KEY uq_auth_tokens_token_hash (token_hash),
+
+  KEY idx_auth_tokens_user_type (user_id, token_type),
+  KEY idx_auth_tokens_expires_at (expires_at),
+  KEY idx_auth_tokens_used_at (used_at),
+
+  CONSTRAINT auth_tokens_ibfk_1
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS complaints (
   id VARCHAR(32) PRIMARY KEY,
@@ -23,12 +83,11 @@ CREATE TABLE IF NOT EXISTS complaints (
   category_base VARCHAR(100) NULL,
   category_specify VARCHAR(100) NULL,
   details TEXT NOT NULL,
-  respondent_name VARCHAR(255) NULL,
+  respondent_name VARCHAR(255) NOT NULL DEFAULT '',
   respondent_contact_number VARCHAR(20) NULL,
-  respondent_email VARCHAR(255) NULL,
-  respondent_purok VARCHAR(100) NULL,
+  respondent_purok VARCHAR(100) NOT NULL DEFAULT '',
   purok VARCHAR(100) NOT NULL,
-  incident_date DATE NULL,
+  incident_date DATE NOT NULL,
   incident_time TIME NULL,
   priority ENUM('Normal', 'High') NOT NULL DEFAULT 'Normal',
   confidentiality ENUM('Public', 'Confidential') NOT NULL DEFAULT 'Public',
@@ -52,10 +111,11 @@ CREATE INDEX idx_complaints_priority ON complaints (priority);
 CREATE INDEX idx_complaints_created_at ON complaints (created_at);
 CREATE INDEX idx_complaints_archived ON complaints (is_archived);
 
+-- Stores attachment metadata only. Binary files are stored under the backend
+-- upload directory and are served through an authenticated route.
 CREATE TABLE IF NOT EXISTS complaint_attachments (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   complaint_id VARCHAR(32) NOT NULL,
-  file_type ENUM('image', 'video') NOT NULL,
   original_name VARCHAR(255) NOT NULL,
   storage_path VARCHAR(500) NOT NULL,
   mime_type VARCHAR(100) NOT NULL,

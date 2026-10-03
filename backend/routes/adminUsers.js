@@ -1,16 +1,31 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const db = require("../db");
+const { addUserActivity } = require("../data/dbActivity");
 const {
-  demoUsersByEmail,
-  getUserById,
-  getUserByEmail,
-  addUserActivity,
-  createAdministratorAccount,
-} = require("../data/mockData");
+  getDbUserById,
+  getDbUserByEmail,
+  createDbAdmin,
+  deleteDbUserById,
+} = require("../data/dbUsers");
+const {
+  createAuthToken,
+  invalidateOutstandingTokens,
+} = require("../data/dbAuthTokens");
+const { sendAdminActivationEmail } = require("../services/emailService");
 
-// Defense-in-depth: a still-valid JWT belonging to a now-inactive admin
-// (e.g. deactivated mid-session by someone else) should not retain access
-// to admin-user management routes.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function appUrl(path, token) {
+  const base = String(process.env.APP_BASE_URL || "").trim().replace(/\/+$/, "");
+  if (!base) throw new Error("APP_BASE_URL environment variable is required.");
+  const url = new URL(path, `${base}/`);
+  url.searchParams.set("token", token);
+  return url.toString();
+}
+
 router.use((req, res, next) => {
   if (req.user.account_status === "inactive") {
     return res.status(403).json({
@@ -22,7 +37,6 @@ router.use((req, res, next) => {
   next();
 });
 
-// Only Super Admin can manage administrator accounts.
 router.use((req, res, next) => {
   if (req.user.role !== "super_admin") {
     return res.status(403).json({
@@ -34,31 +48,23 @@ router.use((req, res, next) => {
   next();
 });
 
-// GET /api/admin-users — list all admin accounts (super_admin + assistant_admin)
 router.get("/", (req, res) => {
-  const admins = Object.values(demoUsersByEmail)
-    .filter((u) => u.role === "super_admin" || u.role === "assistant_admin")
-    .map((u) => ({
-      id: u.id,
-      first_name: u.first_name,
-      last_name: u.last_name,
-      email: u.email,
-      role: u.role,
-      account_status: u.account_status || "active",
-    }));
-  return res.json({ success: true, data: admins });
+  return db
+    .query(
+      `
+        SELECT id, first_name, last_name, email, role, account_status
+        FROM users
+        WHERE role IN ('super_admin', 'assistant_admin')
+        ORDER BY created_at ASC
+      `,
+    )
+    .then(([rows]) => res.json({ success: true, data: rows }));
 });
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// POST /api/admin-users — Step 1 of the turnover workflow.
-// Creates a Super Admin or Assistant Admin account. Always starts
-// Inactive; must be explicitly activated via POST /:id/activate.
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const firstName = String(req.body?.firstName || "").trim();
   const lastName = String(req.body?.lastName || "").trim();
   const email = String(req.body?.email || "").trim().toLowerCase();
-  const password = String(req.body?.password || "");
   const role = req.body?.role;
 
   if (role !== "super_admin" && role !== "assistant_admin") {
@@ -68,32 +74,69 @@ router.post("/", (req, res) => {
     });
   }
 
-  if (!firstName || !lastName || !email || !password) {
+  if (!firstName || !lastName || !email) {
     return res.status(400).json({
       success: false,
-      message: "First name, last name, email, and password are required.",
+      message: "First name, last name, and email are required.",
     });
   }
+
   if (!EMAIL_PATTERN.test(email)) {
-    return res.status(400).json({ success: false, message: "Enter a valid email address." });
-  }
-  if (password.length < 8) {
     return res.status(400).json({
       success: false,
-      message: "Password must be at least 8 characters long.",
+      message: "Enter a valid email address.",
     });
   }
-  if (getUserByEmail(email)) {
+
+  const existingUser = await getDbUserByEmail(email);
+  if (existingUser) {
     return res.status(409).json({
       success: false,
       message: "An account with this email already exists.",
     });
   }
 
-  const admin = createAdministratorAccount({ firstName, lastName, email, password, role });
+  const unusablePasswordHash = bcrypt.hashSync(
+    crypto.randomBytes(48).toString("base64url"),
+    10,
+  );
+  const admin = await createDbAdmin({
+    firstName,
+    lastName,
+    email,
+    passwordHash: unusablePasswordHash,
+    role,
+  });
   const roleLabel = role === "super_admin" ? "Super Admin" : "Assistant Admin";
+  let rawToken;
+  try {
+    ({ rawToken } = await createAuthToken(
+      admin.id,
+      "admin_activation",
+      process.env.ADMIN_ACTIVATION_TOKEN_TTL_MINUTES || "1440",
+    ));
+  } catch (error) {
+    console.error("Admin activation token failed:", error.message);
+    await deleteDbUserById(admin.id);
+    return res.status(500).json({
+      success: false,
+      message: "Could not create the activation link. The account was not created.",
+    });
+  }
 
-  addUserActivity(req.user.id, `Created ${roleLabel} account (inactive)`, {
+  try {
+    await sendAdminActivationEmail(admin, appUrl("admin_activation.html", rawToken));
+  } catch (error) {
+    console.error("Admin activation email send failed:", error.message);
+    await deleteDbUserById(admin.id);
+    return res.status(503).json({
+      success: false,
+      message:
+        "We could not send the administrator activation email. The account was not created. Please try again later.",
+    });
+  }
+
+  await addUserActivity(req.user.id, `Created ${roleLabel} account (inactive)`, {
     targetType: "account",
     targetId: admin.id,
     details: `${firstName} ${lastName} (${email}) created; requires activation before use.`,
@@ -101,7 +144,7 @@ router.post("/", (req, res) => {
 
   return res.status(201).json({
     success: true,
-    message: `${roleLabel} account created as Inactive. Activate it, verify sign-in, then deactivate the outgoing administrator.`,
+    message: `${roleLabel} account created. An activation link was sent to the incoming administrator's email.`,
     data: {
       id: admin.id,
       first_name: firstName,
@@ -113,64 +156,48 @@ router.post("/", (req, res) => {
   });
 });
 
-// POST /api/admin-users/:id/activate
-router.post("/:id/activate", (req, res) => {
-  const target = getUserById(req.params.id);
-  if (!target) {
-    return res.status(404).json({ success: false, message: "User not found." });
-  }
-  if (target.role !== "super_admin" && target.role !== "assistant_admin") {
-    return res.status(400).json({
-      success: false,
-      message: "Only admin accounts can be activated.",
-    });
-  }
-  if ((target.account_status || "active") === "active") {
-    return res.status(400).json({
-      success: false,
-      message: "Administrator account is already active.",
-    });
-  }
-  target.account_status = "active";
-  const roleLabel =
-    target.role === "super_admin" ? "Super Admin" : "Assistant Admin";
-  addUserActivity(req.user.id, "Activated " + roleLabel + " account", {
-    targetType: "account",
-    targetId: target.id,
-    details: target.first_name + " " + target.last_name + " activated.",
-  });
-  return res.json({
-    success: true,
-    message: roleLabel + " account activated.",
+router.post("/:id/activate", async (req, res) => {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Administrators must activate their own account from the emailed activation link.",
   });
 });
 
-// POST /api/admin-users/:id/deactivate
-router.post("/:id/deactivate", (req, res) => {
-  const target = getUserById(req.params.id);
+router.post("/:id/deactivate", async (req, res) => {
+  const target = await getDbUserById(req.params.id);
   if (!target) {
     return res.status(404).json({ success: false, message: "User not found." });
   }
+
   if (target.role !== "super_admin" && target.role !== "assistant_admin") {
     return res.status(400).json({
       success: false,
       message: "Only admin accounts can be deactivated.",
     });
   }
+
   if (req.user.id === req.params.id) {
     return res.status(400).json({
       success: false,
       message: "You cannot deactivate your own account.",
     });
   }
+
   if (target.role === "super_admin") {
-    const otherActiveSuper = Object.values(demoUsersByEmail).some(
-      (u) =>
-        u.id !== target.id &&
-        u.role === "super_admin" &&
-        (u.account_status || "active") === "active",
+    const [rows] = await db.query(
+      `
+        SELECT id
+        FROM users
+        WHERE id <> ?
+          AND role = 'super_admin'
+          AND account_status = 'active'
+        LIMIT 1
+      `,
+      [target.id],
     );
-    if (!otherActiveSuper) {
+
+    if (rows.length === 0) {
       return res.status(400).json({
         success: false,
         message:
@@ -178,19 +205,22 @@ router.post("/:id/deactivate", (req, res) => {
       });
     }
   }
-  target.account_status = "inactive";
-  const roleLabel =
-    target.role === "super_admin" ? "Super Admin" : "Assistant Admin";
-  addUserActivity(req.user.id, "Deactivated " + roleLabel + " account", {
+
+  await db.query("UPDATE users SET account_status = 'inactive' WHERE id = ?", [
+    req.params.id,
+  ]);
+
+  const roleLabel = target.role === "super_admin" ? "Super Admin" : "Assistant Admin";
+  await addUserActivity(req.user.id, `Deactivated ${roleLabel} account`, {
     targetType: "account",
     targetId: target.id,
-    details: target.first_name + " " + target.last_name + " deactivated.",
+    details: `${target.first_name} ${target.last_name} deactivated.`,
   });
+
   return res.json({
     success: true,
-    message: roleLabel + " account deactivated.",
+    message: `${roleLabel} account deactivated.`,
   });
 });
 
 module.exports = router;
- 

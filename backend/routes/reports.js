@@ -1,6 +1,6 @@
 const express = require("express");
 const db = require("../db");
-const { addUserActivity } = require("../data/mockData");
+const { addUserActivity } = require("../data/dbActivity");
 
 const router = express.Router();
 
@@ -25,6 +25,11 @@ function column(columns, names, fallback = "NULL") {
   return name ? quoteId(name) : fallback;
 }
 
+function columnWithAlias(columns, alias, names, fallback = "NULL") {
+  const name = firstColumn(columns, names);
+  return name ? `${quoteId(alias)}.${quoteId(name)}` : fallback;
+}
+
 function archivedWhere(columns, alias = "") {
   const prefix = alias ? `${quoteId(alias)}.` : "";
   const archived = firstColumn(columns, ["is_archived", "archived"]);
@@ -46,115 +51,43 @@ function monthExpr(dateExpression) {
   return `DATE_FORMAT(${dateExpression}, '%Y-%m')`;
 }
 
-function shouldUseDatabase() {
-  return Boolean(process.env.DB_HOST || process.env.DB_USER || process.env.DB_NAME);
-}
-
-function getDemoComplaints() {
-  const { complaints: demoComplaints, getUserById } = require("../data/mockData");
-  return (demoComplaints || [])
-  .filter((complaint) => !complaint.archived && !complaint.is_archived)
-  .map((complaint) => {
-    const user = getUserById(complaint.submitterId);
-    const residentName = user
-      ? [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(" ")
-      : "Unknown Resident";
-
-    return {
-      ...complaint,
-      status: normalizeStatus(complaint.status),
-      resident: residentName,
-      createdAt: complaint.createdAt || new Date().toISOString(),
-    };
-  });
-}
-
-function demoStatusTotals(demoComplaints) {
-  const totals = {
-    Pending: 0,
-    "In Progress": 0,
-    Resolved: 0,
-  };
-  demoComplaints.forEach((complaint) => {
-    totals[normalizeStatus(complaint.status)] += 1;
-  });
-  return Object.entries(totals).map(([status, total]) => ({ status, total }));
-}
-
-function buildDemoDashboardSummary() {
-  const {
-    demoUsersByEmail,
-    residentApplications,
-  } = require("../data/mockData");
-
-  const normalizedComplaints = getDemoComplaints();
-  const approvedResidents = Object.values(demoUsersByEmail || {}).filter(
-    (user) => user.role === "resident",
-  );
-  const pendingApplications = (residentApplications || []).filter(
-    (resident) =>
-      !resident.archived &&
-      !resident.is_archived &&
-      String(resident.status || "").toLowerCase() === "pending",
-  );
-  const recentComplaints = normalizedComplaints.slice(0, 10).map((c) => ({
-    id: c.id || "",
-    resident: c.resident,
-    title: c.title || c.details || "",
-    category: c.category || "",
-    status: c.status,
-    submittedAt: c.createdAt || new Date().toISOString(),
-  }));
-
+function reportTitle(type) {
   return {
-    totalResidents: approvedResidents.length,
-    pendingAccounts: pendingApplications.length,
-    totalComplaints: normalizedComplaints.length,
-    highPriorityComplaints: normalizedComplaints.filter(
-      (c) => (c.priority || "").toLowerCase() === "high",
-    ).length,
-    complaintsByStatus: demoStatusTotals(normalizedComplaints),
-    recentComplaints,
-  };
+    category: "Complaints by Category",
+    monthly: "Monthly Volume",
+    resolution: "Average Resolution Time",
+    priority: "High Priority Trends",
+    recurring: "Recurring Complaint Activity",
+  }[type] || "Report";
 }
 
 async function fetchDashboardSummary() {
-  try {
-    if (!shouldUseDatabase()) {
-      throw new Error("Database is not configured.");
-    }
-    const residentColumns = await getColumns(RESIDENTS_TABLE);
-    const complaintColumns = await getColumns(COMPLAINTS_TABLE);
+  const residentColumns = await getColumns(RESIDENTS_TABLE);
+  const complaintColumns = await getColumns(COMPLAINTS_TABLE);
 
-    const residentStatus = column(residentColumns, ["status"], "NULL");
-    const complaintStatus = column(complaintColumns, ["status"], "'Pending'");
-    const complaintPriority = column(
-      complaintColumns,
-      ["priority"],
-      "'Normal'",
-    );
-    const createdAt = column(
-      complaintColumns,
-      ["submitted_at", "created_at", "date", "incident_date"],
-      "NOW()",
-    );
-    const title = column(
-      complaintColumns,
-      ["title", "subject"],
-      "'Untitled complaint'",
-    );
-    const category = column(
-      complaintColumns,
-      ["category", "category_name"],
-      "'Uncategorized'",
-    );
-    const residentName = column(
-      complaintColumns,
-      ["resident_name", "complainant_name", "name", "submitted_by"],
-      "'Resident'",
-    );
-
-    const [residentCounts] = await db.query(`
+  const residentStatus = column(residentColumns, ["status"], "NULL");
+  const complaintStatus = column(complaintColumns, ["status"], "'Pending'");
+  const complaintPriority = column(
+    complaintColumns,
+    ["priority"],
+    "'Normal'",
+  );
+  const createdAt = column(
+    complaintColumns,
+    ["submitted_at", "created_at", "date", "incident_date"],
+    "NOW()",
+  );
+  const title = column(
+    complaintColumns,
+    ["title", "subject"],
+    "'Untitled complaint'",
+  );
+  const category = column(
+    complaintColumns,
+    ["category", "category_name"],
+    "'Uncategorized'",
+  );
+  const [residentCounts] = await db.query(`
     SELECT
       SUM(CASE
         WHEN ${residentStatus} IS NULL OR LOWER(${residentStatus}) IN ('approved', 'active', 'verified')
@@ -168,7 +101,7 @@ async function fetchDashboardSummary() {
     WHERE ${archivedWhere(residentColumns)}
   `);
 
-    const [complaintCounts] = await db.query(`
+  const [complaintCounts] = await db.query(`
     SELECT
       COUNT(*) AS totalComplaints,
       SUM(CASE WHEN LOWER(${complaintPriority}) IN ('high', 'urgent', 'critical') THEN 1 ELSE 0 END) AS highPriorityComplaints
@@ -176,121 +109,56 @@ async function fetchDashboardSummary() {
     WHERE ${archivedWhere(complaintColumns)}
   `);
 
-    const [statusRows] = await db.query(`
+  const [statusRows] = await db.query(`
     SELECT ${complaintStatus} AS status, COUNT(*) AS total
     FROM ${quoteId(COMPLAINTS_TABLE)}
     WHERE ${archivedWhere(complaintColumns)}
     GROUP BY ${complaintStatus}
   `);
-    const statusTotals = {
-      Pending: 0,
-      "In Progress": 0,
-      Resolved: 0,
-    };
-    statusRows.forEach((row) => {
-      statusTotals[normalizeStatus(row.status)] += Number(row.total || 0);
-    });
+  const statusTotals = {
+    Pending: 0,
+    "In Progress": 0,
+    Resolved: 0,
+  };
+  statusRows.forEach((row) => {
+    statusTotals[normalizeStatus(row.status)] += Number(row.total || 0);
+  });
 
-    const [recentComplaints] = await db.query(`
+  const [recentComplaints] = await db.query(`
     SELECT
-      ${column(complaintColumns, ["id", "complaint_id"], "NULL")} AS id,
-      ${residentName} AS resident,
-      ${title} AS title,
-      ${category} AS category,
-      ${complaintStatus} AS status,
-      ${createdAt} AS submittedAt
-    FROM ${quoteId(COMPLAINTS_TABLE)}
-    WHERE ${archivedWhere(complaintColumns)}
-    ORDER BY ${createdAt} DESC
+      ${columnWithAlias(complaintColumns, "c", ["id", "complaint_id"], "NULL")} AS id,
+      COALESCE(
+        NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.middle_name, u.last_name)), ''),
+        u.email,
+        'Unknown resident'
+      ) AS resident,
+      ${columnWithAlias(complaintColumns, "c", ["title", "subject"], "'Untitled complaint'")} AS title,
+      ${columnWithAlias(complaintColumns, "c", ["category", "category_name"], "'Uncategorized'")} AS category,
+      ${columnWithAlias(complaintColumns, "c", ["status"], "'Pending'")} AS status,
+      ${columnWithAlias(complaintColumns, "c", ["submitted_at", "created_at", "date", "incident_date"], "NOW()")} AS submittedAt
+    FROM ${quoteId(COMPLAINTS_TABLE)} c
+    LEFT JOIN users u ON u.id = c.submitter_id
+    WHERE ${archivedWhere(complaintColumns, "c")}
+    ORDER BY ${columnWithAlias(complaintColumns, "c", ["submitted_at", "created_at", "date", "incident_date"], "NOW()")} DESC
     LIMIT 10
   `);
 
-    return {
-      totalResidents: Number(residentCounts[0]?.totalResidents || 0),
-      pendingAccounts: Number(residentCounts[0]?.pendingAccounts || 0),
-      totalComplaints: Number(complaintCounts[0]?.totalComplaints || 0),
-      highPriorityComplaints: Number(
-        complaintCounts[0]?.highPriorityComplaints || 0,
-      ),
-      complaintsByStatus: Object.entries(statusTotals).map(([status, total]) => ({
-        status,
-        total,
-      })),
-      recentComplaints: recentComplaints.map((row) => ({
-        ...row,
-        status: normalizeStatus(row.status),
-      })),
-    };
-  } catch (dbError) {
-    // If DB is not available (local dev without MySQL), return a safe mock
-    // summary using in-memory demo data so the UI can still render.
-    return buildDemoDashboardSummary();
-  }
-}
-
-function buildDemoCategoryReport() {
-  const grouped = new Map();
-  getDemoComplaints().forEach((complaint) => {
-    const key = complaint.category || "Uncategorized";
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        category: key,
-        totalComplaints: 0,
-        highPriority: 0,
-        highPriorityRate: 0,
-        avgResolutionDays: null,
-        exampleComplaint: complaint.title || complaint.details || "",
-      });
-    }
-    const row = grouped.get(key);
-    row.totalComplaints += 1;
-    if (String(complaint.priority || "").toLowerCase() === "high") {
-      row.highPriority += 1;
-    }
-  });
-
-  return Array.from(grouped.values())
-    .map((row) => ({
+  return {
+    totalResidents: Number(residentCounts[0]?.totalResidents || 0),
+    pendingAccounts: Number(residentCounts[0]?.pendingAccounts || 0),
+    totalComplaints: Number(complaintCounts[0]?.totalComplaints || 0),
+    highPriorityComplaints: Number(
+      complaintCounts[0]?.highPriorityComplaints || 0,
+    ),
+    complaintsByStatus: Object.entries(statusTotals).map(([status, total]) => ({
+      status,
+      total,
+    })),
+    recentComplaints: recentComplaints.map((row) => ({
       ...row,
-      highPriorityRate: row.totalComplaints
-        ? Number(((row.highPriority / row.totalComplaints) * 100).toFixed(1))
-        : 0,
-    }))
-    .sort((a, b) => b.totalComplaints - a.totalComplaints);
-}
-
-function buildDemoMonthlyReport() {
-  const totals = new Map();
-  getDemoComplaints().forEach((complaint) => {
-    const month = String(complaint.createdAt || new Date().toISOString()).slice(0, 7);
-    totals.set(month, (totals.get(month) || 0) + 1);
-  });
-  return Array.from(totals.entries())
-    .map(([month, totalComplaints]) => ({ month, totalComplaints }))
-    .sort((a, b) => a.month.localeCompare(b.month));
-}
-
-function buildDemoResolutionReport() {
-  return buildDemoCategoryReport()
-    .map((row) => {
-      const resolved = getDemoComplaints().filter(
-        (complaint) =>
-          complaint.category === row.category &&
-          normalizeStatus(complaint.status) === "Resolved",
-      );
-      return {
-        category: row.category,
-        resolvedComplaints: resolved.length,
-        avgResolutionDays: resolved.length ? 0 : null,
-      };
-    })
-    .filter((row) => row.resolvedComplaints > 0);
-}
-
-function buildDemoPriorityReport() {
-  return buildDemoCategoryReport()
-    .filter((row) => row.highPriority > 0)
-    .sort((a, b) => b.highPriority - a.highPriority);
+      status: normalizeStatus(row.status),
+    })),
+  };
 }
 
 router.get("/overview", async (req, res, next) => {
@@ -298,7 +166,7 @@ router.get("/overview", async (req, res, next) => {
     const data = await fetchDashboardSummary();
     res.json({ success: true, data });
   } catch (error) {
-    res.json({ success: true, data: buildDemoCategoryReport() });
+    next(error);
   }
 });
 
@@ -307,20 +175,12 @@ router.get("/dashboard", async (req, res, next) => {
     const data = await fetchDashboardSummary();
     res.json({ success: true, data });
   } catch (error) {
-    res.json({ success: true, data: buildDemoDashboardSummary() });
+    next(error);
   }
 });
 
 router.get("/by-category", async (req, res, next) => {
   try {
-    if (!shouldUseDatabase()) {
-      throw new Error("Database is not configured.");
-    }
-    addUserActivity(req.user.id, "Generated report", {
-      targetType: "report",
-      targetId: "by-category",
-      details: "Complaints by Category",
-    });
     const columns = await getColumns(COMPLAINTS_TABLE);
     const category = column(
       columns,
@@ -339,12 +199,6 @@ router.get("/by-category", async (req, res, next) => {
       ["resolved_at", "closed_at", "updated_at"],
       "NULL",
     );
-    const details = column(
-      columns,
-      ["details", "description", "title", "subject"],
-      "''",
-    );
-
     const [rows] = await db.query(`
       SELECT
         ${category} AS category,
@@ -354,8 +208,7 @@ router.get("/by-category", async (req, res, next) => {
           WHEN LOWER(${status}) IN ('resolved', 'closed', 'completed') AND ${resolvedAt} IS NOT NULL
           THEN TIMESTAMPDIFF(HOUR, ${createdAt}, ${resolvedAt}) / 24
           ELSE NULL
-        END) AS avgResolutionDays,
-        MIN(${details}) AS exampleComplaint
+        END) AS avgResolutionDays
       FROM ${quoteId(COMPLAINTS_TABLE)}
       WHERE ${archivedWhere(columns)}
       GROUP BY ${category}
@@ -375,24 +228,15 @@ router.get("/by-category", async (req, res, next) => {
           row.avgResolutionDays === null
             ? null
             : Number(Number(row.avgResolutionDays).toFixed(1)),
-        exampleComplaint: row.exampleComplaint || "",
       })),
     });
   } catch (error) {
-    res.json({ success: true, data: buildDemoCategoryReport() });
+    next(error);
   }
 });
 
 router.get("/monthly", async (req, res, next) => {
   try {
-    if (!shouldUseDatabase()) {
-      throw new Error("Database is not configured.");
-    }
-    addUserActivity(req.user.id, "Generated report", {
-      targetType: "report",
-      targetId: "monthly",
-      details: "Monthly Volume",
-    });
     const columns = await getColumns(COMPLAINTS_TABLE);
     const createdAt = column(
       columns,
@@ -416,20 +260,12 @@ router.get("/monthly", async (req, res, next) => {
       })),
     });
   } catch (error) {
-    res.json({ success: true, data: buildDemoMonthlyReport() });
+    next(error);
   }
 });
 
 router.get("/resolution", async (req, res, next) => {
   try {
-    if (!shouldUseDatabase()) {
-      throw new Error("Database is not configured.");
-    }
-    addUserActivity(req.user.id, "Generated report", {
-      targetType: "report",
-      targetId: "resolution",
-      details: "Average Resolution Time",
-    });
     const columns = await getColumns(COMPLAINTS_TABLE);
     const category = column(
       columns,
@@ -473,20 +309,12 @@ router.get("/resolution", async (req, res, next) => {
       })),
     });
   } catch (error) {
-    res.json({ success: true, data: buildDemoResolutionReport() });
+    next(error);
   }
 });
 
 router.get("/priority", async (req, res, next) => {
   try {
-    if (!shouldUseDatabase()) {
-      throw new Error("Database is not configured.");
-    }
-    addUserActivity(req.user.id, "Generated report", {
-      targetType: "report",
-      targetId: "priority",
-      details: "High Priority Trends",
-    });
     const columns = await getColumns(COMPLAINTS_TABLE);
     const category = column(
       columns,
@@ -519,7 +347,121 @@ router.get("/priority", async (req, res, next) => {
       })),
     });
   } catch (error) {
-    res.json({ success: true, data: buildDemoPriorityReport() });
+    next(error);
+  }
+});
+
+function complainantFullName(row) {
+  return [row.first_name, row.middle_name, row.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function respondentFullName(row) {
+  return String(row.respondent_name || "").trim();
+}
+
+function mostCommonCategory(categories) {
+  const counts = new Map();
+  categories.filter(Boolean).forEach((category) => {
+    counts.set(category, (counts.get(category) || 0) + 1);
+  });
+  return (
+    [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ||
+    "Uncategorized"
+  );
+}
+
+function recurringStatusSummary(statusCounts) {
+  const labels = { pending: "Pending", "in-progress": "In Progress", resolved: "Resolved" };
+  return ["pending", "in-progress", "resolved"]
+    .map((key) => `${labels[key]}: ${statusCounts[key] || 0}`)
+    .join(", ");
+}
+
+function buildRecurringRows(rows, personType) {
+  const getName = personType === "complainant" ? complainantFullName : respondentFullName;
+  const groups = new Map();
+
+  rows.forEach((row) => {
+    const name = getName(row);
+    if (!name) return;
+
+    const group =
+      groups.get(name) ||
+      { name, count: 0, latestDate: null, categories: [], statuses: {} };
+
+    const date = new Date(row.incident_date || row.created_at);
+    group.count += 1;
+    group.categories.push(row.category || "Uncategorized");
+    const statusKey = normalizeStatus(row.status).toLowerCase().replace(/\s+/g, "-");
+    group.statuses[statusKey] = (group.statuses[statusKey] || 0) + 1;
+    if (!Number.isNaN(date.getTime()) && (!group.latestDate || date > group.latestDate)) {
+      group.latestDate = date;
+    }
+
+    groups.set(name, group);
+  });
+
+  return [...groups.values()]
+    .filter((group) => group.count > 1)
+    .map((group) => ({
+      personType: personType === "complainant" ? "Complainant" : "Reported Respondent",
+      name: group.name,
+      count: group.count,
+      latestDate: group.latestDate ? group.latestDate.toISOString().slice(0, 10) : "No date",
+      commonCategory: mostCommonCategory(group.categories),
+      statusBreakdown: recurringStatusSummary(group.statuses),
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+router.get("/recurring", async (req, res, next) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        c.category, c.status, c.respondent_name, c.created_at, c.incident_date,
+        u.first_name, u.middle_name, u.last_name
+      FROM complaints c
+      LEFT JOIN users u ON u.id = c.submitter_id
+      WHERE c.is_archived = FALSE
+    `);
+
+    const data = [
+      ...buildRecurringRows(rows, "complainant"),
+      ...buildRecurringRows(rows, "respondent"),
+    ];
+
+    res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/export-log", async (req, res, next) => {
+  try {
+    const type = String(req.body?.type || "").trim();
+    const format = String(req.body?.format || "").trim().toUpperCase();
+    const allowedTypes = new Set(["category", "monthly", "resolution", "priority", "recurring"]);
+    const allowedFormats = new Set(["PDF", "CSV"]);
+
+    if (!allowedTypes.has(type) || !allowedFormats.has(format)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid report export activity.",
+      });
+    }
+
+    await addUserActivity(req.user.id, `Exported ${format} report`, {
+      targetType: "report",
+      targetId: type,
+      details: reportTitle(type),
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    next(error);
   }
 });
 

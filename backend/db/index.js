@@ -10,7 +10,8 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   connectTimeout: process.env.DB_CONNECT_TIMEOUT
     ? Number(process.env.DB_CONNECT_TIMEOUT)
-    : 1000,
+    : 5000,
+  dateStrings: true,
 });
 
 module.exports = pool;

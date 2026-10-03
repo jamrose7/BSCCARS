@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
-const { getUserById } = require("../data/mockData");
 const { JWT_SECRET } = require("../config/auth");
+const { getDbUserById } = require("../data/dbUsers");
 const VALID_ROLES = new Set(["super_admin", "assistant_admin", "resident"]);
 
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const authorization = req.headers.authorization || "";
   const token = authorization.startsWith("Bearer ")
     ? authorization.slice(7).trim()
@@ -18,7 +18,7 @@ function authenticateToken(req, res, next) {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const user = getUserById(payload.id);
+    const user = await getDbUserById(payload.id);
     if (!user) {
       return res.status(401).json({
         success: false,

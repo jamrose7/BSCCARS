@@ -1,22 +1,39 @@
 const express = require("express");
 const router = express.Router();
+const db = require("../db");
 const { requireRoles } = require("../middleware/auth");
 const {
-  residentApplications,
-  addUser,
-  getUserById,
   addUserActivity,
   addUserNotification,
   addAdminNotification,
-  removeResidentRegistrationNotifications,
-} = require("../data/mockData");
+} = require("../data/dbActivity");
+const { getDbUserById } = require("../data/dbUsers");
 
-function findResident(id) {
-  return residentApplications.find((resident) => resident.id === id);
-}
-
-function findResidentUser(id) {
-  return getUserById(id);
+function dbResidentToApi(row) {
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    middleName: row.middle_name || "",
+    lastName: row.last_name,
+    suffix: row.suffix || "None",
+    dateOfBirth: row.date_of_birth ? String(row.date_of_birth).slice(0, 10) : "",
+    purok: row.purok || "",
+    contactNumber: row.contact_number || "",
+    email: row.email,
+    emailVerifiedAt: row.email_verified_at || null,
+    validId: row.valid_id_name
+      ? {
+          name: row.valid_id_name,
+          type: row.valid_id_type || "",
+          dataUrl: row.valid_id_data || "",
+        }
+      : null,
+    status: row.application_status,
+    archived: Boolean(row.is_archived),
+    is_archived: Boolean(row.is_archived),
+    archivedAt: row.archived_at,
+    submittedAt: row.created_at,
+  };
 }
 
 function residentName(resident) {
@@ -30,122 +47,170 @@ function residentName(resident) {
   );
 }
 
-// Both staff roles process resident applications; restriction
-// actions below remain reserved for the Super Admin.
 router.use(requireRoles("assistant_admin", "super_admin"));
 
-// GET /api/residents/pending
-router.get("/pending", (req, res) => {
-  const pending = residentApplications.filter(
-    (resident) => resident.status === "Pending" && !resident.archived,
+router.get("/pending", async (req, res) => {
+  const [rows] = await db.query(
+    `
+      SELECT *
+      FROM users
+      WHERE role = 'resident'
+        AND application_status = 'Pending'
+        AND is_archived = FALSE
+      ORDER BY created_at DESC
+    `,
   );
-  res.json({ success: true, data: pending });
+  return res.json({ success: true, data: rows.map(dbResidentToApi) });
 });
 
-// GET /api/residents/all
-router.get("/all", (req, res) => {
-  res.json({ success: true, data: residentApplications });
+router.get("/all", async (req, res) => {
+  const [rows] = await db.query(
+    `
+      SELECT *
+      FROM users
+      WHERE role = 'resident'
+      ORDER BY created_at DESC
+    `,
+  );
+  return res.json({ success: true, data: rows.map(dbResidentToApi) });
 });
 
-// POST /api/residents/:id/approve
-router.post("/:id/approve", (req, res) => {
-  const resident = findResident(req.params.id);
-  if (!resident) {
+router.post("/:id/approve", async (req, res) => {
+  const resident = await getDbUserById(req.params.id);
+  if (!resident || resident.role !== "resident") {
     return res
       .status(404)
       .json({ success: false, message: "Resident not found." });
   }
 
-  resident.status = "Approved";
-  removeResidentRegistrationNotifications(resident.id);
-  addUser(
-    {
-      id: resident.id,
-      email: resident.email,
-      role: "resident",
-      first_name: resident.firstName,
-      last_name: resident.lastName,
-      middle_name: resident.middleName,
-    },
-    "",
+  await db.query(
+    `
+      UPDATE users
+      SET application_status = 'Approved',
+          account_status = 'active'
+      WHERE id = ? AND role = 'resident'
+    `,
+    [req.params.id],
   );
-  addUserActivity(req.user.id, "Approved resident registration", {
+
+  await addUserActivity(req.user.id, "Approved resident registration", {
     targetType: "resident",
-    targetId: resident.id,
-    resident_id: resident.id,
-    details: `${resident.firstName} ${resident.lastName}`.trim(),
+    targetId: req.params.id,
+    resident_id: req.params.id,
+    details: `${resident.first_name} ${resident.last_name}`.trim(),
   });
-  addUserNotification(
-    resident.id,
+
+  await addUserNotification(
+    req.params.id,
     "Resident account approved",
     "Your account has been approved. You can now submit and track complaints.",
   );
-  res.json({ success: true, data: resident });
-});
 
-// POST /api/residents/:id/reject
-router.post("/:id/reject", (req, res) => {
-  const resident = findResident(req.params.id);
-  if (!resident) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Resident not found." });
-  }
-
-  resident.status = "Rejected";
-  removeResidentRegistrationNotifications(resident.id);
-  addUserActivity(req.user.id, "Rejected resident registration", {
-    targetType: "resident",
-    targetId: resident.id,
-    resident_id: resident.id,
-    details: `${resident.firstName} ${resident.lastName}`.trim(),
+  return res.json({
+    success: true,
+    data: { ...resident, status: "Approved", account_status: "active" },
   });
-  addUserNotification(
-    resident.id,
-    "Resident account rejected",
-    "Your account application was rejected. Please contact the Barangay Office for assistance.",
-  );
-  res.json({ success: true, data: resident });
 });
 
-// PATCH /api/residents/:id/archive
-// Archive is the system's soft-delete: it hides the resident from active
-// views while preserving the record (and any complaints tied to it) intact.
-// There is no permanent-delete route — archived residents can only be
-// restored via this same endpoint with is_archived: false.
-router.patch("/:id/archive", requireRoles("super_admin"), (req, res) => {
-  const resident = findResident(req.params.id);
-  if (!resident) {
+router.post("/:id/reject", async (req, res) => {
+  const resident = await getDbUserById(req.params.id);
+  if (!resident || resident.role !== "resident") {
     return res
       .status(404)
       .json({ success: false, message: "Resident not found." });
   }
 
-  resident.archived = Boolean(req.body.is_archived);
-  resident.is_archived = resident.archived;
-  resident.archivedAt = resident.archived ? new Date().toISOString() : null;
-  addUserActivity(
+  const reason = String(req.body?.reason || "").trim();
+
+  await db.query(
+    `
+      UPDATE users
+      SET application_status = 'Rejected',
+          account_status = 'inactive'
+      WHERE id = ? AND role = 'resident'
+    `,
+    [req.params.id],
+  );
+
+  await addUserActivity(req.user.id, "Rejected resident registration", {
+    targetType: "resident",
+    targetId: req.params.id,
+    resident_id: req.params.id,
+    details: reason
+      ? `${resident.first_name} ${resident.last_name} — Reason: ${reason}`.trim()
+      : `${resident.first_name} ${resident.last_name}`.trim(),
+  });
+
+  await addUserNotification(
+    req.params.id,
+    "Resident account rejected",
+    reason
+      ? `Your account application was rejected. Reason: ${reason}`
+      : "Your account application was rejected. Please contact the Barangay Office for assistance.",
+  );
+
+  return res.json({
+    success: true,
+    data: {
+      ...resident,
+      status: "Rejected",
+      account_status: "inactive",
+    },
+  });
+});
+
+router.patch("/:id/archive", requireRoles("super_admin"), async (req, res) => {
+  const resident = await getDbUserById(req.params.id);
+  if (!resident || resident.role !== "resident") {
+    return res
+      .status(404)
+      .json({ success: false, message: "Resident not found." });
+  }
+
+  const archived = Boolean(req.body.is_archived);
+  await db.query(
+    `
+      UPDATE users
+      SET is_archived = ?,
+          archived_at = ?
+      WHERE id = ? AND role = 'resident'
+    `,
+    [archived ? 1 : 0, archived ? new Date() : null, req.params.id],
+  );
+
+  await addUserActivity(
     req.user.id,
-    resident.archived ? "Archived resident" : "Restored resident",
+    archived ? "Archived resident" : "Restored resident",
     {
       targetType: "resident",
-      targetId: resident.id,
-      resident_id: resident.id,
+      targetId: req.params.id,
+      resident_id: req.params.id,
       details: residentName(resident),
     },
   );
-  addAdminNotification({
-    title: resident.archived ? "Resident archived" : "Resident restored",
-    message: `${residentName(resident)} was ${resident.archived ? "moved to the archive" : "restored from the archive"}.`,
+
+  await addAdminNotification({
+    title: archived ? "Resident archived" : "Resident restored",
+    message: `${residentName(resident)} was ${
+      archived ? "moved to the archive" : "restored from the archive"
+    }.`,
   });
-  addUserNotification(
-    resident.id,
-    resident.archived
-      ? "Account application archived"
-      : "Account application restored",
-    `Your resident account application was ${resident.archived ? "moved to the archive" : "restored for processing"}.`,
+  await addUserNotification(
+    req.params.id,
+    archived ? "Account application archived" : "Account application restored",
+    `Your resident account application was ${
+      archived ? "moved to the archive" : "restored for processing"
+    }.`,
   );
-  res.json({ success: true, data: resident });
+
+  return res.json({
+    success: true,
+    data: {
+      ...resident,
+      archived,
+      is_archived: archived,
+    },
+  });
 });
 
 module.exports = router;
