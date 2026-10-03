@@ -36,6 +36,11 @@
         </div>
 
         <div class="notice-field">
+          <label for="hearingScheduledAtInput">Hearing scheduled at</label>
+          <input id="hearingScheduledAtInput" type="datetime-local" />
+        </div>
+
+        <div class="notice-field">
           <label for="noticeServedMethodSelect">Served via</label>
           <select id="noticeServedMethodSelect">
             <option value="">-</option>
@@ -65,12 +70,14 @@
           <h1>NOTICE OF HEARING</h1>
           <h2>(MEDIATION PROCEEDINGS)</h2>
 
-          <div class="to-block form-8-to">
+          <div class="to-block party-address-block form-8-to">
             <span>TO:</span>
-            <input type="text" id="fmRespondentName" class="underline-input line-lg" />
+            <input type="text" id="fmRespondentName" class="underline-input party-address-line" />
           </div>
-          <input type="text" id="fmComplainantName" class="underline-input party-name-line form-8-complainant" />
-          <p class="party-label form-8-party-label">Complainant/s</p>
+          <div class="complainant-address-block">
+            <span>Complainant/s:</span>
+            <input type="text" id="fmComplainantName" class="underline-input party-address-line" />
+          </div>
 
           <div class="body-text">
             <p>
@@ -80,9 +87,8 @@
               <input type="text" id="fmHearingMonth" class="underline-input line-md" />
               20<input type="text" id="fmHearingYear" class="underline-input line-xxs" />,
               at
-              <input type="text" id="fmHearingTime" class="underline-input line-md" />
-              o'clock in the
-              morning/afternoon for the hearing of your complaint.
+              <input type="text" id="fmHearingTime" class="underline-input hearing-hour-line" aria-label="Scheduled hearing hour" />
+              o'clock in the morning/afternoon for the hearing of your complaint.
             </p>
             <p>
               This
@@ -146,12 +152,14 @@
           <h1>NOTICE OF HEARING</h1>
           <h2>(RE: FAILURE TO APPEAR)</h2>
 
-          <div class="to-block compact form-18-to">
+          <div class="to-block compact party-address-block form-18-to">
             <span>TO:</span>
-            <input type="text" id="smRespondentName" class="underline-input line-lg" />
+            <input type="text" id="smRespondentName" class="underline-input party-address-line" />
           </div>
-          <input type="text" id="smComplainantName" class="underline-input party-name-line form-18-complainant" />
-          <p class="party-label form-18-party-label">Complainant/s</p>
+          <div class="complainant-address-block">
+            <span>Complainant/s:</span>
+            <input type="text" id="smComplainantName" class="underline-input party-address-line" />
+          </div>
 
           <div class="body-text">
             <p>
@@ -161,8 +169,9 @@
               <input type="text" id="smHearingMonth" class="underline-input line-md" />
               20<input type="text" id="smHearingYear" class="underline-input line-xxs" />,
               at
-              <input type="text" id="smHearingTime" class="underline-input line-sm" />
-              o'clock in the morning/afternoon to explain why you failed to appear for mediation/conciliation
+              <input type="text" id="smHearingTime" class="underline-input hearing-hour-line" aria-label="Scheduled hearing hour" />
+              o'clock in the morning/afternoon
+              to explain why you failed to appear for mediation/conciliation
               scheduled on
               <input type="text" id="smMissedDate" class="underline-input line-md" />
               20<input type="text" id="smMissedYear" class="underline-input line-xxs" />
@@ -197,8 +206,6 @@
             at
             <input type="text" id="smNotificationAMPM" class="underline-input line-sm" />
             AM/PM.
-            <br />
-            <span class="form-18-notified-complainant">Complainant/s</span>
           </p>
 
           <div class="form-18-receipt-block">
@@ -251,8 +258,9 @@
               <input type="text" id="ccHearingMonth" class="underline-input line-md" />
               20<input type="text" id="ccHearingYear" class="underline-input line-xxs" />,
               at
-              <input type="text" id="ccHearingTime" class="underline-input line-sm" />
-              o'clock for hearing of the above-entitled case.
+              <input type="text" id="ccHearingTime" class="underline-input hearing-hour-line" aria-label="Scheduled hearing hour" />
+              o'clock in the morning/afternoon
+              for hearing of the above-entitled case.
             </p>
             <p>
               This
@@ -300,8 +308,8 @@
           </header>
 
           <p class="office-title">OFFICE OF THE LUPON TAGAPAMAYAPA</p>
-          <div class="case-caption">
-            <div>
+          <div class="case-caption form-20-caption">
+            <div class="caption-party">
               <div class="caption-line" id="cfaComplainantCaption"></div>
               <p class="party-label">Complainant/s</p>
             </div>

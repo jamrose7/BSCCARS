@@ -1,84 +1,38 @@
 /**
-
- * Activate/Deactivate is backend-backed because it gates sign-in eligibility.
- * All other actions on this page remain a local-only prototype.
- * Rotation order: activate the incoming admin first, confirm sign-in works,
- * then deactivate the outgoing admin. The backend guarantees the system is
- * never left without an active Super Admin.
+ * Administrator account lifecycle is create -> activate -> deactivate
+ * (see README.md "Administrator Onboarding and Turnover"). There is no
+ * archive step for admin accounts: unlike complaints and residents, an
+ * admin account's activity-log history must stay attributable to a real,
+ * queryable account record, so Deactivate is the terminal lifecycle
+ * action here. Activate/Deactivate are backend-backed and gate sign-in
+ * eligibility directly.
  */
 document.addEventListener("DOMContentLoaded", function () {
-  renderArchivedUsers();
+  initActivityDateRange();
   loadActivityLogs();
-  initArchivedToggle();
   loadAdminUsers();
-  initNewAdminPasswordToggle();
 });
 
-function initNewAdminPasswordToggle() {
-  var toggle = document.getElementById("toggleNewAdminPassword");
-  var input = document.getElementById("newAdminPassword");
-  if (!toggle || !input) return;
+var activityPage = 1;
+var activityDateRange = "today";
 
-  function toggleVisibility() {
-    var isHidden = input.type === "password";
-    input.type = isHidden ? "text" : "password";
-    toggle.classList.toggle("closed", !isHidden);
-    toggle.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
-  }
-
-  toggle.addEventListener("click", toggleVisibility);
-  toggle.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      toggleVisibility();
-    }
-  });
-}
-
-var userIdYear = "2026";
-var activityLogsKey = "bsccarsAdminUserActivityLogs";
-var pendingDeleteUserId = null;
-
-function actSvg() {
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-}
 function deactSvg() {
   return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 }
-function archiveSvg() {
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h2"/><path d="M20 8v11a2 2 0 0 1-2 2h-2"/><path d="m9 15 3-3 3 3"/><path d="M12 12v9"/></svg>';
+
+function getCurrentAdminId() {
+  try {
+    return (JSON.parse(localStorage.getItem("user")) || {}).id || "";
+  } catch (e) {
+    return "";
+  }
 }
 
-function formatUserId(seq) {
-  return "ADM-" + userIdYear + "-" + String(seq).padStart(3, "0");
-}
-function collectExistingUserIds() {
-  var ids = Array.from(
-    document.querySelectorAll("#usersBody tr td:first-child"),
-  ).map(function (c) {
-    return c.textContent.trim();
-  });
-  return ids
-    .concat(
-      getArchivedUsers().map(function (u) {
-        return u.id;
-      }),
-    )
-    .filter(function (id) {
-      return /^ADM-2026-\d{3}$/.test(id);
-    });
-}
-function generateNextUserId() {
-  var seq = collectExistingUserIds().map(function (id) {
-    return Number(id.slice(-3));
-  });
-  return formatUserId(seq.length ? Math.max.apply(null, seq) + 1 : 1);
-}
 function getCurrentAdminName() {
   try {
     var u = JSON.parse(localStorage.getItem("user")) || {};
-    return u.firstName && u.lastName
-      ? u.firstName + " " + u.lastName
+    return u.first_name && u.last_name
+      ? u.first_name + " " + u.last_name
       : "Super Admin";
   } catch (e) {
     return "Super Admin";
@@ -104,12 +58,7 @@ async function loadAdminUsers() {
 function actionsHtml(user, active) {
   var h = "";
   if (!active) {
-    h +=
-      '<button class="action-btn status-activate" onclick="handleActivate(\'' +
-      user.id +
-      '\')" title="Activate">' +
-      actSvg() +
-      "</button>";
+    h += '<span class="status-badge status-inactive status-awaiting">Awaiting email activation</span>';
   }
   if (active) {
     h +=
@@ -119,14 +68,9 @@ function actionsHtml(user, active) {
       deactSvg() +
       "</button>";
   }
-  h +=
-    '<button class="action-btn action-archive" onclick="archiveUser(\'' +
-    escapeHtml(user.id) +
-    '\')" title="Archive">' +
-    archiveSvg() +
-    "</button>";
   return h;
 }
+
 function renderAdminUsers(admins) {
   var tbody = document.getElementById("usersBody");
   if (!tbody) return;
@@ -151,14 +95,7 @@ function renderAdminUsers(admins) {
   }
   tbody.innerHTML = html;
 }
-async function handleActivate(id) {
-  try {
-    var r = await api.activateAdminUser(id);
-    if (r.success) await loadAdminUsers();
-  } catch (e) {
-    alert(e.message || "Activation failed");
-  }
-}
+
 async function handleDeactivate(id) {
   try {
     var r = await api.deactivateAdminUser(id);
@@ -188,118 +125,179 @@ function viewUser(id) {
 function editUser(id) {
   alert("Edit user " + id + " - coming soon.");
 }
-function deleteUser(id) {
-  pendingDeleteUserId = id;
-  var modal = document.getElementById("deleteUserModal");
-  var msg = document.getElementById("deleteUserMessage");
-  if (msg)
-    msg.textContent =
-      "Move user " + id + " to the archive? It can be restored later.";
-  if (modal) {
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-  }
-}
-function openDeleteUserModal(id) {
-  deleteUser(id);
-}
-function confirmDeleteUser() {
-  if (!pendingDeleteUserId) return;
-  var id = pendingDeleteUserId;
-  pendingDeleteUserId = null;
-  cancelDeleteUser();
-  var rows = Array.from(document.querySelectorAll("#usersBody tr"));
-  for (var i = 0; i < rows.length; i++) {
-    if (rows[i].cells[0] && rows[i].cells[0].textContent.trim() === id) {
-      archiveUserFromRow(rows[i]);
-      rows[i].remove();
-      logActivity("Moved user account to archive", id);
-      if (window.BSCCARSNotifications && window.BSCCARSNotifications.add)
-        window.BSCCARSNotifications.add({
-          title: "User moved to archive",
-          message: "User " + id + " archived.",
-        });
-      renderArchivedUsers();
-      return;
-    }
-  }
-  renderArchivedUsers();
-}
-function cancelDeleteUser() {
-  var m = document.getElementById("deleteUserModal");
-  if (m) {
-    m.classList.remove("show");
-    m.setAttribute("aria-hidden", "true");
-  }
-}
-function getArchivedUsers() {
-  try {
-    return JSON.parse(localStorage.getItem("bsccarsArchivedUsers")) || [];
-  } catch (e) {
-    return [];
-  }
-}
-function saveArchivedUsers(u) {
-  localStorage.setItem("bsccarsArchivedUsers", JSON.stringify(u));
-}
-function logActivity(action, target) {
-  var logs = getActivityLogs();
-  var now = new Date();
-  logs.unshift({
-    action: action,
-    by: getCurrentAdminName(),
-    target: target,
-    date: now.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }),
-    time: now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-  });
-  saveActivityLogs(logs);
-  renderActivityLogs();
-}
-function getActivityLogs() {
-  try {
-    return JSON.parse(localStorage.getItem(activityLogsKey)) || [];
-  } catch (e) {
-    return [];
-  }
-}
-function saveActivityLogs(l) {
-  localStorage.setItem(activityLogsKey, JSON.stringify(l));
-}
-function renderActivityLogs() {
-  var body = document.getElementById("activityLogBody");
-  if (!body) return;
-  renderActivityLogRows(getActivityLogs());
-}
 async function loadActivityLogs() {
-  var local = getActivityLogs();
   if (typeof api === "undefined" || !api.getSystemActivityLogs) {
-    renderActivityLogRows(local);
+    renderActivityLogRows([]);
     return;
   }
   try {
-    var res = await api.getSystemActivityLogs();
+    var filters = getActivityFilters();
+    var res = await api.getSystemActivityLogs(filters);
     var backend = Array.isArray(res && res.data) ? res.data : [];
-    renderActivityLogRows(backend.map(normalizeBackendLog).concat(local));
+    renderActivityLogRows(backend.map(normalizeBackendLog));
+    renderActivityPagination(res.pagination || { page: 1, pageSize: 20, total: backend.length, totalPages: 1 });
+    populateActivityOptions(res.activities || []);
   } catch (e) {
-    renderActivityLogRows(local);
+    renderActivityLogRows([]);
   }
+}
+function padDatePart(value) {
+  return String(value).padStart(2, "0");
+}
+function formatDateInputValue(date) {
+  return (
+    date.getFullYear() +
+    "-" +
+    padDatePart(date.getMonth() + 1) +
+    "-" +
+    padDatePart(date.getDate())
+  );
+}
+function getActivityPresetRange(range) {
+  var today = new Date();
+  var start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  var end = new Date(start);
+
+  if (range === "yesterday") {
+    start.setDate(start.getDate() - 1);
+    end = new Date(start);
+  } else if (range === "last7") {
+    start.setDate(start.getDate() - 6);
+  } else if (range === "month") {
+    start = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  return {
+    from: formatDateInputValue(start),
+    to: formatDateInputValue(end),
+  };
+}
+function setActiveActivityDatePreset(range) {
+  activityDateRange = range;
+  document.querySelectorAll(".activity-date-preset").forEach(function (button) {
+    button.classList.toggle("is-active", button.dataset.range === range);
+  });
+  var customRange = document.getElementById("activityCustomRange");
+  if (customRange) customRange.hidden = range !== "custom";
+}
+function initActivityDateRange() {
+  var buttons = document.querySelectorAll(".activity-date-preset");
+  if (!buttons.length) return;
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setActiveActivityDatePreset(button.dataset.range || "today");
+      activityPage = 1;
+      loadActivityLogs();
+    });
+  });
+  ["activityFrom", "activityTo"].forEach(function (id) {
+    var input = document.getElementById(id);
+    if (input) {
+      input.addEventListener("change", function () {
+        if (activityDateRange === "custom") {
+          activityPage = 1;
+          loadActivityLogs();
+        }
+      });
+    }
+  });
+  var sort = document.getElementById("activitySort");
+  if (sort) {
+    sort.addEventListener("change", function () {
+      activityPage = 1;
+      loadActivityLogs();
+    });
+  }
+  setActiveActivityDatePreset(activityDateRange);
+}
+function getActivityFilters() {
+  var dateRange =
+    activityDateRange === "custom"
+      ? {
+          from: (document.getElementById("activityFrom") || {}).value || "",
+          to: (document.getElementById("activityTo") || {}).value || "",
+        }
+      : getActivityPresetRange(activityDateRange);
+  return {
+    page: activityPage,
+    pageSize: 20,
+    search: (document.getElementById("activitySearch") || {}).value || "",
+    from: dateRange.from,
+    to: dateRange.to,
+    activity: (document.getElementById("activityFilter") || {}).value || "",
+    sort: (document.getElementById("activitySort") || {}).value || "latest",
+  };
+}
+function applyActivityFilters() {
+  activityPage = 1;
+  loadActivityLogs();
+}
+function clearActivityFilters() {
+  ["activitySearch", "activityFrom", "activityTo"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  setActiveActivityDatePreset("today");
+  var act = document.getElementById("activityFilter");
+  var sort = document.getElementById("activitySort");
+  if (act) act.value = "";
+  if (sort) sort.value = "latest";
+  applyActivityFilters();
+}
+function populateActivityOptions(items) {
+  var select = document.getElementById("activityFilter");
+  if (!select || select.options.length > 1) return;
+  items.forEach(function (item) {
+    var option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    select.appendChild(option);
+  });
+}
+function renderActivityPagination(p) {
+  var summary = document.getElementById("activityPaginationSummary");
+  var controls = document.getElementById("activityPaginationControls");
+  if (!summary || !controls) return;
+  var start = p.total ? (p.page - 1) * p.pageSize + 1 : 0;
+  var end = Math.min(p.page * p.pageSize, p.total || 0);
+  summary.textContent = "Showing " + start + "-" + end + " of " + (p.total || 0) + " activities";
+  var html = '<button type="button" ' + (p.page <= 1 ? "disabled" : "") + ' onclick="gotoActivityPage(' + (p.page - 1) + ')">Previous</button>';
+  for (var i = 1; i <= p.totalPages; i++) {
+    if (i === 1 || i === p.totalPages || Math.abs(i - p.page) <= 2) {
+      html += '<button type="button" ' + (i === p.page ? "disabled" : "") + ' onclick="gotoActivityPage(' + i + ')">' + i + "</button>";
+    }
+  }
+  html += '<button type="button" ' + (p.page >= p.totalPages ? "disabled" : "") + ' onclick="gotoActivityPage(' + (p.page + 1) + ')">Next</button>';
+  controls.innerHTML = html;
+}
+function gotoActivityPage(page) {
+  activityPage = page;
+  loadActivityLogs();
 }
 function normalizeBackendLog(log) {
   var ts = new Date(log.timestamp || Date.now());
+  var targetLabels = {
+    account: "Account",
+    resident: "Resident",
+    complaint: "Complaint",
+    hearing_notice: "Hearing notice",
+    notification: "Notification",
+    report: "Report",
+  };
+  var targetType = String(log.targetType || "").replace(/_/g, " ");
+  var targetLabel = targetLabels[log.targetType] ||
+    targetType.replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
+  var targetId = log.targetId;
+  if (log.targetType === "notification" && /^Read notification: /.test(log.action || "")) {
+    targetId = String(log.action).slice("Read notification: ".length);
+  }
   return {
     action: log.action || "",
     by: log.user || "System",
     target:
-      [log.targetType, log.targetId].filter(Boolean).join(" ") ||
+      [targetLabel, targetId].filter(Boolean).join(": ") ||
       log.details ||
-      "-",
+      "No specific target",
     date: ts.toLocaleDateString("en-US", {
       year: "numeric",
       month: "2-digit",
@@ -337,126 +335,6 @@ function renderActivityLogRows(logs) {
     })
     .join("");
 }
-function initArchivedToggle() {
-  var cb = document.getElementById("showArchivedUsers");
-  var panel = document.querySelector(".archive-panel");
-  if (!cb || !panel) return;
-  panel.style.display = "none";
-  cb.addEventListener("change", function () {
-    panel.style.display = cb.checked ? "block" : "none";
-  });
-}
-function archiveUser(userId) {
-  if (!confirm("Archive user " + userId + "? It can be restored later.")) return;
-  var rows = Array.from(document.querySelectorAll("#usersBody tr"));
-  for (var i = 0; i < rows.length; i++) {
-    if (rows[i].cells[0] && rows[i].cells[0].textContent.trim() === userId) {
-      var role = rows[i].cells[5].textContent.trim(); // grab role BEFORE removing row
-      archiveUserFromRow(rows[i]);
-      rows[i].remove();
-      logActivity("Archived " + role + " account", userId);
-      if (window.BSCCARSNotifications && window.BSCCARSNotifications.add)
-        window.BSCCARSNotifications.add({
-          title: role + " archived",
-          message: role + " account " + userId + " was archived.",
-        });
-      renderArchivedUsers();
-      return;
-    }
-  }
-}
-function archiveUserFromRow(row) {
-  var user = {
-    id: row.cells[0].textContent.trim(),
-    firstName: row.cells[1].textContent.trim(),
-    lastName: row.cells[2].textContent.trim(),
-    middleName: row.cells[3].textContent.trim(),
-    email: row.cells[4].textContent.trim(),
-    role: row.cells[5].textContent.trim(),
-    is_archived: true,
-    archivedAt: new Date().toISOString(),
-  };
-  var users = getArchivedUsers().filter(function (u) {
-    return u.id !== user.id;
-  });
-  users.unshift(user);
-  saveArchivedUsers(users);
-}
-function restoreUser(userId) {
-  var archived = getArchivedUsers();
-  var user = archived.find(function (u) {
-    return u.id === userId;
-  });
-  if (!user) return;
-  addUserRow(user);
-  saveArchivedUsers(
-    archived.filter(function (u) {
-      return u.id !== userId;
-    }),
-  );
-  logActivity("Restored archived user account", userId);
-  if (window.BSCCARSNotifications && window.BSCCARSNotifications.add)
-    window.BSCCARSNotifications.add({
-      title: "User restored",
-      message: "User " + userId + " was restored.",
-    });
-  renderArchivedUsers();
-}
-function addUserRow(user) {
-  var row = document.createElement("tr");
-  row.innerHTML =
-    "<td>" +
-    escapeHtml(user.id) +
-    "</td><td>" +
-    escapeHtml(user.firstName) +
-    "</td><td>" +
-    escapeHtml(user.lastName) +
-    "</td><td>" +
-    escapeHtml(user.middleName || "-") +
-    "</td><td>" +
-    escapeHtml(user.email) +
-    "</td><td>" +
-    escapeHtml(user.role) +
-    '</td><td><span class="status-badge status-active">Active</span></td><td>' +
-    '<button class="action-btn action-archive" onclick="archiveUser(\'' +
-    escapeHtml(user.id) +
-    '\')" title="Archive">' +
-    archiveSvg() +
-    "</button></td>";
-  document.getElementById("usersBody").prepend(row);
-}
-function renderArchivedUsers() {
-  var list = document.getElementById("usersArchiveList");
-  if (!list) return;
-  var users = getArchivedUsers();
-  if (!users.length) {
-    list.innerHTML =
-      '<p style="color:rgba(238,247,247,0.72);">No archived user accounts yet.</p>';
-    return;
-  }
-  list.innerHTML = users
-    .map(function (u) {
-      return (
-        '<div class="archive-card"><div><strong>' +
-        escapeHtml(u.firstName) +
-        " " +
-        escapeHtml(u.lastName) +
-        "</strong><span>" +
-        escapeHtml(u.role) +
-        " - " +
-        escapeHtml(u.email) +
-        '</span></div><div class="archive-actions"><button type="button" data-restore-user="' +
-        escapeHtml(u.id) +
-        '">Restore</button></div>'
-      );
-    })
-    .join("");
-  list.querySelectorAll("[data-restore-user]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      restoreUser(b.dataset.restoreUser);
-    });
-  });
-}
 function openAddUserModal() {
   var m = document.getElementById("addUserModal");
   if (m) m.classList.add("show");
@@ -471,9 +349,8 @@ async function saveNewUser(e) {
   var ln = document.getElementById("lastName").value.trim();
   var em = document.getElementById("email").value.trim();
   var role = document.getElementById("role").value;
-  var pw = document.getElementById("newAdminPassword").value;
 
-  if (!fn || !ln || !em || !pw) {
+  if (!fn || !ln || !em) {
     alert("Please fill in all fields.");
     return;
   }
@@ -481,18 +358,12 @@ async function saveNewUser(e) {
     alert("Please enter a valid email.");
     return;
   }
-  if (pw.length < 8) {
-    alert("Password must be at least 8 characters long.");
-    return;
-  }
-
   try {
     var res = await api.post("/admin-users", {
       firstName: fn,
       lastName: ln,
       email: em,
-      role: role,
-      password: pw,
+      role: role
     });
     if (res.success) {
       alert(res.message);
@@ -537,7 +408,7 @@ function exportPDF() {
       ? api.getStoredUser() || {}
       : {};
   var genBy =
-    [su.first_name || su.firstName, su.last_name || su.lastName]
+    [su.first_name, su.last_name]
       .filter(Boolean)
       .join(" ") || "Administrator";
   var search =
@@ -612,8 +483,8 @@ function exportPDF() {
   for (var i = 0; i < users.length; i++) {
     var vals = [
       users[i].id,
-      users[i].firstName,
-      users[i].lastName,
+      users[i].first_name,
+      users[i].last_name,
       users[i].email,
       users[i].role,
       users[i].status,
@@ -674,9 +545,9 @@ function exportCSV() {
     users.map(function (u) {
       return [
         u.id,
-        u.firstName,
-        u.lastName,
-        u.middleName,
+        u.first_name,
+        u.last_name,
+        u.middle_name,
         u.email,
         u.role,
         u.status,
@@ -707,9 +578,9 @@ function getVisibleUsersForExport() {
     .map(function (r) {
       return {
         id: r.cells[0].textContent.trim(),
-        firstName: r.cells[1].textContent.trim(),
-        lastName: r.cells[2].textContent.trim(),
-        middleName: r.cells[3].textContent.trim(),
+        first_name: r.cells[1].textContent.trim(),
+        last_name: r.cells[2].textContent.trim(),
+        middle_name: r.cells[3].textContent.trim(),
         email: r.cells[4].textContent.trim(),
         role: r.cells[5].textContent.trim(),
         status: r.cells[6].textContent.trim(),

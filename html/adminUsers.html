@@ -73,12 +73,6 @@
                 + Add New User
               </button>
             </div>
-            <div class="archive-toggle-control">
-              <label>
-                <input type="checkbox" id="showArchivedUsers" />
-                Show archived users
-              </label>
-            </div>
           </div>
 
           <div class="table-wrapper">
@@ -114,6 +108,38 @@
 
         <section class="activity-section">
           <h2>User Activity Logs (Read-Only)</h2>
+          <div class="activity-filters">
+            <input id="activitySearch" type="search" placeholder="Search activity logs..." />
+            <div class="activity-date-range" aria-label="Date range">
+              <span class="activity-date-range__label">Date Range</span>
+              <div class="activity-date-range__presets">
+                <button type="button" class="activity-date-preset is-active" data-range="today">Today</button>
+                <button type="button" class="activity-date-preset" data-range="yesterday">Yesterday</button>
+                <button type="button" class="activity-date-preset" data-range="last7">Last 7 Days</button>
+                <button type="button" class="activity-date-preset" data-range="month">This Month</button>
+                <button type="button" class="activity-date-preset" data-range="custom">Custom</button>
+              </div>
+              <div class="activity-custom-range" id="activityCustomRange" hidden>
+                <label>
+                  <span>Start Date</span>
+                  <input id="activityFrom" type="date" />
+                </label>
+                <label>
+                  <span>End Date</span>
+                  <input id="activityTo" type="date" />
+                </label>
+              </div>
+            </div>
+            <select id="activityFilter">
+              <option value="">Activity</option>
+            </select>
+            <select id="activitySort">
+              <option value="latest">Latest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+            <button type="button" class="btn-export" onclick="applyActivityFilters()">Apply Filters</button>
+            <button type="button" class="btn-export" onclick="clearActivityFilters()">Clear Filters</button>
+          </div>
 
           <div class="table-wrapper">
             <table class="activity-table">
@@ -129,11 +155,10 @@
               <tbody id="activityLogBody"></tbody>
             </table>
           </div>
-        </section>
-
-        <section class="activity-section archive-panel">
-          <h2>Archived Assistant Admin Accounts</h2>
-          <div class="archive-list" id="usersArchiveList"></div>
+          <div class="activity-pagination">
+            <span id="activityPaginationSummary"></span>
+            <div id="activityPaginationControls"></div>
+          </div>
         </section>
       </main>
     </div>
@@ -184,29 +209,6 @@
               </select>
             </div>
 
-          <div class="form-group">
-            <label for="newAdminPassword">Temporary Password:</label>
-
-            <div class="password-field">
-              <input
-                type="password"
-                id="newAdminPassword"
-                name="password"
-                required
-                minlength="8"
-                autocomplete="new-password"
-              />
-
-              <span
-                class="eye closed"
-                id="toggleNewAdminPassword"
-                role="button"
-                tabindex="0"
-                aria-label="Show password"
-              ></span>
-            </div>
-          </div>  
-
             <div class="form-actions">
               <button type="submit" class="btn-save">Save User</button>
               <button
@@ -217,39 +219,6 @@
               </button>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
-
-    <div id="deleteUserModal" class="modal-overlay" aria-hidden="true">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Archive user?</h2>
-          <button
-            class="btn-close-modal"
-            type="button"
-            onclick="cancelDeleteUser()">
-            &times;
-          </button>
-        </div>
-        <div class="modal-body">
-          <p id="deleteUserMessage">
-            Move this user to the archive? The account can be restored later.
-          </p>
-          <div class="form-actions">
-            <button
-              type="button"
-              class="btn-cancel"
-              onclick="cancelDeleteUser()">
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn-save"
-              onclick="confirmDeleteUser()">
-              Move to Archive
-            </button>
-          </div>
         </div>
       </div>
     </div>

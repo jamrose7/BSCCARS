@@ -143,6 +143,10 @@
   font-size: 0.9rem;
 }
 
+.users-table td:first-child {
+  white-space: nowrap;
+}
+
 .users-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -162,9 +166,18 @@
 }
 
 .status-inactive {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-  border: 1px solid rgba(255, 107, 107, 0.3);
+  background: rgba(230, 100, 110, 0.14);
+  color: #f2a0a6;
+  border: 1px solid rgba(242, 160, 166, 0.35);
+}
+
+.status-awaiting {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
 .action-btn {
@@ -530,4 +543,121 @@
   font-size: 0.9rem;
   min-height: 1.2em;
 }
+}
+
+.activity-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.activity-filters input,
+.activity-filters select {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef7f7;
+}
+
+.activity-date-range {
+  display: grid;
+  gap: 8px;
+}
+
+.activity-date-range__label {
+  color: rgba(238, 247, 247, 0.82);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.activity-date-range__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.activity-date-preset {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef7f7;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.activity-date-preset:hover,
+.activity-date-preset.is-active {
+  background: rgba(78, 205, 196, 0.18);
+  border-color: rgba(78, 205, 196, 0.46);
+}
+
+.activity-custom-range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activity-custom-range[hidden] {
+  display: none;
+}
+
+.activity-custom-range label {
+  display: grid;
+  gap: 5px;
+  color: rgba(238, 247, 247, 0.76);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.activity-filters input::placeholder {
+  color: rgba(238, 247, 247, 0.62);
+}
+
+.activity-filters input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(94%) sepia(9%) saturate(250%) hue-rotate(131deg) brightness(105%);
+  opacity: 0.9;
+}
+
+.activity-filters input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.activity-filters select option {
+  background: #123a40;
+  color: #eef7f7;
+}
+
+.activity-pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: rgba(238, 247, 247, 0.82);
+}
+
+#activityPaginationControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#activityPaginationControls button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef7f7;
+}
+
+#activityPaginationControls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }

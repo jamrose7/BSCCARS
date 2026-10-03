@@ -581,7 +581,7 @@
               <button
                 type="button"
                 id="issueCfaButton"
-                class="btn-evidence btn-danger"
+                class="btn-evidence btn-escalate"
                 style="display: none"
                 aria-label="Issue a Complaint for Administrative Action (CFA) to escalate this complaint">
                 Issue CFA
@@ -601,17 +601,18 @@
               <label
                 for="assignmentRoleSelect"
                 style="font-size: 0.8rem; color: rgba(255, 255, 255, 0.7)">
-                Assign barangay tanod / trusted personnel for field verification, site survey, or KP Form delivery
+                Assign barangay personnel for field verification, site survey, or KP Form delivery
               </label>
               <div style="display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
-                <select
+                <input
+                  type="hidden"
                   id="assignmentRoleSelect"
+                  value="Barangay Personnel" />
+                <div
+                  aria-label="Assignment role"
                   style="padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #f0f0f0; font-family: inherit; font-size: 0.875rem;">
-                  <option value="">Select role</option>
-                  <option value="Barangay Tanod">Barangay Tanod</option>
-                  <option value="Barangay Personnel">Barangay Personnel</option>
-                  <option value="Trusted Barangay Personnel">Trusted Barangay Personnel</option>
-                </select>
+                  Barangay Personnel
+                </div>
                 <input
                   type="text"
                   id="assignmentNameInput"

@@ -17,10 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
     stageSelect.value = window._noticeComplaintData?.stage || "first_mediation";
     stageSelect.addEventListener("change", () => {
       applyNoticeStage(stageSelect.value);
+      applyScheduledHearingToForm(
+        document.getElementById("hearingScheduledAtInput")?.value || "",
+      );
     });
   }
 
   prefillPartyNames();
+  bindAutoSizingUnderlineFields();
 
   if (!window.__bsccarsNoticeAfterPrintBound) {
     window.addEventListener("afterprint", () => {
@@ -37,12 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (signoutBtn) {
     signoutBtn.addEventListener("click", () => {
       if (window.confirm("Are you sure you want to sign out?")) {
+        api.signOut();
         window.location.href = "index.html";
       }
     });
   }
 
   applyNoticeStage(getNoticeStage());
+  initializeHearingSchedule();
+  resizeAutoSizingUnderlineFields();
 });
 
 const STAGE_CONFIG = {
@@ -118,6 +125,9 @@ function applyNoticeStage(stage) {
   });
 
   prefillPartyNames();
+  applyScheduledHearingToForm(
+    document.getElementById("hearingScheduledAtInput")?.value || "",
+  );
 }
 
 function getNoticeStage() {
@@ -141,14 +151,102 @@ function prefillPartyNames() {
     setFieldText(config.captionComplainantId, complainantName);
     setFieldText(config.captionRespondentId, respondentName);
   });
+
+  resizeAutoSizingUnderlineFields();
+}
+
+function bindAutoSizingUnderlineFields() {
+  document.querySelectorAll(".underline-input").forEach((field) => {
+    field.addEventListener("input", () => resizeUnderlineField(field));
+    resizeUnderlineField(field);
+  });
+}
+
+function resizeAutoSizingUnderlineFields() {
+  document.querySelectorAll(".underline-input").forEach(resizeUnderlineField);
+}
+
+function resizeUnderlineField(field) {
+  const limits = getUnderlineFieldLimits(field);
+  const valueLength = (field.value || "").length;
+  const width = valueLength
+    ? Math.min(Math.max(valueLength + 2, limits.min), limits.max)
+    : limits.defaultWidth;
+
+  field.style.width = `${width}ch`;
+}
+
+function getUnderlineFieldLimits(field) {
+  if (
+    [
+      "smNotificationDay",
+      "smNotificationYear",
+      "smNotificationAMPM",
+    ].includes(field.id)
+  ) {
+    return { min: 3, max: 6, defaultWidth: 4 };
+  }
+
+  if (field.id === "smNotificationMonth") {
+    return { min: 8, max: 14, defaultWidth: 10 };
+  }
+
+  if (field.id === "smCaseNo") {
+    return { min: 7, max: 14, defaultWidth: 9 };
+  }
+
+  if (field.id === "smFor") {
+    return { min: 14, max: 26, defaultWidth: 18 };
+  }
+
+  if (field.id === "cfaCaseNo") {
+    return { min: 7, max: 14, defaultWidth: 9 };
+  }
+
+  if (field.id === "cfaFor") {
+    return { min: 14, max: 26, defaultWidth: 18 };
+  }
+
+  if (field.classList.contains("form-18-case-line")) {
+    return { min: 8, max: 16, defaultWidth: 10 };
+  }
+
+  if (field.classList.contains("party-address-line")) {
+    return { min: 12, max: 34, defaultWidth: 16 };
+  }
+
+  if (field.classList.contains("hearing-hour-line")) {
+    return { min: 1, max: 2, defaultWidth: 1 };
+  }
+
+  if (
+    field.classList.contains("line-xxs") ||
+    field.classList.contains("line-xs")
+  ) {
+    return { min: 4, max: 8, defaultWidth: 5 };
+  }
+
+  if (field.classList.contains("line-sm")) {
+    return { min: 6, max: 12, defaultWidth: 8 };
+  }
+
+  if (field.classList.contains("line-md")) {
+    return { min: 10, max: 22, defaultWidth: 14 };
+  }
+
+  if (field.classList.contains("line-lg")) {
+    return { min: 16, max: 34, defaultWidth: 24 };
+  }
+
+  return { min: 8, max: 28, defaultWidth: 14 };
 }
 
 function setFieldValue(id, value) {
-  if (!id || !value) return;
+  if (!id || value === undefined || value === null || value === "") return;
 
   const element = document.getElementById(id);
 
-  if (element && "value" in element && !element.value.trim()) {
+  if (element && "value" in element) {
     element.value = value;
   }
 }
@@ -179,11 +277,60 @@ function getNoticeServiceAtValue() {
   ).trim();
 }
 
+function initializeHearingSchedule() {
+  const scheduleInput = document.getElementById("hearingScheduledAtInput");
+  if (!scheduleInput) return;
+
+  const storedDate = window._noticeComplaintData?.hearing_date || "";
+  const storedTime = window._noticeComplaintData?.hearing_time || "";
+  if (storedDate && storedTime) {
+    scheduleInput.value = `${storedDate}T${String(storedTime).slice(0, 5)}`;
+  }
+
+  scheduleInput.addEventListener("input", () => {
+    applyScheduledHearingToForm(scheduleInput.value);
+  });
+
+  if (scheduleInput.value) applyScheduledHearingToForm(scheduleInput.value);
+}
+
+function applyScheduledHearingToForm(value) {
+  const config = STAGE_CONFIG[getNoticeStage()];
+  if (!config?.hearing || !value) return;
+
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T([01]\d|2[0-3]):([0-5]\d)$/);
+  if (!match) return;
+
+  const [, year, month, day, hour, minute] = match;
+  const monthName = new Date(Number(year), Number(month) - 1, Number(day)).toLocaleString(
+    "en-US",
+    { month: "long" },
+  );
+
+  setFieldValue(config.hearing.day, String(Number(day)));
+  setFieldValue(config.hearing.month, monthName);
+  setFieldValue(config.hearing.year, year.slice(-2));
+
+  const timeField = document.getElementById(config.hearing.time);
+  if (timeField) timeField.value = String(Number(hour) % 12 || 12);
+  resizeAutoSizingUnderlineFields();
+}
+
 function buildHearingDateTime(config) {
   if (!config.hearing) {
     return {
       hearingDate: null,
       hearingTime: null,
+    };
+  }
+
+  const scheduledAt = document.getElementById("hearingScheduledAtInput")?.value || "";
+  const scheduledMatch = scheduledAt.match(/^(\d{4})-(\d{2})-(\d{2})T([01]\d|2[0-3]):([0-5]\d)$/);
+  if (scheduledMatch) {
+    const [, year, month, day, hour, minute] = scheduledMatch;
+    return {
+      hearingDate: `${year}-${month}-${day}`,
+      hearingTime: `${hour}:${minute}`,
     };
   }
 
@@ -316,72 +463,69 @@ async function persistNoticeRecord(options = {}) {
     return null;
   }
 
-  localStorage.setItem("lastHearingNotice", JSON.stringify(payload));
-
-  if (typeof api !== "undefined" && api.post && api.patch) {
-    try {
-      const outcomeBody = {
-        stage: payload.stage,
-        outcome: payload.outcome,
-        hearing_date: payload.hearing_date,
-        hearing_time: payload.hearing_time,
-        notice_served_method: payload.notice_served_method,
-        notice_served_at: payload.notice_served_at,
-      };
-
-      let noticeRecord;
-
-      if (window._noticeRecordId) {
-        noticeRecord = await api.patch(
-          `/hearing-notices/${window._noticeRecordId}/outcome`,
-          outcomeBody
-        );
-      } else {
-        noticeRecord = await api.post("/hearing-notices", {
-          complaint_id: complaintId,
-          ...outcomeBody,
-        });
-
-        if (noticeRecord?.data?.id) {
-          window._noticeRecordId = noticeRecord.data.id;
-
-          const storedNotice = JSON.parse(
-            sessionStorage.getItem("selectedComplaintForNotice") || "{}"
-          );
-
-          storedNotice.noticeId = noticeRecord.data.id;
-          storedNotice.stage = payload.stage;
-
-          sessionStorage.setItem(
-            "selectedComplaintForNotice",
-            JSON.stringify(storedNotice)
-          );
-        }
-      }
-
-      return noticeRecord?.data || noticeRecord;
-    } catch (error) {
-      console.warn(
-        "Unable to sync notice to backend. Saved locally instead.",
-        error
-      );
-    }
+  if (typeof api === "undefined" || !api.post || !api.patch) {
+    throw new Error("The hearing notice service is unavailable.");
   }
 
-  return null;
+  try {
+    const outcomeBody = {
+      stage: payload.stage,
+      outcome: payload.outcome,
+      hearing_date: payload.hearing_date,
+      hearing_time: payload.hearing_time,
+      notice_served_method: payload.notice_served_method,
+      notice_served_at: payload.notice_served_at,
+    };
+
+    let noticeRecord;
+
+    if (window._noticeRecordId) {
+      noticeRecord = await api.patch(
+        `/hearing-notices/${window._noticeRecordId}/outcome`,
+        outcomeBody
+      );
+    } else {
+      noticeRecord = await api.post("/hearing-notices", {
+        complaint_id: complaintId,
+        ...outcomeBody,
+      });
+
+      if (noticeRecord?.data?.id) {
+        window._noticeRecordId = noticeRecord.data.id;
+
+        const storedNotice = JSON.parse(
+          sessionStorage.getItem("selectedComplaintForNotice") || "{}"
+        );
+
+        storedNotice.noticeId = noticeRecord.data.id;
+        storedNotice.stage = payload.stage;
+        storedNotice.hearing_date = payload.hearing_date;
+        storedNotice.hearing_time = payload.hearing_time;
+
+        sessionStorage.setItem(
+          "selectedComplaintForNotice",
+          JSON.stringify(storedNotice)
+        );
+      }
+    }
+
+    return noticeRecord?.data || noticeRecord;
+  } catch (error) {
+    console.error("Unable to save hearing notice:", error);
+    throw new Error("Unable to save the hearing notice. Please try again.");
+  }
 }
 
 async function saveNotice() {
-  const savedNotice = await persistNoticeRecord();
+  try {
+    const savedNotice = await persistNoticeRecord();
 
-  if (savedNotice) {
-    alert("Hearing notice has been saved and synced to the proceedings record.");
-    return;
+    if (savedNotice) {
+      alert("Hearing notice has been saved and synced to the proceedings record.");
+    }
+  } catch (error) {
+    alert(error.message || "Unable to save the hearing notice. Please try again.");
   }
-
-  alert(
-    "Hearing notice has been saved locally. You can now print it or return to the complaints list."
-  );
 }
 
 function formatServiceDateTime(value) {
@@ -429,10 +573,16 @@ async function handlePrintServiceRecording() {
 
   if (!details) return;
 
-  const savedNotice = await persistNoticeRecord({
-    noticeServedMethod: details.noticeServedMethod,
-    noticeServedAt: details.noticeServedAt,
-  });
+  let savedNotice;
+  try {
+    savedNotice = await persistNoticeRecord({
+      noticeServedMethod: details.noticeServedMethod,
+      noticeServedAt: details.noticeServedAt,
+    });
+  } catch (error) {
+    alert(error.message || "Unable to record notice service details. Please try again.");
+    return;
+  }
 
   const methodInput = document.getElementById(
     "noticeServedMethodSelect"

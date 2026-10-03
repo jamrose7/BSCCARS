@@ -108,6 +108,10 @@
   overscroll-behavior: contain;
 }
 
+.notif-panel--expanded .notif-panel__list {
+  max-height: min(560px, calc(100vh - 180px));
+}
+
 .notif-panel__list::-webkit-scrollbar { width: 4px; }
 .notif-panel__list::-webkit-scrollbar-thumb {
   background: rgba(8, 53, 64, 0.2);

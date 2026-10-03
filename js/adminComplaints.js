@@ -12,6 +12,7 @@ let activePriorityFilter = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   restrictAssistantAdminActions();
+
   initModal();
   initComplaintFilters();
   initCharacterCounter();
@@ -20,6 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLiveComplaints();
   renderArchivedComplaints();
 });
+
+function isSuperAdmin() {
+  try {
+    return JSON.parse(localStorage.getItem("user"))?.role === "super_admin";
+  } catch {
+    return false;
+  }
+}
 
 function restrictAssistantAdminActions() {
   try {
@@ -68,11 +77,38 @@ function viewComplaint(button) {
 
   loadComplaintComments(_currentComplaintId);
   loadProceedingsTimeline(_currentComplaintId);
+  hydrateComplaintModal(_currentComplaintId);
 
   const title = document.getElementById("modalTitle");
   if (title) {
     title.tabIndex = -1;
     title.focus();
+  }
+}
+
+// List endpoint doesn't hydrate attachments/follow-ups — fetch the full record.
+async function hydrateComplaintModal(complaintId) {
+  if (typeof api === "undefined" || !api.getComplaintById) return;
+
+  try {
+    const response = await api.getComplaintById(complaintId);
+    const full = response?.data;
+
+    if (!full || _currentComplaintId !== complaintId) return;
+
+    const normalized = normalizeComplaintForTable(full);
+
+    const index = liveComplaints.findIndex(
+      item => formatComplaintNumber(item.id) === complaintId
+    );
+    if (index >= 0) {
+      liveComplaints[index] = { ...liveComplaints[index], ...normalized };
+    }
+
+    buildEvidence(normalized.image, normalized.video);
+    buildResidentFollowUps(full.followUps || []);
+  } catch (error) {
+    console.warn("Unable to load full complaint details.", error);
   }
 }
 
@@ -482,10 +518,6 @@ function normalizeComplaintForTable(complaint) {
       complaint.admin_notes ||
       "",
 
-    respondent_email:
-      complaint.respondent_email ||
-      complaint.respondentEmail ||
-      ""
   };
 }
 
@@ -955,13 +987,15 @@ async function addInternalNote() {
 
     [
       "newNoteInput",
-      "assignmentRoleSelect",
       "assignmentNameInput",
       "assignmentTaskInput"
     ].forEach(id => {
       const element = document.getElementById(id);
       if (element) element.value = "";
     });
+
+    const role = document.getElementById("assignmentRoleSelect");
+    if (role) role.value = "Barangay Personnel";
 
     input.focus();
   } catch (error) {
@@ -1075,15 +1109,7 @@ function createEvidenceCard(filename, type) {
     openProtectedAttachment(filename, view)
   );
 
-  const remove = document.createElement("button");
-  remove.type = "button";
-  remove.className = "btn-evidence btn-danger";
-  remove.textContent = image ? "Remove Image" : "Remove Video";
-  remove.addEventListener("click", () =>
-    removeEvidence(filename, card)
-  );
-
-  actions.append(view, remove);
+  actions.append(view);
   card.append(fileLabel, actions);
 
   return card;
@@ -1091,23 +1117,6 @@ function createEvidenceCard(filename, type) {
 
 function displayFileName(path) {
   return String(path || "").split(/[\\/]/).pop() || path;
-}
-
-function removeEvidence(filename, card) {
-  if (!confirm(`Are you sure you want to remove "${filename}"?`)) {
-    return;
-  }
-
-  card?.remove();
-
-  const container = document.getElementById("evidenceContainer");
-
-  if (container && !container.children.length) {
-    const message = document.createElement("p");
-    message.className = "timeline-empty";
-    message.textContent = "No attachments uploaded.";
-    container.appendChild(message);
-  }
 }
 
 function buildResidentFollowUps(followUps) {
@@ -1663,23 +1672,6 @@ function openHearingNotice() {
   window.location.href = "adminComplaintNotice.html";
 }
 
-function getArchivedComplaints() {
-  try {
-    return JSON.parse(
-      localStorage.getItem(archivedComplaintsKey)
-    ) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveArchivedComplaints(complaints) {
-  localStorage.setItem(
-    archivedComplaintsKey,
-    JSON.stringify(complaints)
-  );
-}
-
 function getComplaintDataFromButton(button) {
   const data = button.dataset;
 
@@ -1718,26 +1710,17 @@ async function archiveCurrentComplaint() {
     return;
   }
 
-  if (typeof api !== "undefined" && api.archiveComplaint) {
-    try {
-      await api.archiveComplaint(archivedComplaintId);
-    } catch (error) {
-      alert(error.message || "Unable to archive complaint.");
-      return;
-    }
+  if (typeof api === "undefined" || !api.archiveComplaint) {
+    alert("Unable to archive the complaint because the API service is unavailable.");
+    return;
   }
 
-  const complaint = {
-    ...getComplaintDataFromButton(_lastFocusedButton),
-    archivedAt: new Date().toISOString()
-  };
-
-  const archived = getArchivedComplaints().filter(
-    item => item.id !== complaint.id
-  );
-
-  archived.unshift(complaint);
-  saveArchivedComplaints(archived);
+  try {
+    await api.archiveComplaint(archivedComplaintId);
+  } catch (error) {
+    alert(error.message || "Unable to archive complaint.");
+    return;
+  }
 
   _lastFocusedButton.closest("tr")?.remove();
 
@@ -1753,14 +1736,8 @@ async function archiveCurrentComplaint() {
       : getActiveComplaintsFromRows()
   );
 
-  renderArchivedComplaints();
+  await renderArchivedComplaints();
   closeComplaintModal();
-
-  window.BSCCARSNotifications?.add?.({
-    title: "Complaint archived",
-    message:
-      `${archivedComplaintId} was moved to the archive and can be restored later.`
-  });
 }
 
 function getActiveComplaintsFromRows() {
@@ -1775,59 +1752,42 @@ function getActiveComplaintsFromRows() {
 }
 
 async function restoreArchivedComplaint(id) {
-  const archived = getArchivedComplaints();
-
-  const complaint = archived.find(
-    item => item.id === id
-  );
-
-  if (!complaint) return;
-
-  if (typeof api !== "undefined" && api.restoreComplaint) {
-    try {
-      await api.restoreComplaint(id);
-    } catch (error) {
-      alert(error.message || "Unable to restore complaint.");
-      return;
-    }
+  if (typeof api === "undefined" || !api.restoreComplaint) {
+    alert("Unable to restore the complaint because the API service is unavailable.");
+    return;
   }
 
-  const tbody = document.getElementById("complaintsBody");
-
-  if (tbody) {
-    const empty = document.getElementById("emptyStateRow");
-
-    tbody.insertBefore(
-      createComplaintRow(complaint),
-      empty || null
-    );
+  try {
+    await api.restoreComplaint(id);
+  } catch (error) {
+    alert(error.message || "Unable to restore complaint.");
+    return;
   }
 
-  saveArchivedComplaints(
-    archived.filter(item => item.id !== id)
-  );
-
-  liveComplaints.unshift(complaint);
-
-  renderComplaintStats(liveComplaints);
-  renderArchivedComplaints();
-  filterComplaintRows();
-
-  window.BSCCARSNotifications?.add?.({
-    title: "Complaint restored",
-    message:
-      `${formatComplaintNumber(id)} was restored from the archive.`
-  });
+  await loadLiveComplaints();
+  await renderArchivedComplaints();
 }
 
-function renderArchivedComplaints() {
-  const list = document.getElementById(
-    "complaintsArchiveList"
-  );
-
+async function renderArchivedComplaints() {
+  const list = document.getElementById("complaintsArchiveList");
   if (!list) return;
 
-  const archived = getArchivedComplaints();
+  if (typeof api === "undefined" || !api.getComplaints) {
+    list.innerHTML =
+      '<p style="color:rgba(238,247,247,.72);">Archived complaints are unavailable right now.</p>';
+    return;
+  }
+
+  let archived = [];
+  try {
+    const response = await api.getComplaints({ archived: "true" });
+    archived = Array.isArray(response?.data) ? response.data : [];
+  } catch (error) {
+    console.warn("Unable to load archived complaints.", error);
+    list.innerHTML =
+      '<p style="color:rgba(238,247,247,.72);">Unable to load archived complaints.</p>';
+    return;
+  }
 
   if (!archived.length) {
     list.innerHTML =
@@ -1835,7 +1795,11 @@ function renderArchivedComplaints() {
     return;
   }
 
-  list.innerHTML = archived.map(complaint => `
+  const canRestore = isSuperAdmin();
+
+  list.innerHTML = archived.map(raw => {
+    const complaint = normalizeComplaintForTable(raw);
+    return `
     <div class="archive-card">
       <div>
         <strong>
@@ -1844,27 +1808,28 @@ function renderArchivedComplaints() {
         </strong>
         <span>
           ${escapeHtml(complaint.category)}
-          - ${escapeHtml(complaint.status)}
+          - ${escapeHtml(statusLabel(complaint.status))}
           - ${escapeHtml(complaint.name)}
         </span>
       </div>
       <div class="archive-actions">
-        <button
-          type="button"
-          data-restore-complaint="${escapeHtml(complaint.id)}"
-        >
-          Restore
-        </button>
+        ${canRestore ? `
+          <button
+            type="button"
+            data-restore-complaint="${escapeHtml(complaint.id)}"
+          >
+            Restore
+          </button>
+        ` : ""}
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   list.querySelectorAll("[data-restore-complaint]")
     .forEach(button => {
       button.addEventListener("click", () =>
-        restoreArchivedComplaint(
-          button.dataset.restoreComplaint
-        )
+        restoreArchivedComplaint(button.dataset.restoreComplaint)
       );
     });
 }

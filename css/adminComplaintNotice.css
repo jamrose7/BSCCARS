@@ -157,11 +157,11 @@ h2 {
 }
 
 .form-12 h1 {
-  margin-top: 0.4in;
+  margin-top: 0.34in;
 }
 
 .form-12 h2 {
-  margin-top: 0.5in;
+  margin-top: 0.28in;
 }
 
 .form-12 .office-title {
@@ -169,16 +169,16 @@ h2 {
 }
 
 .form-12 .body-text {
-  margin-top: 0.2in;
+  margin-top: 0.24in;
   line-height: 1.22;
 }
 
 .form-12 .to-two-col {
   display: grid;
-  grid-template-columns: 0.38in 2.35in 2.35in;
-  gap: 0.22in;
-  align-items: start;
-  margin-top: 0.32in;
+  grid-template-columns: 0.34in 2.2in 2.2in;
+  gap: 0.28in;
+  align-items: end;
+  margin-top: 0.34in;
 }
 
 .form-12 .to-two-col > div {
@@ -186,16 +186,17 @@ h2 {
 }
 
 .form-12 .to-two-col .line-lg {
-  width: 100%;
+  width: 2in !important;
   text-align: center;
 }
 
 .form-12 .to-two-col > span {
-  padding-top: 0.04in;
+  align-self: end;
+  padding-bottom: 0.02in;
 }
 
 .form-12 .to-two-col .party-label {
-  margin-top: 0.1in;
+  margin-top: 0.08in;
   text-align: center;
 }
 
@@ -216,8 +217,8 @@ h2 {
 
 .form-12 .receipt-signatures {
   display: grid;
-  grid-template-columns: 2.35in 2.35in;
-  gap: 0.22in;
+  grid-template-columns: 2.25in 2.25in;
+  gap: 0.45in;
   margin-top: 0.4in;
 }
 
@@ -227,7 +228,7 @@ h2 {
 }
 
 .form-12 .receipt-signatures div div {
-  margin-top: 0.24in;
+  margin-top: 0.3in;
 }
 
 .form-12 .logo-row {
@@ -308,6 +309,11 @@ h2 {
   width: 250px;
 }
 
+.hearing-hour-line {
+  width: 24px;
+  text-align: center;
+}
+
 .to-extra-line,
 .case-meta-extra-line {
   border-top: 1px solid #000;
@@ -318,6 +324,33 @@ h2 {
   display: block;
   width: 245px;
   margin: 0.1in 0 0 0.28in;
+}
+
+.party-address-block {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+
+.complainant-address-block {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  margin-top: 0.18in;
+  margin-left: 0;
+}
+
+.party-address-block > span,
+.complainant-address-block > span {
+  flex: 0 0 auto;
+  text-align: left;
+}
+
+.party-address-line,
+.complainant-address-block .party-address-line {
+  width: 2.15in;
+  min-width: 1.45in;
+  max-width: 3in;
 }
 
 .party-label {
@@ -404,8 +437,8 @@ h2 {
 
 .case-caption {
   display: grid;
-  grid-template-columns: 2.45in 2.55in;
-  gap: 0.34in;
+  grid-template-columns: minmax(2.3in, 1fr) 2.45in;
+  gap: 0.42in;
   align-items: end;
   margin-top: 0.18in;
 }
@@ -416,9 +449,23 @@ h2 {
   text-align: left;
 }
 
+.form-18-caption .caption-party {
+  width: 1.95in;
+}
+
+.form-18-caption .caption-party .caption-line,
+.form-18 .respondent-caption {
+  width: 1.95in;
+}
+
+.form-18-caption .caption-party .party-label {
+  width: 1.95in;
+  text-align: left;
+}
+
 .case-meta {
   line-height: 1.4;
-  text-align: right;
+  text-align: left;
 }
 
 .case-meta p + p {
@@ -453,31 +500,16 @@ h2 {
 }
 
 .form-8 .to-block {
-  margin-top: 0.28in;
+  margin-top: 0.36in;
 }
 
 .form-8-to {
-  gap: 5px;
-}
-
-.form-8-to .line-lg,
-.form-8-complainant {
-  width: 2.55in;
-}
-
-.form-8-complainant {
-  margin-top: 0.16in;
-  margin-left: 0.37in;
-}
-
-.form-8-party-label {
-  margin-top: 0.08in;
-  margin-left: 0.37in;
+  margin-left: 0;
 }
 
 .form-8 .body-text {
   width: 100%;
-  margin-top: 0.18in;
+  margin-top: 0.3in;
   line-height: 1.26;
 }
 
@@ -507,7 +539,7 @@ h2 {
 }
 
 .form-18 .office-title {
-  margin-top: 0.18in;
+  margin-top: 0.14in;
 }
 
 .form-18,
@@ -529,10 +561,10 @@ h2 {
 
 .form-18-caption,
 .form-20 .case-caption {
-  grid-template-columns: 2.15in 2.35in;
-  gap: 0.65in;
+  grid-template-columns: 2.45in 2.45in;
+  gap: 0.4in;
   align-items: start;
-  margin-top: 0.22in;
+  margin-top: 0.18in;
 }
 
 .form-18-caption .case-meta,
@@ -548,35 +580,45 @@ h2 {
 
 .form-18-caption .case-meta p + p,
 .form-20 .case-meta p + p {
-  margin-top: 0.08in;
-}
-
-.form-18-case-line,
-.form-20 .case-meta .line-md {
-  width: 1.15in;
-}
-
-.form-18-caption .case-meta-extra-line,
-.form-20 .case-meta-extra-line {
-  width: 2.25in;
   margin-top: 0.1in;
 }
 
-.form-18-caption .case-meta p:nth-child(2) .underline-input,
+.form-18-case-line {
+  width: 1in;
+}
+
+.form-20 .case-meta .line-md {
+  width: 1.38in;
+}
+
+.form-20 .case-meta-extra-line {
+  width: 2.35in;
+  margin-top: 0.1in;
+}
+
+.form-18-caption .case-meta-extra-line {
+  width: 1.85in;
+  margin-top: 0.11in;
+  margin-left: 0.34in;
+}
+
 .form-20 .case-meta p:nth-child(2) .underline-input {
-  width: 2.25in;
+  width: 2.35in;
+}
+
+.form-18-caption .case-meta p:nth-child(2) .underline-input {
+  width: 1.75in;
 }
 
 .form-18 .against-label,
 .form-20 .against-label {
-  width: 2.15in;
+  width: 2.45in;
   text-align: left;
   font-weight: 400;
 }
 
-.form-18 .respondent-caption,
 .form-20 .respondent-caption {
-  width: 2.15in;
+  width: 2.45in;
   text-align: left;
 }
 
@@ -585,55 +627,47 @@ h2 {
 }
 
 .form-18 .respondent-caption {
-  margin-top: 0.12in;
+  margin-top: 0.1in;
 }
 
 .form-18 h1 {
-  margin-top: 0.16in;
-}
-
-.form-18-to {
   margin-top: 0.18in;
 }
 
-.form-18-to .underline-input,
-.form-18-complainant {
-  width: 2.55in;
-}
-
-.form-18-complainant {
-  margin-top: 0.08in;
-  margin-left: 0.33in;
-}
-
-.form-18-party-label {
-  margin-top: 0.04in;
-  margin-left: 0.33in;
+.form-18-to {
+  margin-top: 0.2in;
 }
 
 .form-18 .body-text {
   width: 100%;
-  margin-top: 0.14in;
-  line-height: 1.12;
+  margin-top: 0.18in;
+  line-height: 1.08;
   text-align: justify;
 }
 
 .form-18-signature {
   width: 2.5in;
-  margin: 0.14in auto 0;
+  margin: 0.08in auto 0;
 }
 
 .form-18 .notice-receipt {
-  margin-top: 0.18in;
-  line-height: 1.12;
+  margin-top: 0.1in;
+  line-height: 1.08;
+  white-space: nowrap;
 }
 
-.form-18-notified-complainant {
-  display: none;
+.form-18 .notice-receipt .line-xs,
+.form-18 .notice-receipt .line-xxs,
+.form-18 .notice-receipt .line-sm {
+  width: 0.42in;
+}
+
+.form-18 .notice-receipt .line-md {
+  width: 1.05in;
 }
 
 .form-18-receipt-block {
-  margin-top: 0.02in;
+  margin-top: 0.08in;
 }
 
 .form-18-complainant-receipt-label,
@@ -642,23 +676,48 @@ h2 {
 }
 
 .form-18-respondent-label {
-  margin-top: 0.2in;
+  margin-top: 0.18in;
 }
 
 .form-18-complainant-lines,
 .form-18-respondent-lines {
-  width: 3.05in;
-  margin-top: 0.06in;
-  margin-left: 1.45in;
+  width: 2.45in;
+  margin-top: 0.1in;
+  margin-left: 1.55in;
 }
 
 .form-18-complainant-lines div,
 .form-18-respondent-lines div {
-  margin-top: 0.12in;
+  margin-top: 0.1in;
 }
 
 .form-20 h1 {
   margin-top: 0.2in;
+}
+
+.form-20-caption .caption-party,
+.form-20-caption .caption-party .caption-line,
+.form-20 .respondent-caption {
+  width: 1.95in;
+}
+
+.form-20-caption .caption-party .party-label {
+  width: 1.95in;
+  text-align: left;
+}
+
+.form-20-caption .case-meta .line-md {
+  width: 1in;
+}
+
+.form-20-caption .case-meta p:nth-child(2) .underline-input {
+  width: 1.75in;
+}
+
+.form-20-caption .case-meta-extra-line {
+  width: 1.85in;
+  margin-top: 0.11in;
+  margin-left: 0.34in;
 }
 
 .form-20 .body-text {

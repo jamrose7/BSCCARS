@@ -44,60 +44,13 @@ function formatStatusLabel(status) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function getStoredList(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function uniqueById(items) {
-  const map = new Map();
-
-  items.forEach((item) => {
-    if (item?.id) {
-      map.set(item.id, item);
-    }
-  });
-
-  return Array.from(map.values());
-}
-
-async function getPendingResidentApplications() {
-  const localPending = getStoredList("bsccarsPendingResidents").filter(
-    (resident) =>
-      !resident.archived &&
-      !resident.is_archived &&
-      String(resident.status || "").toLowerCase() === "pending",
-  );
-
-  if (typeof api === "undefined" || !api.getPendingResidents) {
-    return localPending;
-  }
-
-  try {
-    const response = await api.getPendingResidents();
-    const backendPending = Array.isArray(response?.data) ? response.data : [];
-    return uniqueById([...backendPending, ...localPending]);
-  } catch (error) {
-    return localPending;
-  }
-}
-
 async function loadDashboardStats() {
   try {
-    const [response, pendingResidents] = await Promise.all([
-      api.getDashboardReport(),
-      getPendingResidentApplications(),
-    ]);
+    const response = await api.getDashboardReport();
     const data = response?.data || {};
-    const approvedResidents = getStoredList("bsccarsApprovedResidents").filter(
-      (resident) => /^RES-2026-\d{3}$/.test(String(resident.id || "")),
-    );
 
-    setText("totalResidents", Number(data.totalResidents || 0) + approvedResidents.length);
-    setText("pendingAccounts", pendingResidents.length);
+    setText("totalResidents", Number(data.totalResidents || 0));
+    setText("pendingAccounts", Number(data.pendingAccounts || 0));
     setText("totalComplaints", Number(data.totalComplaints || 0));
     setText("highPriorityComplaints", Number(data.highPriorityComplaints || 0));
     renderStatusCounts(data.complaintsByStatus || []);

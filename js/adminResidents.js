@@ -1,8 +1,10 @@
-const residentActionLogsKey = "bsccarsResidentActionLogs";
 const localNotificationKey = "bsccarsLocalNotifications";
 
 let residents = [];
 let showArchivedResidents = false;
+let residentStatusFilter = "Pending";
+let residentSortOrder = "newest";
+let pendingRejectResident = null;
 
 function isSuperAdmin() {
   try {
@@ -46,33 +48,6 @@ function updateRegistrationNotification(resident, status) {
   }
 }
 
-function logResidentAction(action, resident) {
-  const entry = {
-    action,
-    residentId: resident.id,
-    residentName: getResidentName(resident),
-    email: resident.email || "",
-    performedBy:
-      typeof api !== "undefined"
-        ? api.user?.email || api.user?.name || "Admin"
-        : "Admin",
-    timestamp: new Date().toISOString(),
-  };
-
-  try {
-    const logs = JSON.parse(localStorage.getItem(residentActionLogsKey)) || [];
-    logs.unshift(entry);
-    localStorage.setItem(
-      residentActionLogsKey,
-      JSON.stringify(logs.slice(0, 200)),
-    );
-  } catch (error) {
-    localStorage.setItem(residentActionLogsKey, JSON.stringify([entry]));
-  }
-
-  console.info("Resident action logged:", entry);
-}
-
 // ---------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------
@@ -109,6 +84,73 @@ function escapeHtml(value) {
 
 function getResidentName(resident) {
   return `${resident.firstName || ""} ${resident.lastName || ""}`.trim();
+}
+
+function getResidentTime(resident) {
+  const value =
+    resident.submittedAt ||
+    resident.createdAt ||
+    resident.created_at ||
+    resident.updatedAt ||
+    resident.updated_at ||
+    "";
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function getStatusRank(status) {
+  return {
+    Pending: 0,
+    Approved: 1,
+    Rejected: 2,
+  }[status] ?? 3;
+}
+
+function sortResidentsForReview(list) {
+  return [...list].sort((a, b) => {
+    if (residentSortOrder === "name-az") {
+      return getResidentName(a).localeCompare(getResidentName(b), undefined, {
+        sensitivity: "base",
+      });
+    }
+
+    const timeDifference =
+      residentSortOrder === "oldest"
+        ? getResidentTime(a) - getResidentTime(b)
+        : getResidentTime(b) - getResidentTime(a);
+
+    if (timeDifference) {
+      return timeDifference;
+    }
+
+    return getStatusRank(a.status) - getStatusRank(b.status);
+  });
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = String(value);
+  }
+}
+
+function updateResidentSummary(visibleResidents) {
+  const activeResidents = residents.filter((resident) => !isResidentArchived(resident));
+  const source = showArchivedResidents ? visibleResidents : activeResidents;
+
+  setText("residentTotalCount", source.length);
+  setText(
+    "residentPendingCount",
+    source.filter((resident) => resident.status === "Pending").length,
+  );
+  setText(
+    "residentApprovedCount",
+    source.filter((resident) => resident.status === "Approved").length,
+  );
+  setText(
+    "residentRejectedCount",
+    source.filter((resident) => resident.status === "Rejected").length,
+  );
 }
 
 // ---------------------------------------------------------------------
@@ -186,10 +228,6 @@ function renderActions(resident) {
 }
 
 function renderIdCell(resident) {
-  // The uploaded ID preview URL now comes from the resident record itself
-  // (backend-served), not from a browser-local IndexedDB lookup keyed by
-  // a client-generated id. If your backend doesn't yet return a viewable
-  // URL/dataUrl for validId, this is the field to add server-side.
   if (!resident.validId || !resident.validId.dataUrl) {
     return '<span class="muted">No ID file</span>';
   }
@@ -217,19 +255,30 @@ function renderResidents() {
       ? isResidentArchived(resident)
       : !isResidentArchived(resident),
   );
+  const filteredResidents =
+    residentStatusFilter === "All"
+      ? visibleResidents
+      : visibleResidents.filter(
+          (resident) => resident.status === residentStatusFilter,
+        );
+  const sortedResidents = sortResidentsForReview(filteredResidents);
 
   if (!residentsBody) {
     return;
   }
 
-  if (!visibleResidents.length) {
+  updateResidentSummary(visibleResidents);
+
+  if (!sortedResidents.length) {
     const emptyMessage = showArchivedResidents
       ? "No archived resident applications."
-      : "No resident applications yet. New registrations will appear here automatically.";
+      : residentStatusFilter === "All"
+        ? "No resident applications yet. New registrations will appear here automatically."
+        : `No ${residentStatusFilter.toLowerCase()} resident applications found.`;
 
     residentsBody.innerHTML = `
     <tr>
-      <td class="empty-state" colspan="10">
+      <td class="empty-state" colspan="12">
         ${emptyMessage}
       </td>
     </tr>
@@ -237,10 +286,11 @@ function renderResidents() {
     return;
   }
 
-  residentsBody.innerHTML = visibleResidents
+  residentsBody.innerHTML = sortedResidents
     .map(
-      (resident) => `
-        <tr>
+      (resident, index) => `
+        <tr id="resident-${escapeHtml(resident.id)}" class="${resident.status === "Pending" ? "row-pending" : ""}">
+          <td class="number-cell">${index + 1}</td>
           <td>${escapeHtml(resident.firstName)}</td>
           <td>${escapeHtml(resident.lastName)}</td>
           <td>${escapeHtml(resident.middleName || "-")}</td>
@@ -249,6 +299,7 @@ function renderResidents() {
           <td>${escapeHtml(resident.purok)}</td>
           <td class="nowrap">${escapeHtml(resident.contactNumber)}</td>
           <td class="email-cell">${escapeHtml(resident.email)}</td>
+          <td>${resident.emailVerifiedAt ? "Verified" : "Not Verified"}</td>
           <td class="id-cell">${renderIdCell(resident)}</td>
           <td class="action-cell">${renderActions(resident)}</td>
         </tr>
@@ -256,10 +307,6 @@ function renderResidents() {
     )
     .join("");
 }
-
-// ---------------------------------------------------------------------
-// Modals
-// ---------------------------------------------------------------------
 
 function openIdModal(resident) {
   const modal = document.getElementById("idModal");
@@ -278,10 +325,9 @@ function openIdModal(resident) {
     return;
   }
 
-  const idDataUrl = resident.validId.dataUrl;
-
   modalTitle.textContent = `${getResidentName(resident)} - Uploaded ID`;
   modalFileName.textContent = resident.validId.name || "Uploaded ID";
+  const idDataUrl = resident.validId.dataUrl;
 
   if (resident.validId.type && resident.validId.type.includes("pdf")) {
     modalBody.innerHTML = `
@@ -316,6 +362,33 @@ function closeIdModal() {
   modalBody.innerHTML = "";
 }
 
+function openRejectReasonModal(resident) {
+  pendingRejectResident = resident;
+  const modal = document.getElementById("rejectReasonModal");
+  const nameEl = document.getElementById("rejectReasonResidentName");
+  const input = document.getElementById("rejectReasonInput");
+
+  if (!modal) return;
+
+  if (nameEl) {
+    nameEl.textContent = `Reject ${getResidentName(resident)}'s account application?`;
+  }
+  if (input) input.value = "";
+
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  input?.focus();
+}
+
+function closeRejectReasonModal() {
+  const modal = document.getElementById("rejectReasonModal");
+  if (!modal) return;
+
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+  pendingRejectResident = null;
+}
+
 // ---------------------------------------------------------------------
 // Actions — now hit the real backend, then reload from the server
 // so the table always reflects the system of record.
@@ -324,7 +397,6 @@ function closeIdModal() {
 async function approveResident(resident) {
   try {
     await api.approveResident(resident.id); // POST /api/residents/:id/approve
-    logResidentAction("Approve Resident", { ...resident, status: "Approved" });
     updateRegistrationNotification(resident, "Approved");
     await loadResidents();
     renderResidents();
@@ -335,10 +407,9 @@ async function approveResident(resident) {
   }
 }
 
-async function rejectResident(resident) {
+async function rejectResident(resident, reason = "") {
   try {
-    await api.rejectResident(resident.id); // POST /api/residents/:id/reject
-    logResidentAction("Reject Resident", { ...resident, status: "Rejected" });
+    await api.rejectResident(resident.id, reason);
     updateRegistrationNotification(resident, "Rejected");
     await loadResidents();
     renderResidents();
@@ -352,11 +423,6 @@ async function rejectResident(resident) {
 async function archiveResident(resident) {
   try {
     await api.archiveResident(resident.id); // PATCH /api/residents/:id/archive
-    logResidentAction("Archive Resident", {
-      ...resident,
-      archived: true,
-      is_archived: true,
-    });
     await loadResidents();
     renderResidents();
   } catch (error) {
@@ -369,11 +435,6 @@ async function archiveResident(resident) {
 async function restoreResident(resident) {
   try {
     await api.restoreResident(resident.id); // PATCH /api/residents/:id/archive (is_archived: false)
-    logResidentAction("Restore Resident", {
-      ...resident,
-      archived: false,
-      is_archived: false,
-    });
     await loadResidents();
     renderResidents();
   } catch (error) {
@@ -392,6 +453,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeIdModalButton = document.getElementById("closeIdModal");
   const idModal = document.getElementById("idModal");
   const showArchivedToggle = document.getElementById("showArchivedResidents");
+  const statusFilterSelect = document.getElementById("residentStatusFilter");
+  const sortOrderSelect = document.getElementById("residentSortOrder");
 
   await loadResidents();
   renderResidents();
@@ -400,6 +463,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const highlightId = params.get("highlight");
   if (highlightId) {
+    const highlightedResident = residents.find(
+      (resident) => resident.id === highlightId,
+    );
+    if (
+      highlightedResident &&
+      residentStatusFilter !== "All" &&
+      highlightedResident.status !== residentStatusFilter
+    ) {
+      residentStatusFilter = "All";
+      if (statusFilterSelect) {
+        statusFilterSelect.value = "All";
+      }
+      renderResidents();
+    }
+
     setTimeout(() => {
       const rows = document.querySelectorAll("#residentsBody tr");
       for (const row of rows) {
@@ -456,6 +534,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
+      if (button.dataset.action === "reject") {
+        openRejectReasonModal(resident);
+        return;
+      }
+
       const residentName = getResidentName(resident);
 
       if (
@@ -463,13 +546,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.confirm(`Approve ${residentName}'s account?`)
       ) {
         await approveResident(resident);
-      }
-
-      if (
-        button.dataset.action === "reject" &&
-        window.confirm(`Reject ${residentName}'s account?`)
-      ) {
-        await rejectResident(resident);
       }
     });
   }
@@ -493,9 +569,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  if (statusFilterSelect) {
+    statusFilterSelect.addEventListener("change", () => {
+      residentStatusFilter = statusFilterSelect.value || "All";
+      renderResidents();
+    });
+  }
+
+  if (sortOrderSelect) {
+    sortOrderSelect.addEventListener("change", () => {
+      residentSortOrder = sortOrderSelect.value || "newest";
+      renderResidents();
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeIdModal();
+      closeRejectReasonModal();
     }
   });
 });
+
+document
+  .getElementById("cancelRejectReason")
+  ?.addEventListener("click", closeRejectReasonModal);
+
+document
+  .getElementById("confirmRejectReason")
+  ?.addEventListener("click", async () => {
+    if (!pendingRejectResident) return;
+
+    const reason =
+      document.getElementById("rejectReasonInput")?.value.trim() || "";
+    const resident = pendingRejectResident;
+
+    closeRejectReasonModal();
+    await rejectResident(resident, reason);
+  });
+
+document
+  .getElementById("rejectReasonModal")
+  ?.addEventListener("click", (event) => {
+    if (event.target.id === "rejectReasonModal") {
+      closeRejectReasonModal();
+    }
+  });

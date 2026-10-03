@@ -546,11 +546,11 @@
   transform: translateY(-2px);
 }
 
-.btn-evidence.btn-danger {
+.btn-evidence.btn-escalate {
   background: linear-gradient(135deg, #b8483b, #8b3a30);
 }
 
-.btn-evidence.btn-danger:hover {
+.btn-evidence.btn-escalate:hover {
   background: linear-gradient(135deg, #8b3a30, #6b2d26);
   transform: translateY(-2px);
 }

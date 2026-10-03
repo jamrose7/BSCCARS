@@ -63,15 +63,56 @@
 
         <section class="residents-panel">
           <div class="panel-heading">
-            <h3>Pending Resident Approvals</h3>
+            <div>
+              <h3>Resident Applications</h3>
+              <p class="panel-subtitle">Filter by account status and sort applications for faster review.</p>
+            </div>
             <label class="archive-toggle" for="showArchivedResidents">
               <input type="checkbox" id="showArchivedResidents" />
               <span>Show archived</span>
             </label>
           </div>
+          <div class="resident-summary" aria-label="Resident application summary">
+            <div class="resident-summary-item">
+              <span>Total</span>
+              <strong id="residentTotalCount">0</strong>
+            </div>
+            <div class="resident-summary-item is-pending">
+              <span>Pending</span>
+              <strong id="residentPendingCount">0</strong>
+            </div>
+            <div class="resident-summary-item">
+              <span>Approved</span>
+              <strong id="residentApprovedCount">0</strong>
+            </div>
+            <div class="resident-summary-item">
+              <span>Rejected</span>
+              <strong id="residentRejectedCount">0</strong>
+            </div>
+          </div>
+          <div class="resident-controls" aria-label="Resident table controls">
+            <label for="residentStatusFilter">
+              <span>Status</span>
+              <select id="residentStatusFilter">
+                <option value="All">All</option>
+                <option value="Pending" selected>Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </label>
+            <label for="residentSortOrder">
+              <span>Sort by</span>
+              <select id="residentSortOrder">
+                <option value="latest">Latest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="name-az">Name A-Z</option>
+              </select>
+            </label>
+          </div>
           <div class="residents-table-wrap">
             <table class="residents-table">
               <colgroup>
+                <col class="col-number" />
                 <col class="col-name" />
                 <col class="col-name" />
                 <col class="col-middle" />
@@ -80,11 +121,13 @@
                 <col class="col-purok" />
                 <col class="col-contact" />
                 <col class="col-email" />
+                <col class="col-verified" />
                 <col class="col-id" />
                 <col class="col-action" />
               </colgroup>
               <thead>
                 <tr>
+                  <th>No.</th>
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Middle Name</th>
@@ -93,6 +136,7 @@
                   <th>Purok</th>
                   <th>Contact Number</th>
                   <th>Email Address</th>
+                  <th>Email Verified</th>
                   <th>ID Uploaded</th>
                   <th>Action</th>
                 </tr>
@@ -106,23 +150,59 @@
     </div>
 
     <div class="id-modal" id="idModal" aria-hidden="true">
-      <div class="id-modal-dialog" role="dialog" aria-modal="true">
-        <div class="id-modal-header">
-          <div>
-            <h3 id="idModalTitle">Uploaded ID</h3>
-            <p id="idModalFileName"></p>
-          </div>
+  <div class="id-modal-dialog" role="dialog" aria-modal="true">
+    <div class="id-modal-header">
+      <div>
+        <h3 id="idModalTitle">Uploaded ID</h3>
+        <p id="idModalFileName"></p>
+      </div>
 
-          <button
-            class="id-modal-close"
-            id="closeIdModal"
-            type="button">
-            Close
+      <button
+        class="id-modal-close"
+        id="closeIdModal"
+        type="button">
+        Close
+      </button>
+    </div>
+
+    <div class="id-modal-body" id="idModalBody"></div>
+  </div>
+</div>
+
+<div class="id-modal" id="rejectReasonModal" aria-hidden="true">
+  <div class="confirm-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="rejectReasonTitle">
+    <div class="confirm-modal-header">
+      <h3 id="rejectReasonTitle">Reject Application</h3>
+      <p id="rejectReasonResidentName">Reject this resident's account application?</p>
+    </div>
+
+    <div style="padding: 0 24px 16px;">
+      <label
+        for="rejectReasonInput"
+        style="display:block; margin-bottom:6px; font-weight:700; color:#12333d; font-size:0.85rem;"
+      >
+        Reason (optional)
+      </label>
+      <textarea
+        id="rejectReasonInput"
+        rows="3"
+        maxlength="300"
+        placeholder="e.g. Unclear ID photo, incomplete information, duplicate application..."
+        style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid rgba(18,51,61,0.18); font:inherit; resize:vertical; color:#12333d;"
+      ></textarea>
+    </div>
+
+    <div class="confirm-modal-actions">
+        <button type="button" class="confirm-secondary" id="cancelRejectReason">
+          Cancel
+        </button>
+        <button type="button" class="confirm-danger" id="confirmRejectReason">
+          Reject Application
           </button>
         </div>
-
-        <div class="id-modal-body" id="idModalBody"></div>
       </div>
+    </div>
+    </div>
     </div>
 
     <script src="../js/utils/ui.js"></script>
