@@ -11,7 +11,7 @@ The project includes a static HTML/CSS/JavaScript frontend and an Express.js bac
 - JWT-based sign-in for residents, Assistant Admin, and Super Admin users.
 - Resident complaint submission with category, priority, confidentiality, incident date/time, attachments, and Money Debt respondent fields.
 - Admin-only complaint intake source tracking ("Received Via"): Digital Submission, In-person at Barangay Office, or Other (with a free-text specify field).
-- Active complaint limit of 5 pending or in-progress complaints per resident.
+- Active complaint limit of 5 unarchived pending or in-progress complaints per resident.
 - Resident "My Complaints" page with status history, admin responses, attachments, hearing proceedings, and follow-up updates.
 - Resident follow-ups for active complaints so continuing issues can be updated instead of duplicated.
 - Admin complaint management with status updates, official responses, respondent detail correction, archiving, and resident follow-up visibility.
@@ -179,6 +179,18 @@ New resident registrations are pending and inactive until the application is app
 
 If applying schema changes to an existing database, inspect the affected table first and apply only the missing column/index/enum update rather than forcing a destructive change.
 
+### Existing databases: failed sign-in lockout
+
+The sign-in lockout feature requires `failed_login_attempts` and `locked_until` on the `users` table. `schema.sql` creates these columns for a new database, but `CREATE TABLE IF NOT EXISTS` does not add them to an existing table. Back up the database, check which columns are missing, and add only those columns. If both are missing, run:
+
+```sql
+ALTER TABLE users
+  ADD COLUMN failed_login_attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  ADD COLUMN locked_until DATETIME NULL;
+```
+
+If one column already exists, omit its `ADD COLUMN` clause from the statement.
+
 ## Main API Areas
 
 ```text
@@ -309,12 +321,13 @@ Profile photos are validated on the backend by declared image type, data URL for
 
 ## Complaint Rules
 
-- Residents can have up to 5 active complaints.
+- Residents can have up to 5 unarchived active complaints.
 - Active complaints are `pending` or `in-progress`.
+- Archived complaints do not count toward the limit.
 - Resolved complaints no longer count against the active complaint limit.
 - Follow-ups can only be added by the resident who submitted the complaint.
 - Follow-ups are allowed only for active, non-archived complaints.
-- Confidential complaints hide the complainant from public listings, but authorized barangay personnel can still review the full record. The schema currently supports `Public` and `Confidential` only — the "Anonymous" confidentiality tier described in the original proposal is not implemented at the database level.
+- Confidential complaints hide the complainant from public listings, but authorized barangay personnel can still review the full record. The schema currently supports `Public` and `Confidential` only.
 - Money Debt complaints require respondent full name and purok; respondent contact number is optional. Respondent details are never exposed in the Public Feed.
 - High priority is automatically and non-overridably applied to complaints in configured urgent categories (Physical Harm/Violence/Threats, Public Health Hazard); all other categories are stored as Normal. A resident-requested High priority on a non-urgent category is downgraded to Normal and recorded in the activity log.
 - Complaint submissions accept one JPG/JPEG/PNG image up to 5 MB and one valid MP4 video up to 10 MB and 20 seconds. Videos shorter than 20 seconds are accepted. The browser and backend both enforce the duration limit.
@@ -346,7 +359,9 @@ The Privacy Policy still requires the barangay to supply its designated Data Pro
 
 ## Security and Assurance Status
 
-BSCCARS includes baseline Information Security controls: JWT authentication, bcrypt password hashing, role-based API authorization, rate limiting on selected auth and token endpoints (5 attempts per 15 minutes; form endpoints use IP plus submitted email, while token-validation endpoints use IP), Helmet security headers with a Content-Security-Policy, token hashing for password reset/email verification/admin activation, upload validation, path traversal checks and per-file authorization for complaint attachments, privacy-limited public feed responses, and database-backed activity logging.
+BSCCARS includes baseline Information Security controls: passwords are stored as bcrypt hashes (never plaintext), password strength rules are enforced, and password reset links use hashed, expiring, single-use tokens. Sign-in locks an account for 10 minutes after 3 consecutive incorrect passwords; a successful sign-in clears the counter. Selected auth and token endpoints also have request rate limits (3 attempts per 10 minutes; form endpoints use IP plus submitted email, while token-validation endpoints use IP). Other controls include JWT authentication, role-based API authorization, Helmet security headers with a Content-Security-Policy, upload validation, path traversal checks and per-file authorization for complaint attachments, privacy-limited public feed responses, and database-backed activity logging.
+
+Passwords are stored as one-way bcrypt hashes, so the system cannot retrieve or display a user's original password. Hashing protects stored password values; it does not secure network traffic. Configure TLS at deployment and set `ENFORCE_HTTPS=true` when running behind a TLS-capable proxy or host. Account lockout is enforced using `failed_login_attempts` and `locked_until` in the `users` table. The threshold and duration are currently 3 consecutive failures and 10 minutes.
 
 Note: the current CSP allows `'unsafe-inline'` for both `script-src` (inline
 `<script>` blocks) and `script-src-attr` (inline event-handler attributes
