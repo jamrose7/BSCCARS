@@ -9,6 +9,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
 const db = require("./db");
+const { addActivityLog } = require("./data/dbActivity");
 
 const authRoutes = require("./routes/auth");
 const complaintsRoutes = require("./routes/complaints");
@@ -92,9 +93,44 @@ app.use(cors({
 app.use(express.json({ limit: "7mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+const signInLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const ip = ipKeyGenerator(req.ip);
+    return `${ip}:${email || "unknown"}`;
+  },
+  message: {
+    success: false,
+    message: "Sign-in temporarily blocked: 3 requests were made from this IP address for this email within 10 minutes. Please try again after the rate limit resets.",
+  },
+  handler: async (req, res, next, options) => {
+    try {
+      const email = String(req.body?.email || "").trim().toLowerCase();
+      const [users] = email
+        ? await db.query("SELECT id FROM users WHERE email = ? LIMIT 1", [email])
+        : [[]];
+      const userId = users[0]?.id || null;
+      await addActivityLog({
+        userId,
+        action: "Failed Sign In",
+        targetType: "account",
+        targetId: userId,
+        details: "Sign-in request blocked by rate limit",
+      });
+    } catch (error) {
+      console.error("Unable to log rate-limited sign-in attempt:", error.message);
+    }
+    return res.status(options.statusCode).json(options.message);
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: 10 * 60 * 1000,
+  max: 3,
   keyGenerator: (req) => {
     const email = String(req.body?.email || "").trim().toLowerCase();
     const ip = ipKeyGenerator(req.ip);
@@ -111,8 +147,8 @@ const authLimiter = rateLimit({
 // Token validation requests contain no email address. They need a normal
 // IP-based limiter instead of the email-and-IP limiter used by form requests.
 const tokenLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
+  windowMs: 10 * 60 * 1000,
+  max: 3,
   message: {
     success: false,
     message: "Too many attempts. Please try again in a few minutes.",
@@ -121,7 +157,7 @@ const tokenLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use("/api/auth/sign-in", authLimiter);
+app.use("/api/auth/sign-in", signInLimiter);
 app.use("/api/auth/register", authLimiter);
 app.use("/api/auth/request-password-reset", authLimiter);
 app.use("/api/auth/validate-reset-token", tokenLimiter);

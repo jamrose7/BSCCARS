@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(20) PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
+  failed_login_attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  locked_until DATETIME NULL,
   role ENUM('resident', 'assistant_admin', 'super_admin') NOT NULL DEFAULT 'resident',
   first_name VARCHAR(100) NOT NULL,
   middle_name VARCHAR(100) NULL,

@@ -23,6 +23,8 @@ const {
   getDbUserByEmail,
   getDbUserById,
   getDbUserWithPasswordByEmail,
+  recordDbFailedLogin,
+  clearDbLoginFailures,
   updateDbUserPassword,
   markDbUserEmailVerified,
   promoteDbPendingEmail,
@@ -45,6 +47,10 @@ const {
   sendPasswordResetConfirmationEmail,
 } = require("../services/emailService");
 const PASSWORD_SALT_ROUNDS = 10;
+const LOGIN_FAILURE_LIMIT = 3;
+const LOGIN_LOCKOUT_MINUTES = 10;
+const LOGIN_LOCKOUT_MESSAGE =
+  `Your account has been temporarily locked for ${LOGIN_LOCKOUT_MINUTES} minutes because of ${LOGIN_FAILURE_LIMIT} consecutive incorrect sign-in attempts. Please try again after the lockout expires.`;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const GENERIC_RESET_MESSAGE =
   "If an account is associated with this email address, we will send instructions to reset your password.";
@@ -148,17 +154,42 @@ router.post("/sign-in", asyncHandler(async (req, res) => {
     });
   }
 
+  if (user.is_locked) {
+    await addUserActivity(user.id, "Failed Sign In", {
+      targetType: "account",
+      targetId: user.id,
+      details: "Sign-in attempted while account was locked",
+    });
+    return res.status(423).json({
+      success: false,
+      message: LOGIN_LOCKOUT_MESSAGE,
+    });
+  }
+
   if (!(await verifyAccountPassword(user, password))) {
+    const lockState = await recordDbFailedLogin(
+      user.id,
+      LOGIN_FAILURE_LIMIT,
+      LOGIN_LOCKOUT_MINUTES,
+    );
     await addUserActivity(user.id, "Failed Sign In", {
       targetType: "account",
       targetId: user.id,
       details: "Invalid credentials",
     });
+    if (lockState?.is_locked) {
+      return res.status(423).json({
+        success: false,
+        message: LOGIN_LOCKOUT_MESSAGE,
+      });
+    }
     return res.status(401).json({
       success: false,
       message: "Incorrect password please try again",
     });
   }
+
+  await clearDbLoginFailures(user.id);
 
   if (!VALID_ROLES.has(user.role)) {
     return res.status(403).json({

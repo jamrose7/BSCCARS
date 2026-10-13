@@ -42,10 +42,19 @@ function dbUserToApi(row) {
 
 async function getDbUserByEmail(email) {
   const [rows] = await db.query(
-    "SELECT * FROM users WHERE email = ? LIMIT 1",
+    `SELECT users.*,
+            (locked_until IS NOT NULL AND locked_until > CURRENT_TIMESTAMP) AS is_locked
+     FROM users WHERE email = ? LIMIT 1`,
     [normalizeEmail(email)],
   );
-  return dbUserToApi(rows[0]);
+  const user = dbUserToApi(rows[0]);
+  if (!user) return null;
+  return {
+    ...user,
+    failed_login_attempts: rows[0].failed_login_attempts,
+    locked_until: rows[0].locked_until,
+    is_locked: Boolean(rows[0].is_locked),
+  };
 }
 
 async function getDbUserWithPasswordByEmail(email) {
@@ -54,6 +63,40 @@ async function getDbUserWithPasswordByEmail(email) {
     [normalizeEmail(email)],
   );
   return rows[0] || null;
+}
+
+async function recordDbFailedLogin(id, threshold, lockoutMinutes) {
+  await db.query(
+    `UPDATE users
+     SET failed_login_attempts = 0, locked_until = NULL
+     WHERE id = ?
+       AND locked_until IS NOT NULL
+       AND locked_until <= CURRENT_TIMESTAMP`,
+    [id],
+  );
+  await db.query(
+    `UPDATE users
+     SET locked_until = CASE
+           WHEN failed_login_attempts + 1 >= ?
+             THEN DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ? MINUTE)
+           ELSE NULL
+         END,
+         failed_login_attempts = LEAST(failed_login_attempts + 1, ?)
+     WHERE id = ? AND (locked_until IS NULL OR locked_until <= CURRENT_TIMESTAMP)`,
+    [threshold, lockoutMinutes, threshold, id],
+  );
+  const [rows] = await db.query(
+    "SELECT failed_login_attempts, locked_until, locked_until > CURRENT_TIMESTAMP AS is_locked FROM users WHERE id = ? LIMIT 1",
+    [id],
+  );
+  return rows[0] || null;
+}
+
+async function clearDbLoginFailures(id) {
+  await db.query(
+    "UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?",
+    [id],
+  );
 }
 
 async function getDbUserById(id) {
@@ -76,7 +119,9 @@ async function verifyDbUserPassword(id, password) {
 
 async function updateDbUserPassword(id, newPassword) {
   const passwordHash = bcrypt.hashSync(newPassword, PASSWORD_SALT_ROUNDS);
-  await db.query("UPDATE users SET password_hash = ? WHERE id = ?", [
+  await db.query(
+    "UPDATE users SET password_hash = ?, failed_login_attempts = 0, locked_until = NULL WHERE id = ?",
+    [
     passwordHash,
     id,
   ]);
@@ -214,6 +259,8 @@ async function activateDbAdminWithPassword(id, newPassword) {
     `
       UPDATE users
       SET password_hash = ?,
+          failed_login_attempts = 0,
+          locked_until = NULL,
           account_status = 'active',
           email_verified_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -229,6 +276,8 @@ module.exports = {
   dbUserToApi,
   getDbUserByEmail,
   getDbUserWithPasswordByEmail,
+  recordDbFailedLogin,
+  clearDbLoginFailures,
   getDbUserById,
   verifyDbUserPassword,
   updateDbUserPassword,
