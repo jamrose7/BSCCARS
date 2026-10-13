@@ -14,7 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 var activityPage = 1;
+var activityPageSize = 10;
 var activityDateRange = "today";
+var activitySearchTimer = null;
+var activityRequestId = 0;
 
 function deactSvg() {
   return '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
@@ -126,20 +129,35 @@ function editUser(id) {
   alert("Edit user " + id + " - coming soon.");
 }
 async function loadActivityLogs() {
+  var requestId = ++activityRequestId;
+  setActivityStatus("Loading activity logs…");
   if (typeof api === "undefined" || !api.getSystemActivityLogs) {
-    renderActivityLogRows([]);
+    renderActivityMessage("Activity logs are unavailable because the API client did not load.");
     return;
   }
   try {
     var filters = getActivityFilters();
     var res = await api.getSystemActivityLogs(filters);
+    if (requestId !== activityRequestId) return;
     var backend = Array.isArray(res && res.data) ? res.data : [];
     renderActivityLogRows(backend.map(normalizeBackendLog));
-    renderActivityPagination(res.pagination || { page: 1, pageSize: 20, total: backend.length, totalPages: 1 });
+    renderActivityPagination(res.pagination || { page: 1, pageSize: activityPageSize, total: backend.length, totalPages: 1 });
     populateActivityOptions(res.activities || []);
   } catch (e) {
-    renderActivityLogRows([]);
+    if (requestId !== activityRequestId) return;
+    console.error("Unable to load system activity logs:", e);
+    renderActivityMessage("Unable to load activity logs. " + (e.message || "Check your connection and try again."));
+    renderActivityPagination({ page: 1, pageSize: activityPageSize, total: 0, totalPages: 1 });
   }
+}
+function setActivityStatus(message) {
+  var status = document.getElementById("activityLogStatus");
+  if (status) status.textContent = message || "";
+}
+function renderActivityMessage(message) {
+  var body = document.getElementById("activityLogBody");
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.72);padding:18px;">' + escapeHtml(message) + '</td></tr>';
 }
 function padDatePart(value) {
   return String(value).padStart(2, "0");
@@ -208,6 +226,31 @@ function initActivityDateRange() {
       loadActivityLogs();
     });
   }
+  var search = document.getElementById("activitySearch");
+  if (search) {
+    search.addEventListener("input", function () {
+      clearTimeout(activitySearchTimer);
+      activitySearchTimer = setTimeout(function () {
+        activityPage = 1;
+        loadActivityLogs();
+      }, 250);
+    });
+  }
+  var activity = document.getElementById("activityFilter");
+  if (activity) {
+    activity.addEventListener("change", function () {
+      activityPage = 1;
+      loadActivityLogs();
+    });
+  }
+  var pageSize = document.getElementById("activityPageSize");
+  if (pageSize) {
+    pageSize.addEventListener("change", function () {
+      activityPageSize = Number.parseInt(pageSize.value, 10) || 10;
+      activityPage = 1;
+      loadActivityLogs();
+    });
+  }
   setActiveActivityDatePreset(activityDateRange);
 }
 function getActivityFilters() {
@@ -220,7 +263,7 @@ function getActivityFilters() {
       : getActivityPresetRange(activityDateRange);
   return {
     page: activityPage,
-    pageSize: 20,
+    pageSize: activityPageSize,
     search: (document.getElementById("activitySearch") || {}).value || "",
     from: dateRange.from,
     to: dateRange.to,
@@ -258,16 +301,20 @@ function renderActivityPagination(p) {
   var summary = document.getElementById("activityPaginationSummary");
   var controls = document.getElementById("activityPaginationControls");
   if (!summary || !controls) return;
-  var start = p.total ? (p.page - 1) * p.pageSize + 1 : 0;
-  var end = Math.min(p.page * p.pageSize, p.total || 0);
-  summary.textContent = "Showing " + start + "-" + end + " of " + (p.total || 0) + " activities";
-  var html = '<button type="button" ' + (p.page <= 1 ? "disabled" : "") + ' onclick="gotoActivityPage(' + (p.page - 1) + ')">Previous</button>';
-  for (var i = 1; i <= p.totalPages; i++) {
-    if (i === 1 || i === p.totalPages || Math.abs(i - p.page) <= 2) {
-      html += '<button type="button" ' + (i === p.page ? "disabled" : "") + ' onclick="gotoActivityPage(' + i + ')">' + i + "</button>";
+  var page = Math.max(Number(p.page) || 1, 1);
+  var pageSize = Math.max(Number(p.pageSize) || activityPageSize, 1);
+  var totalPages = Math.max(Number(p.totalPages) || 1, 1);
+  var total = Number(p.total) || 0;
+  var start = total ? (page - 1) * pageSize + 1 : 0;
+  var end = Math.min(page * pageSize, total);
+  summary.textContent = "Showing " + start + "-" + end + " of " + total + " activities";
+  var html = '<button type="button" ' + (page <= 1 ? "disabled" : "") + ' onclick="gotoActivityPage(' + (page - 1) + ')">Previous</button>';
+  for (var i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || Math.abs(i - page) <= 2) {
+      html += '<button type="button" ' + (i === page ? "disabled" : "") + ' onclick="gotoActivityPage(' + i + ')">' + i + "</button>";
     }
   }
-  html += '<button type="button" ' + (p.page >= p.totalPages ? "disabled" : "") + ' onclick="gotoActivityPage(' + (p.page + 1) + ')">Next</button>';
+  html += '<button type="button" ' + (page >= totalPages ? "disabled" : "") + ' onclick="gotoActivityPage(' + (page + 1) + ')">Next</button>';
   controls.innerHTML = html;
 }
 function gotoActivityPage(page) {
@@ -312,9 +359,9 @@ function normalizeBackendLog(log) {
 function renderActivityLogRows(logs) {
   var body = document.getElementById("activityLogBody");
   if (!body) return;
+  setActivityStatus("");
   if (!logs.length) {
-    body.innerHTML =
-      '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.65);padding:18px;">No activity logged yet.</td></tr>';
+    renderActivityMessage("No activity matches the selected filters.");
     return;
   }
   body.innerHTML = logs

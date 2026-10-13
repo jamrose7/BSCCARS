@@ -155,8 +155,17 @@
               <tbody id="activityLogBody"></tbody>
             </table>
           </div>
+          <p id="activityLogStatus" class="activity-log-status" role="status" aria-live="polite"></p>
           <div class="activity-pagination">
             <span id="activityPaginationSummary"></span>
+            <label class="activity-page-size">Rows per page
+              <select id="activityPageSize" aria-label="Activity log rows per page">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </label>
             <div id="activityPaginationControls"></div>
           </div>
         </section>

@@ -59,7 +59,6 @@ router.get("/", async (req, res) => {
   `);
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-  const offset = (page - 1) * pageSize;
   const countParams = [...params];
   const [countRows] = await db.query(
     `
@@ -70,6 +69,10 @@ router.get("/", async (req, res) => {
     `,
     countParams,
   );
+  const total = Number(countRows[0]?.total || 0);
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+  const currentPage = Math.min(page, totalPages);
+  const offset = (currentPage - 1) * pageSize;
   const [rows] = await db.query(
     `
       SELECT
@@ -115,7 +118,7 @@ router.get("/", async (req, res) => {
         AND l.target_type = 'resident'
         AND target_user.id = l.target_id
       ${whereSql}
-      ORDER BY l.created_at ${sort}
+      ORDER BY l.created_at ${sort}, l.id ${sort}
       LIMIT ? OFFSET ?
     `,
     [...params, pageSize, offset],
@@ -127,10 +130,10 @@ router.get("/", async (req, res) => {
     success: true,
     data: rows,
     pagination: {
-      page,
+      page: currentPage,
       pageSize,
-      total: Number(countRows[0]?.total || 0),
-      totalPages: Math.max(Math.ceil(Number(countRows[0]?.total || 0) / pageSize), 1),
+      total,
+      totalPages,
     },
     activities: activityRows.map((row) => row.action),
   });

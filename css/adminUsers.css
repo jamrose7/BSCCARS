@@ -636,10 +636,35 @@
 
 .activity-pagination {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   align-items: center;
   color: rgba(238, 247, 247, 0.82);
+}
+
+.activity-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.activity-page-size select {
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: #123a40;
+  color: #eef7f7;
+}
+
+.activity-log-status {
+  min-height: 1.2em;
+  margin: -6px 0 12px;
+  color: rgba(238, 247, 247, 0.8);
+  font-size: 0.9rem;
 }
 
 #activityPaginationControls {
