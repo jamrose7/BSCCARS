@@ -175,8 +175,9 @@ h2 {
 
 .form-12 .to-two-col {
   display: grid;
-  grid-template-columns: 0.34in 2.2in 2.2in;
+  grid-template-columns: 2.2in 2.2in;
   gap: 0.28in;
+  justify-content: center;
   align-items: end;
   margin-top: 0.34in;
 }
@@ -188,11 +189,6 @@ h2 {
 .form-12 .to-two-col .line-lg {
   width: 2in !important;
   text-align: center;
-}
-
-.form-12 .to-two-col > span {
-  align-self: end;
-  padding-bottom: 0.02in;
 }
 
 .form-12 .to-two-col .party-label {
